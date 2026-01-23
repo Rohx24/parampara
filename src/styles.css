@@ -1,0 +1,37 @@
+@import url("https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@400;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: only light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  font-family: "Nunito", system-ui, sans-serif;
+  color: #2f2a28;
+  background: radial-gradient(circle at top, #fff7f2 0%, #e9f6ff 45%, #d8f2e8 100%);
+}
+
+.bg-sparkle {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.8) 1px, transparent 1px),
+    radial-gradient(rgba(255, 255, 255, 0.6) 1px, transparent 1px);
+  background-size: 90px 90px, 150px 150px;
+  background-position: 0 0, 40px 30px;
+}
+
+.video-shimmer {
+  background: linear-gradient(120deg, #ffc8b2, #ffe5b4, #b8ecff, #c7f3da);
+  background-size: 300% 300%;
+}
+
+.modal-backdrop {
+  background: rgba(20, 20, 24, 0.4);
+  backdrop-filter: blur(6px);
+}
