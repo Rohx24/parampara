@@ -522,7 +522,7 @@ function TabletMock({
             >
               <video
                 ref={videoRef}
-                src="/trial%201.mov"
+                src="/trial 1.mov"
                 muted
                 loop
                 playsInline
