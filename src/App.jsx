@@ -452,8 +452,6 @@ function TabletMock({
 }) {
   const videoRef = useRef(null);
   const [autoSubtitle, setAutoSubtitle] = useState(subtitle);
-  const videoSrc = "/trial%201.mov";
-  const videoType = "video/quicktime";
   const videoHeight =
     size === "lg" ? "h-56 sm:h-64" : "h-44";
 
@@ -524,16 +522,14 @@ function TabletMock({
             >
               <video
                 ref={videoRef}
+                src="/trial%201.mov"
                 muted
                 loop
                 playsInline
                 autoPlay
                 preload="metadata"
                 className="h-full w-full object-cover"
-              >
-                <source src={videoSrc} type={videoType} />
-                Your browser does not support the video tag.
-              </video>
+              />
               <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
               <div className="absolute bottom-3 left-3 rounded-full bg-white/80 px-3 py-1 text-[11px] font-semibold text-slate-600">
                 Little Mango Adventure
