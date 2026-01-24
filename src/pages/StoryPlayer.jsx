@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
+import { useSession } from "../context/SessionContext.jsx";
+import { logEvent, updateProgressSummary } from "../lib/db";
 
 const stories = [
   {
@@ -195,11 +197,13 @@ const subtitleTracks = {
 
 export default function StoryPlayer() {
   const { id } = useParams();
+  const { childProfile, setChildProfile } = useSession();
   const story = useMemo(
     () => stories.find((item) => item.id === id) || stories[0],
     [id]
   );
   const videoRef = useRef(null);
+  const loggedStoryId = useRef(null);
   const [selected, setSelected] = useState(languages[0]);
   const [momentIndex, setMomentIndex] = useState(0);
   const [showMoment, setShowMoment] = useState(false);
@@ -230,6 +234,32 @@ export default function StoryPlayer() {
       clearInterval(interval);
     };
   }, []);
+
+  useEffect(() => {
+    if (!childProfile?.id) return;
+    if (loggedStoryId.current === story.id) return;
+    loggedStoryId.current = story.id;
+    logEvent(childProfile.id, "story_start", {
+      storyId: story.id,
+      language: selected.id,
+    });
+    const currentSummary = childProfile.progress_summary || {};
+    updateProgressSummary(childProfile.id, {
+      ...currentSummary,
+      lastStoryId: story.id,
+    })
+      .then((updated) => updated && setChildProfile(updated))
+      .catch(() => undefined);
+  }, [childProfile?.id, selected.id, story.id]);
+
+  useEffect(() => {
+    if (!childProfile?.id || !showMoment) return;
+    logEvent(childProfile.id, "story_checkpoint", {
+      storyId: story.id,
+      checkpointId: momentIndex,
+      language: selected.id,
+    });
+  }, [childProfile?.id, momentIndex, selected.id, showMoment, story.id]);
 
   useEffect(() => {
     const video = videoRef.current;

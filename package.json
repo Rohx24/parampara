@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@google/model-viewer": "^4.1.0",
+    "@supabase/supabase-js": "^2.49.0",
     "framer-motion": "^11.0.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",

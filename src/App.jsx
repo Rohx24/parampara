@@ -1,11 +1,21 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Routes, Route, Link } from "react-router-dom";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Routes, Route, Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import Signup from "./pages/Signup.jsx";
 import Journey from "./pages/Journey.jsx";
 import Stories from "./pages/Stories.jsx";
 import StoryPlayer from "./pages/StoryPlayer.jsx";
+import Parents from "./pages/Parents.jsx";
+import HomeLoggedIn from "./pages/HomeLoggedIn.jsx";
+import Games from "./pages/Games.jsx";
+import LetterMatchGame from "./games/LetterMatch/LetterMatchGame.jsx";
+import Start from "./pages/Start.jsx";
+import ParentSetup from "./pages/ParentSetup.jsx";
+import KidJoin from "./pages/KidJoin.jsx";
 import Mascot3D from "./components/Mascot3D.jsx";
+import { useSession } from "./context/SessionContext.jsx";
+import { logEvent } from "./lib/db";
+import { getActiveCue, useVttCues } from "./hooks/useVttCues.js";
 
 const languages = [
   {
@@ -193,24 +203,54 @@ const heroItem = {
 const MotionLink = motion(Link);
 
 function App() {
+  const location = useLocation();
+  const { session, sessionReady } = useSession();
+  const publicRoutes = ["/", "/parents", "/start", "/parent-setup", "/kid-join"];
+  const isPublicRoute = publicRoutes.some((path) =>
+    location.pathname.startsWith(path)
+  );
+
+  if (!sessionReady) {
+    return <div className="min-h-screen bg-sparkle" />;
+  }
+
+  if (!session && !isPublicRoute) {
+    return <Navigate to="/start" replace />;
+  }
+
   return (
     <div className="min-h-screen bg-sparkle">
       <Routes>
+        <Route path="/start" element={<Start />} />
+        <Route path="/parent-setup" element={<ParentSetup />} />
+        <Route path="/kid-join" element={<KidJoin />} />
         <Route path="/" element={<LandingPage />} />
+        <Route
+          path="/home"
+          element={session ? <HomeLoggedIn /> : <Navigate to="/start" replace />}
+        />
+        <Route path="/parents" element={<Parents />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/journey" element={<Journey />} />
         <Route path="/stories" element={<Stories />} />
         <Route path="/stories/:id" element={<StoryPlayer />} />
         <Route path="/voice" element={<VoicePlaceholder />} />
+        <Route path="/games" element={<Games />} />
+        <Route path="/games/letter-match" element={<LetterMatchGame />} />
       </Routes>
     </div>
   );
 }
 
 function LandingPage() {
+  const { childProfile } = useSession();
   const [selected, setSelected] = useState(languages[0]);
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(true);
+  const defaultBuddyMessage = "Hi, I'm Buddy!";
+  const [buddyMessage, setBuddyMessage] = useState(defaultBuddyMessage);
+
+  const resetBuddyMessage = () => setBuddyMessage(defaultBuddyMessage);
+  const showBuddyMessage = (message) => () => setBuddyMessage(message);
 
   const subtitle = selected.subtitle;
   const speechText = selected.messages[0];
@@ -260,6 +300,10 @@ function LandingPage() {
               <MotionLink
                 to="/signup"
                 aria-label="Create free account"
+                onMouseEnter={showBuddyMessage("Create a free account")}
+                onMouseLeave={resetBuddyMessage}
+                onFocus={showBuddyMessage("Create a free account")}
+                onBlur={resetBuddyMessage}
                 className="rounded-full bg-buddy-grape px-6 py-3 text-base font-semibold text-white shadow-soft transition hover:-translate-y-0.5 hover:shadow-card"
                 whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.96 }}
@@ -269,6 +313,10 @@ function LandingPage() {
               <motion.button
                 type="button"
                 aria-label="Watch a 20-second preview"
+                onMouseEnter={showBuddyMessage("Watch a 20-sec preview")}
+                onMouseLeave={resetBuddyMessage}
+                onFocus={showBuddyMessage("Watch a 20-sec preview")}
+                onBlur={resetBuddyMessage}
                 onClick={() => setPreviewOpen(true)}
                 whileTap={{ scale: 0.96 }}
                 className="rounded-full border border-white/60 bg-white/70 px-6 py-3 text-base font-semibold text-buddy-cocoa shadow-soft backdrop-blur transition hover:-translate-y-0.5"
@@ -276,6 +324,16 @@ function LandingPage() {
                 Watch a 20-sec preview
               </motion.button>
             </motion.div>
+            {childProfile ? (
+              <motion.div
+                variants={heroItem}
+                className="rounded-2xl border border-white/70 bg-white/80 px-4 py-3 text-sm font-semibold text-slate-600 shadow-soft"
+              >
+                Resume for {childProfile.nickname} ·{" "}
+                {childProfile.preferred_language || "Language"} · Level{" "}
+                {childProfile.level || "starter"}
+              </motion.div>
+            ) : null}
             <motion.div variants={heroItem} className="flex flex-wrap gap-3">
               {languages.map((language) => (
                 <button
@@ -283,6 +341,10 @@ function LandingPage() {
                   type="button"
                   aria-label={`Select ${language.label}`}
                   onClick={() => setSelected(language)}
+                  onMouseEnter={showBuddyMessage(`Watch in ${language.label}`)}
+                  onMouseLeave={resetBuddyMessage}
+                  onFocus={showBuddyMessage(`Watch in ${language.label}`)}
+                  onBlur={resetBuddyMessage}
                   className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
                     selected.id === language.id
                       ? "bg-buddy-coral text-white shadow-soft"
@@ -301,7 +363,10 @@ function LandingPage() {
             animate="show"
             className="relative flex flex-col items-center justify-center gap-6 lg:flex-row"
           >
-            <Mascot3D className="order-2 hidden lg:block lg:order-none lg:mr-10 lg:-translate-x-2" />
+            <div className="order-2 hidden lg:flex lg:order-none lg:mr-10 lg:-translate-x-2 lg:flex-col lg:items-center lg:gap-3">
+              <SpeechBubble text={buddyMessage} className="text-center" />
+              <Mascot3D />
+            </div>
             <TabletMock
               subtitle={subtitle}
               className="lg:scale-[1.03]"
@@ -343,63 +408,105 @@ function LandingPage() {
       <PreviewModal
         open={previewOpen}
         onClose={() => setPreviewOpen(false)}
-        subtitle={subtitle}
-        isPlaying={isPlaying}
-        onTogglePlay={() => setIsPlaying((prev) => !prev)}
+        language={selected}
+        onLanguageChange={setSelected}
       />
     </div>
   );
 }
 
 function Navbar() {
+  const navigate = useNavigate();
+  const { childProfile, switchChild } = useSession();
+  const homeTarget = childProfile ? "/home" : "/";
+
+  const handleSwitch = () => {
+    switchChild();
+    navigate("/start");
+  };
+
   return (
     <header className="relative z-20 flex items-center justify-between px-6 pt-8 sm:px-10 lg:px-16">
-      <div className="flex items-center gap-3">
+      <MotionLink
+        to={homeTarget}
+        aria-label="BhashaBuddy home"
+        className="flex items-center gap-3"
+        whileHover={{ y: -2 }}
+        whileTap={{ scale: 0.98 }}
+      >
         <div className="rounded-2xl bg-white/70 p-2 shadow-soft">
           <BellIcon className="h-6 w-6" />
         </div>
         <span className="font-display text-2xl font-semibold text-buddy-cocoa">
           BhashaBuddy
         </span>
-      </div>
-      <nav className="hidden items-center gap-6 text-sm font-semibold text-slate-600 md:flex">
-        <motion.a
-          href="#stories"
-          aria-label="Stories"
-          whileHover={{ y: -2 }}
-          whileTap={{ scale: 0.97 }}
-          className="transition hover:text-buddy-coral"
-        >
-          Stories
-        </motion.a>
-        <motion.a
-          href="#parents"
-          aria-label="Parents"
-          whileHover={{ y: -2 }}
-          whileTap={{ scale: 0.97 }}
-          className="transition hover:text-buddy-coral"
-        >
-          Parents
-        </motion.a>
+      </MotionLink>
+      {!childProfile ? (
+        <nav className="hidden items-center gap-6 text-sm font-semibold text-slate-600 md:flex">
+          <motion.a
+            href="#stories"
+            aria-label="Stories"
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.97 }}
+            className="transition hover:text-buddy-coral"
+          >
+            Stories
+          </motion.a>
+          <MotionLink
+            to="/parents"
+            aria-label="Parents"
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.97 }}
+            className="transition hover:text-buddy-coral"
+          >
+            Parents
+          </MotionLink>
+          <MotionLink
+            to="/start"
+            aria-label="Sign in"
+            className="rounded-full bg-white/70 px-4 py-2 text-buddy-cocoa shadow-soft transition hover:-translate-y-0.5"
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.96 }}
+          >
+            Sign in
+          </MotionLink>
+        </nav>
+      ) : null}
+      {childProfile ? (
+        <div className="flex items-center gap-2">
+          <MotionLink
+            to="/home"
+            aria-label="Home"
+            className="rounded-full bg-white/80 px-3 py-2 text-xs font-semibold text-slate-600 shadow-soft transition hover:-translate-y-0.5"
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.96 }}
+          >
+            Home
+          </MotionLink>
+          <span className="rounded-full bg-white/80 px-3 py-2 text-xs font-semibold text-slate-600 shadow-soft">
+            {childProfile.nickname} ·{" "}
+            {childProfile.preferred_language || "Language"}
+          </span>
+          <button
+            type="button"
+            onClick={handleSwitch}
+            className="rounded-full bg-white/80 px-3 py-2 text-xs font-semibold text-slate-600 shadow-soft transition hover:-translate-y-0.5"
+          >
+            Switch
+          </button>
+        </div>
+      ) : null}
+      {!childProfile ? (
         <MotionLink
-          to="/signup"
+          to="/start"
           aria-label="Sign in"
-          className="rounded-full bg-white/70 px-4 py-2 text-buddy-cocoa shadow-soft transition hover:-translate-y-0.5"
+          className="rounded-full bg-buddy-grape px-4 py-2 text-sm font-semibold text-white shadow-soft transition hover:-translate-y-0.5 md:hidden"
           whileHover={{ y: -2 }}
           whileTap={{ scale: 0.96 }}
         >
           Sign in
         </MotionLink>
-      </nav>
-      <MotionLink
-        to="/signup"
-        aria-label="Sign up"
-        className="rounded-full bg-buddy-grape px-4 py-2 text-sm font-semibold text-white shadow-soft transition hover:-translate-y-0.5 md:hidden"
-        whileHover={{ y: -2 }}
-        whileTap={{ scale: 0.96 }}
-      >
-        Sign in
-      </MotionLink>
+      ) : null}
     </header>
   );
 }
@@ -420,6 +527,16 @@ function FeatureCard({ title, description, icon }) {
 }
 
 function VoicePlaceholder() {
+  const { childProfile } = useSession();
+
+  useEffect(() => {
+    if (!childProfile?.id) return undefined;
+    logEvent(childProfile.id, "voice_session", { status: "start" });
+    return () => {
+      logEvent(childProfile.id, "voice_session", { status: "end" });
+    };
+  }, [childProfile?.id]);
+
   return (
     <div className="flex min-h-screen items-center justify-center px-6">
       <div className="max-w-lg rounded-2xl border border-white/60 bg-white/80 p-10 text-center shadow-soft">
@@ -522,14 +639,16 @@ function TabletMock({
             >
               <video
                 ref={videoRef}
-                src="/trial%201.mov"
                 muted
                 loop
                 playsInline
                 autoPlay
-                preload="metadata"
+                preload="auto"
                 className="h-full w-full object-cover"
-              />
+              >
+                <source src="/trial-1.mp4" type="video/mp4" />
+                <source src="/trial%201.mov" type="video/quicktime" />
+              </video>
               <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
               <div className="absolute bottom-3 left-3 rounded-full bg-white/80 px-3 py-1 text-[11px] font-semibold text-slate-600">
                 Little Mango Adventure
@@ -628,8 +747,30 @@ function BouncingStar({ className }) {
   );
 }
 
-function PreviewModal({ open, onClose, subtitle, isPlaying, onTogglePlay }) {
+function PreviewModal({ open, onClose, language, onLanguageChange }) {
   const dialogRef = useRef(null);
+  const videoRef = useRef(null);
+  const audioRef = useRef(null);
+  const lastCueRef = useRef("");
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [audioMuted, setAudioMuted] = useState(false);
+  const [audioError, setAudioError] = useState(false);
+  const [regenStatus, setRegenStatus] = useState("");
+  const [activeCue, setActiveCue] = useState("");
+
+  const languageAssets = useMemo(
+    () => ({
+      tamil: { vtt: "/subtitles/ta.vtt", audio: "/audio/ta.mp3", speech: "ta-IN" },
+      telugu: { vtt: "/subtitles/te.vtt", audio: "/audio/te.mp3", speech: "te-IN" },
+      hindi: { vtt: "/subtitles/hi.vtt", audio: "/audio/hi.mp3", speech: "hi-IN" },
+      kannada: { vtt: "/subtitles/kn.vtt", audio: "/audio/kn.mp3", speech: "kn-IN" },
+    }),
+    []
+  );
+
+  const activeLangId = language?.id || "tamil";
+  const assets = languageAssets[activeLangId] || languageAssets.tamil;
+  const { cues, loading, error } = useVttCues(open ? assets.vtt : null);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -672,6 +813,146 @@ function PreviewModal({ open, onClose, subtitle, isPlaying, onTogglePlay }) {
     };
   }, [open, onClose]);
 
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.muted = audioMuted;
+  }, [audioMuted]);
+
+  useEffect(() => {
+    if (!open) return;
+    setAudioError(false);
+    setRegenStatus("");
+    lastCueRef.current = "";
+    setActiveCue("");
+    const audio = audioRef.current;
+    if (audio) {
+      audio.load();
+    }
+  }, [assets.audio, assets.vtt, open]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const updateCue = () => {
+      const cue = getActiveCue(cues, video.currentTime);
+      setActiveCue(cue?.text || "");
+    };
+    updateCue();
+    video.addEventListener("timeupdate", updateCue);
+    video.addEventListener("loadeddata", updateCue);
+    return () => {
+      video.removeEventListener("timeupdate", updateCue);
+      video.removeEventListener("loadeddata", updateCue);
+    };
+  }, [cues]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    const audio = audioRef.current;
+    if (!video) return undefined;
+
+    const syncAudio = () => {
+      if (!audio || audioError) return;
+      audio.currentTime = video.currentTime;
+    };
+
+    const handlePlay = () => {
+      if (!audio || audioError) return;
+      audio.play().catch(() => setAudioError(true));
+    };
+
+    const handlePause = () => {
+      if (audio) audio.pause();
+    };
+
+    video.addEventListener("seeking", syncAudio);
+    video.addEventListener("play", handlePlay);
+    video.addEventListener("pause", handlePause);
+
+    return () => {
+      video.removeEventListener("seeking", syncAudio);
+      video.removeEventListener("play", handlePlay);
+      video.removeEventListener("pause", handlePause);
+    };
+  }, [audioError]);
+
+  useEffect(() => {
+    if (!open || !isPlaying || !audioError || !activeCue || audioMuted) return;
+    if (lastCueRef.current === activeCue) return;
+    lastCueRef.current = activeCue;
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(activeCue);
+    utter.lang = assets.speech;
+    window.speechSynthesis.speak(utter);
+  }, [activeCue, assets.speech, audioError, audioMuted, isPlaying, open]);
+
+  useEffect(() => {
+    if (!open) {
+      window.speechSynthesis?.cancel();
+      setIsPlaying(false);
+    }
+  }, [open]);
+
+  const startPlayback = async () => {
+    const video = videoRef.current;
+    const audio = audioRef.current;
+    if (!video) return;
+    video.currentTime = 0;
+    if (audio) audio.currentTime = 0;
+    setIsPlaying(true);
+    try {
+      await video.play();
+    } catch (error) {
+      setIsPlaying(false);
+    }
+    if (audio && !audioError) {
+      try {
+        await audio.play();
+      } catch (error) {
+        setAudioError(true);
+      }
+    }
+  };
+
+  const pausePlayback = () => {
+    const video = videoRef.current;
+    const audio = audioRef.current;
+    video?.pause();
+    audio?.pause();
+    setIsPlaying(false);
+  };
+
+  useEffect(() => {
+    if (open) {
+      startPlayback();
+    } else {
+      pausePlayback();
+    }
+  }, [open, assets.audio]);
+
+  const subtitleText = loading
+    ? "Loading subtitles..."
+    : error || !cues.length
+    ? "Subtitles not available"
+    : activeCue || "…";
+
+  const handleRegenerate = async () => {
+    setRegenStatus("Checking local voice server…");
+    try {
+      const response = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lang: activeLangId, text: activeCue || "" }),
+      });
+      if (!response.ok) throw new Error("offline");
+      setRegenStatus("Voice regenerated.");
+    } catch (error) {
+      setRegenStatus("Offline demo mode: pre-generated voices.");
+    }
+  };
+
   return (
     <AnimatePresence>
       {open ? (
@@ -692,9 +973,9 @@ function PreviewModal({ open, onClose, subtitle, isPlaying, onTogglePlay }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
-            className="w-full max-w-2xl rounded-3xl bg-white/95 p-6 shadow-card"
+            className="w-full max-w-3xl rounded-3xl bg-white/95 p-6 shadow-card"
           >
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <h3 className="font-display text-xl font-semibold text-buddy-cocoa">
                 Preview: Story player
               </h3>
@@ -707,15 +988,94 @@ function PreviewModal({ open, onClose, subtitle, isPlaying, onTogglePlay }) {
                 Close
               </button>
             </div>
-            <div className="mt-6 flex items-center justify-center">
-              <TabletMock
-                subtitle={subtitle}
-                className="w-full max-w-xl"
-                isPlaying={isPlaying}
-                onTogglePlay={onTogglePlay}
-                size="lg"
-              />
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              {languages.map((lang) => (
+                <button
+                  key={lang.id}
+                  type="button"
+                  aria-label={`Preview in ${lang.label}`}
+                  onClick={() => onLanguageChange(lang)}
+                  className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
+                    activeLangId === lang.id
+                      ? "bg-buddy-coral text-white shadow-soft"
+                      : "bg-white/80 text-buddy-cocoa"
+                  }`}
+                >
+                  {lang.label}
+                </button>
+              ))}
             </div>
+
+            <div className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+              <div className="rounded-2xl bg-white p-4 shadow-soft">
+                <div className="relative overflow-hidden rounded-xl bg-slate-100">
+                  <video
+                    ref={videoRef}
+                    muted
+                    playsInline
+                    preload="metadata"
+                    className="h-[320px] w-full object-cover sm:h-[360px]"
+                  >
+                    <source src="/trial-1.mp4" type="video/mp4" />
+                    <source src="/trial%201.mov" type="video/quicktime" />
+                  </video>
+                  <div className="absolute bottom-3 left-3 rounded-full bg-white/80 px-3 py-1 text-[11px] font-semibold text-slate-600">
+                    Little Mango Adventure
+                  </div>
+                </div>
+
+                <div className="mt-4 flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={isPlaying ? pausePlayback : startPlayback}
+                    className="rounded-full bg-buddy-grape px-4 py-2 text-xs font-semibold text-white shadow-soft"
+                  >
+                    {isPlaying ? "Pause" : "Play"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAudioMuted((prev) => !prev)}
+                    className="rounded-full bg-white/90 px-4 py-2 text-xs font-semibold text-slate-600 shadow-soft"
+                  >
+                    {audioMuted ? "Unmute narration" : "Mute narration"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleRegenerate}
+                    className="rounded-full bg-white/90 px-4 py-2 text-xs font-semibold text-slate-600 shadow-soft"
+                  >
+                    Regenerate voice
+                  </button>
+                </div>
+
+                {regenStatus ? (
+                  <div className="mt-3 text-xs font-semibold text-slate-500">
+                    {regenStatus}
+                  </div>
+                ) : null}
+
+                <div className="mt-4 rounded-full bg-buddy-mint/70 px-4 py-2 text-center text-sm font-semibold text-slate-600">
+                  {subtitleText}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-4">
+                <div className="rounded-2xl border border-white/70 bg-white/85 p-4 text-sm text-slate-600 shadow-soft">
+                  Narration audio plays from local files. If audio is missing,
+                  Buddy will read subtitles aloud using your browser.
+                </div>
+                <div className="rounded-2xl border border-white/70 bg-white/85 p-4 text-sm text-slate-600 shadow-soft">
+                  Tips: use headphones and let kids repeat the highlighted words.
+                </div>
+              </div>
+            </div>
+
+            <audio
+              ref={audioRef}
+              src={assets.audio}
+              onError={() => setAudioError(true)}
+            />
           </motion.div>
         </motion.div>
       ) : null}

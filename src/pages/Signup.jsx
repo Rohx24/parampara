@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
+import { createFamilyWithChild, generateKidCode, hashPin, updateChildOnboarding } from "../lib/db";
+import { useSession } from "../context/SessionContext.jsx";
 
 const focusOptions = [
   "Stories",
@@ -39,6 +41,7 @@ const stepVariants = {
 
 export default function Signup() {
   const navigate = useNavigate();
+  const { childProfile, setChildProfile, loginChild } = useSession();
   const [step, setStep] = useState(1);
   const [onboarding, setOnboarding] = useState({
     age: 8,
@@ -59,8 +62,41 @@ export default function Signup() {
     });
   };
 
-  const handleFinish = () => {
+  const handleFinish = async () => {
+    if (onboarding.role === "Parent") {
+      navigate("/parent-setup", { replace: true });
+      return;
+    }
     localStorage.setItem("bhashabuddy_onboarding", JSON.stringify(onboarding));
+    if (childProfile?.id) {
+      try {
+        const updated = await updateChildOnboarding(childProfile.id, onboarding);
+        if (updated) setChildProfile(updated);
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.warn("Failed to persist onboarding", error);
+      }
+    } else {
+      try {
+        const tempPin = String(Math.floor(100000 + Math.random() * 900000));
+        const parentPinHash = await hashPin(tempPin);
+        const kidCode = await generateKidCode();
+        const { family, child } = await createFamilyWithChild({
+          parentPinHash,
+          child: {
+            kidCode,
+            nickname: "Buddy",
+            age: onboarding.age,
+            preferredLanguage: "English",
+            onboarding,
+          },
+        });
+        loginChild({ familyId: family.id, childId: child.id }, child);
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.warn("Failed to create child profile", error);
+      }
+    }
     navigate("/journey", { replace: true });
   };
 
@@ -162,9 +198,13 @@ export default function Signup() {
                         type="button"
                         whileHover={{ y: -2 }}
                         whileTap={{ scale: 0.96 }}
-                        onClick={() =>
-                          setOnboarding((prev) => ({ ...prev, role }))
-                        }
+                        onClick={() => {
+                          if (role === "Parent") {
+                            navigate("/parent-setup");
+                            return;
+                          }
+                          setOnboarding((prev) => ({ ...prev, role }));
+                        }}
                         className={`rounded-full px-5 py-2 text-sm font-semibold shadow-soft transition ${
                           active
                             ? "bg-buddy-coral text-white"

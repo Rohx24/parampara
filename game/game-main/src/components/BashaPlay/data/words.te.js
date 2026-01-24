@@ -1,0 +1,22 @@
+export const wordsTe = [
+  { word: "అమ్మ", meaning: "mother" },
+  { word: "నాన్న", meaning: "father" },
+  { word: "పాలు", meaning: "milk" },
+  { word: "నీరు", meaning: "water" },
+  { word: "ఇల్లు", meaning: "house" },
+  { word: "పువ్వు", meaning: "flower" },
+  { word: "పండు", meaning: "fruit" },
+  { word: "కుక్క", meaning: "dog" },
+  { word: "పిల్లి", meaning: "cat" },
+  { word: "చెట్టు", meaning: "tree" },
+  { word: "కన్ను", meaning: "eye" },
+  { word: "చెవి", meaning: "ear" },
+  { word: "చేయి", meaning: "hand" },
+  { word: "కాలు", meaning: "leg" },
+  { word: "సూర్యుడు", meaning: "sun" },
+  { word: "చంద్రుడు", meaning: "moon" },
+  { word: "నక్షత్రం", meaning: "star" },
+  { word: "పుస్తకం", meaning: "book" },
+  { word: "పాఠశాల", meaning: "school" },
+  { word: "ఆట", meaning: "game" }
+];

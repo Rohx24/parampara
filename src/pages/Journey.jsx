@@ -11,6 +11,8 @@ import { Link } from "react-router-dom";
 import Mascot from "../components/Mascot.jsx";
 import SpeechBubble from "../components/SpeechBubble.jsx";
 import SceneController from "../components/SceneController.jsx";
+import { useSession } from "../context/SessionContext.jsx";
+import { logEvent } from "../lib/db";
 
 const sceneLabels = ["Welcome", "Quest setup", "Mini challenge", "Completion"];
 
@@ -23,6 +25,7 @@ const challengeOptions = [
 export default function Journey() {
   const reducedMotion = useReducedMotion();
   const containerRef = useRef(null);
+  const { childProfile } = useSession();
   const [scene, setScene] = useState(0);
   const [mascotMood, setMascotMood] = useState("neutral");
   const [preferences, setPreferences] = useState({
@@ -37,13 +40,14 @@ export default function Journey() {
   const [isFinePointer, setIsFinePointer] = useState(true);
 
   const onboarding = useMemo(() => {
+    if (childProfile?.onboarding) return childProfile.onboarding;
     try {
       const stored = localStorage.getItem("bhashabuddy_onboarding");
       return stored ? JSON.parse(stored) : null;
     } catch (error) {
       return null;
     }
-  }, []);
+  }, [childProfile]);
 
   const focusList = onboarding?.focus?.length
     ? onboarding.focus
@@ -151,6 +155,13 @@ export default function Journey() {
     const correct = option === challengeOptions[0];
     setChallengeState({ answered: true, correct });
     setMascotMood(correct ? "happy" : "surprised");
+    if (childProfile?.id) {
+      logEvent(childProfile.id, "game_play", {
+        challenge: "mini_challenge",
+        option,
+        correct,
+      });
+    }
   };
 
   return (
@@ -418,10 +429,10 @@ function SceneComplete() {
       </p>
       <div className="flex flex-wrap gap-3">
         <Link
-          to="/stories"
+          to="/home"
           className="rounded-full bg-buddy-grape px-6 py-3 text-sm font-semibold text-white shadow-soft transition hover:-translate-y-0.5"
         >
-          Enter Stories Library
+          Go to Home
         </Link>
         <Link
           to="/voice"

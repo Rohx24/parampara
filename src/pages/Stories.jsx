@@ -1,6 +1,8 @@
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useSession } from "../context/SessionContext.jsx";
+import { logEvent } from "../lib/db";
 
 const stories = [
   {
@@ -56,14 +58,16 @@ const focusToTag = {
 };
 
 export default function Stories() {
+  const { childProfile } = useSession();
   const onboarding = useMemo(() => {
+    if (childProfile?.onboarding) return childProfile.onboarding;
     try {
       const stored = localStorage.getItem("bhashabuddy_onboarding");
       return stored ? JSON.parse(stored) : null;
     } catch (error) {
       return null;
     }
-  }, []);
+  }, [childProfile]);
 
   const focusList = onboarding?.focus?.length
     ? onboarding.focus
@@ -123,7 +127,18 @@ export default function Stories() {
 
           <div className="mt-5 grid gap-4 md:grid-cols-3">
             {recommended.map((story) => (
-              <StoryCard key={story.id} story={story} highlight />
+              <StoryCard
+                key={story.id}
+                story={story}
+                highlight
+                onStart={() =>
+                  childProfile?.id &&
+                  logEvent(childProfile.id, "story_start", {
+                    storyId: story.id,
+                    source: "recommended",
+                  })
+                }
+              />
             ))}
           </div>
         </section>
@@ -134,7 +149,17 @@ export default function Stories() {
           </h2>
           <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {stories.map((story) => (
-              <StoryCard key={story.id} story={story} />
+              <StoryCard
+                key={story.id}
+                story={story}
+                onStart={() =>
+                  childProfile?.id &&
+                  logEvent(childProfile.id, "story_start", {
+                    storyId: story.id,
+                    source: "library",
+                  })
+                }
+              />
             ))}
           </div>
         </section>
@@ -143,7 +168,7 @@ export default function Stories() {
   );
 }
 
-function StoryCard({ story, highlight = false }) {
+function StoryCard({ story, highlight = false, onStart }) {
   return (
     <motion.div
       whileHover={{ y: -6 }}
@@ -173,6 +198,7 @@ function StoryCard({ story, highlight = false }) {
       </div>
       <Link
         to={`/stories/${story.id}`}
+        onClick={onStart}
         className="mt-4 inline-flex items-center justify-center rounded-full bg-buddy-grape px-4 py-2 text-xs font-semibold text-white shadow-soft transition hover:-translate-y-0.5"
       >
         Start story

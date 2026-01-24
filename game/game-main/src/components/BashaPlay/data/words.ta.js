@@ -1,0 +1,22 @@
+export const wordsTa = [
+  { word: "அம்மா", meaning: "mother" },
+  { word: "அப்பா", meaning: "father" },
+  { word: "பால்", meaning: "milk" },
+  { word: "நீர்", meaning: "water" },
+  { word: "வீடு", meaning: "house" },
+  { word: "பூ", meaning: "flower" },
+  { word: "பழம்", meaning: "fruit" },
+  { word: "நாய்", meaning: "dog" },
+  { word: "பூனை", meaning: "cat" },
+  { word: "மரம்", meaning: "tree" },
+  { word: "நாள்", meaning: "day" },
+  { word: "கண்", meaning: "eye" },
+  { word: "காது", meaning: "ear" },
+  { word: "கை", meaning: "hand" },
+  { word: "கால்", meaning: "leg" },
+  { word: "சூரியன்", meaning: "sun" },
+  { word: "நிலா", meaning: "moon" },
+  { word: "நட்சத்திரம்", meaning: "star" },
+  { word: "புத்தகம்", meaning: "book" },
+  { word: "பள்ளி", meaning: "school" }
+];
