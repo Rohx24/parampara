@@ -1,4 +1,4 @@
-import { getSupabaseClient, supabase } from "./supabase";
+import { getSupabaseClient, hasSupabase, supabase } from "./supabase";
 
 const WORDS = [
   "MANGO",
@@ -49,6 +49,9 @@ function makeKidCode() {
 }
 
 export async function generateKidCode() {
+  if (!supabase) {
+    return makeKidCode();
+  }
   for (let attempt = 0; attempt < 12; attempt += 1) {
     const code = makeKidCode();
     const { data, error } = await supabase
@@ -63,6 +66,29 @@ export async function generateKidCode() {
 }
 
 export async function createFamilyWithChild({ parentPinHash, child }) {
+  if (!supabase) {
+    const family = {
+      id: crypto.randomUUID(),
+      parent_pin_hash: parentPinHash,
+      created_at: new Date().toISOString(),
+      last_active_at: new Date().toISOString(),
+    };
+    const childRow = {
+      id: crypto.randomUUID(),
+      family_id: family.id,
+      kid_code: child.kidCode,
+      nickname: child.nickname,
+      age: child.age,
+      preferred_language: child.preferredLanguage,
+      onboarding: child.onboarding ?? null,
+      level: child.level ?? "starter",
+      progress_summary: child.progressSummary ?? DEFAULT_PROGRESS,
+      session_token: crypto.randomUUID(),
+      created_at: new Date().toISOString(),
+      last_active_at: new Date().toISOString(),
+    };
+    return { family, child: childRow };
+  }
   const sessionToken = crypto.randomUUID();
   const { data: family, error: familyError } = await supabase
     .from("families")
@@ -95,6 +121,7 @@ export async function createFamilyWithChild({ parentPinHash, child }) {
 
 export async function fetchChildProfile({ familyId, childId }) {
   if (!familyId || !childId) return null;
+  if (!supabase) return null;
   const { data, error } = await supabase
     .from("children")
     .select("*")
@@ -107,6 +134,7 @@ export async function fetchChildProfile({ familyId, childId }) {
 
 export async function fetchFamilyById(familyId) {
   if (!familyId) return null;
+  if (!supabase) return null;
   const { data, error } = await supabase
     .from("families")
     .select("*")
@@ -119,6 +147,7 @@ export async function fetchFamilyById(familyId) {
 export async function findChildByKidCode(kidCode) {
   const normalized = normalizeKidCode(kidCode);
   if (!normalized) return null;
+  if (!supabase) return null;
   const { data, error } = await supabase
     .from("children")
     .select("*")
@@ -130,6 +159,7 @@ export async function findChildByKidCode(kidCode) {
 
 export async function updateChildOnboarding(childId, onboarding) {
   if (!childId) return null;
+  if (!supabase) return { id: childId, onboarding };
   const { data, error } = await supabase
     .from("children")
     .update({ onboarding })
@@ -142,6 +172,7 @@ export async function updateChildOnboarding(childId, onboarding) {
 
 export async function updateProgressSummary(childId, progressSummary) {
   if (!childId) return null;
+  if (!supabase) return { id: childId, progress_summary: progressSummary };
   const { data, error } = await supabase
     .from("children")
     .update({ progress_summary: progressSummary })
@@ -154,6 +185,7 @@ export async function updateProgressSummary(childId, progressSummary) {
 
 export async function touchFamily(familyId) {
   if (!familyId) return;
+  if (!supabase) return;
   await supabase
     .from("families")
     .update({ last_active_at: new Date().toISOString() })
@@ -162,6 +194,7 @@ export async function touchFamily(familyId) {
 
 export async function touchChild(childId) {
   if (!childId) return;
+  if (!supabase) return;
   await supabase
     .from("children")
     .update({ last_active_at: new Date().toISOString() })
@@ -170,6 +203,7 @@ export async function touchChild(childId) {
 
 export async function logEvent(childId, type, metadata = {}) {
   if (!childId || !type) return null;
+  if (!supabase) return null;
   const { data, error } = await supabase
     .from("events")
     .insert({ child_id: childId, type, metadata })
@@ -185,6 +219,7 @@ export async function logEvent(childId, type, metadata = {}) {
 
 export async function upsertMistake(childId, mistake) {
   if (!childId || !mistake?.domain || !mistake?.item) return null;
+  if (!supabase) return null;
   const payload = {
     child_id: childId,
     domain: mistake.domain,
@@ -207,6 +242,7 @@ export async function upsertMistake(childId, mistake) {
 }
 
 export function getScopedSupabase(sessionToken) {
+  if (!hasSupabase) return null;
   return getSupabaseClient(sessionToken);
 }
 
