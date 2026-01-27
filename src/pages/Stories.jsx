@@ -11,6 +11,7 @@ const stories = [
     type: "Festival",
     length: "6 min",
     tags: ["Festivals", "Stories"],
+    poster: "/stories/posters/festival-lanterns.svg",
   },
   {
     id: "folk-river",
@@ -18,6 +19,7 @@ const stories = [
     type: "Folk tale",
     length: "5 min",
     tags: ["Folk tales", "Moral stories"],
+    poster: "/stories/posters/folk-river.svg",
   },
   {
     id: "moral-sharing",
@@ -25,6 +27,7 @@ const stories = [
     type: "Moral",
     length: "4 min",
     tags: ["Moral stories", "Daily conversation"],
+    poster: "/stories/posters/moral-sharing.svg",
   },
   {
     id: "mythology-star",
@@ -32,6 +35,7 @@ const stories = [
     type: "Mythology",
     length: "7 min",
     tags: ["Mythology", "Stories"],
+    poster: "/stories/posters/mythology-star.svg",
   },
   {
     id: "festival-drum",
@@ -39,6 +43,7 @@ const stories = [
     type: "Festival",
     length: "6 min",
     tags: ["Festivals", "Speaking"],
+    poster: "/stories/posters/festival-drum.svg",
   },
   {
     id: "folk-forest",
@@ -46,6 +51,7 @@ const stories = [
     type: "Folk tale",
     length: "5 min",
     tags: ["Folk tales", "Pronunciation"],
+    poster: "/stories/posters/folk-forest.svg",
   },
 ];
 
@@ -176,7 +182,7 @@ function StoryCard({ story, highlight = false, onStart }) {
         highlight ? "border-buddy-grape/40" : "border-white/70"
       }`}
     >
-      <Thumbnail type={story.type} />
+      <Thumbnail type={story.type} poster={story.poster} title={story.title} />
       <div className="mt-4 flex-1">
         <div className="flex items-center justify-between text-xs font-semibold text-slate-500">
           <span>{story.type}</span>
@@ -207,13 +213,29 @@ function StoryCard({ story, highlight = false, onStart }) {
   );
 }
 
-function Thumbnail({ type }) {
+function Thumbnail({ type, poster, title }) {
   const palette = {
     Festival: "from-[#FFE3C2] via-[#FFD6EA] to-[#CBE9FF]",
     "Folk tale": "from-[#D7F8E6] via-[#CBE9FF] to-[#FFD6C9]",
     Moral: "from-[#FFF0C9] via-[#D7F8E6] to-[#FFD6C9]",
     Mythology: "from-[#E6E0FF] via-[#CBE9FF] to-[#FFE8A6]",
   };
+
+  if (poster) {
+    return (
+      <div className="relative h-36 w-full overflow-hidden rounded-2xl bg-white/80">
+        <img
+          src={poster}
+          alt={title || type}
+          className="h-full w-full object-cover"
+          loading="lazy"
+        />
+        <div className="absolute bottom-3 left-3 rounded-full bg-white/80 px-3 py-1 text-[11px] font-semibold text-slate-600">
+          {type}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

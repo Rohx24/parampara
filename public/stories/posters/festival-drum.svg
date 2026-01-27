@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360">
+  <defs>
+    <linearGradient id="g5" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFE8B8"/>
+      <stop offset="55%" stop-color="#FFC6D9"/>
+      <stop offset="100%" stop-color="#CBE9FF"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="360" fill="url(#g5)"/>
+  <circle cx="130" cy="80" r="55" fill="#FFFFFF" fill-opacity="0.6"/>
+  <circle cx="520" cy="240" r="90" fill="#FFFFFF" fill-opacity="0.35"/>
+  <path d="M100 260c90-50 190-50 280 0" stroke="#FFFFFF" stroke-opacity="0.75" stroke-width="16" stroke-linecap="round"/>
+  <text x="40" y="320" font-family="Nunito, sans-serif" font-size="22" fill="#8C4B7B" opacity="0.9">The Festival Drum</text>
+</svg>

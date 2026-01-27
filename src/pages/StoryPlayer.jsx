@@ -10,36 +10,43 @@ const stories = [
     title: "Festival of Lanterns",
     type: "Festival",
     length: "6 min",
+    video: "/stories/story1.mp4",
+    poster: "/stories/posters/festival-lanterns.svg",
   },
   {
     id: "folk-river",
     title: "The River & The Drum",
     type: "Folk tale",
     length: "5 min",
+    poster: "/stories/posters/folk-river.svg",
   },
   {
     id: "moral-sharing",
     title: "Mango Learns to Share",
     type: "Moral",
     length: "4 min",
+    poster: "/stories/posters/moral-sharing.svg",
   },
   {
     id: "mythology-star",
     title: "Star of the Sky Queen",
     type: "Mythology",
     length: "7 min",
+    poster: "/stories/posters/mythology-star.svg",
   },
   {
     id: "festival-drum",
     title: "The Festival Drum",
     type: "Festival",
     length: "6 min",
+    poster: "/stories/posters/festival-drum.svg",
   },
   {
     id: "folk-forest",
     title: "Forest of Fireflies",
     type: "Folk tale",
     length: "5 min",
+    poster: "/stories/posters/folk-forest.svg",
   },
 ];
 
@@ -195,6 +202,116 @@ const subtitleTracks = {
   ],
 };
 
+const storySubtitles = {
+  "festival-lanterns": {
+    hindi: [
+      {
+        start: 0,
+        end: 14,
+        text: "इतिहास आमतौर पर वह होता है जिसे हम पढ़ते हैं। पन्ने तारीखों, नामों और दूर-दराज के स्थानों से भरे होते हैं,",
+      },
+      {
+        start: 14,
+        end: 28,
+        text: "लेकिन हर पन्ने में कभी राज्यों और सीमाओं से पहले की वास्तविक जिंदगियां बसी थीं। ऐसे इंसान थे जो आग की खोज करके जीना सीख रहे थे।",
+      },
+      { start: 28, end: 36, text: "उन शुरुआती दिनों से राजाओं और सभ्यताओं का उदय हुआ," },
+      {
+        start: 36,
+        end: 58,
+        text: "साम्राज्य स्थापित हुए। संसाधनों का दोहन हुआ। ज्ञान को खामोश कर दिया गया और आवाजों को दबा दिया गया।",
+      },
+      {
+        start: 58,
+        end: 78,
+        text: "किताबें जला दी गईं। ग्रामीणों को लूटा गया और पीढ़ियों को यह भूलने पर मजबूर किया गया कि वे कौन थे।",
+      },
+      {
+        start: 78,
+        end: 100,
+        text: "यह लोगों में बसा था। परिवारों में और समय के साथ चुपचाप आगे बढ़ती कहानियों में। जब हम उन्हें देखते हैं, तो हम खो चुके होते हैं। हम उन्हें सिर्फ याद नहीं करते।",
+      },
+      {
+        start: 100,
+        end: 124,
+        text: "हम चाहते हैं कि हम उनसे एक बार फिर बात कर सकें। क्या होगा अगर अतीत सिर्फ याद रखने की चीज न होकर, अनुभव करने की चीज हो? फिर से, सिर्फ इतिहास नहीं, बल्कि जुड़ाव। सिर्फ कहानियां नहीं, बल्कि उपस्थिति।",
+      },
+    ],
+    tamil: [
+      {
+        start: 0,
+        end: 20,
+        text: "வரலாறு என்பது பொதுவாக நாம் படிக்கும் ஒன்று. தேதிகள், பெயர்கள் மற்றும் தொலைதூர இடங்களால் நிரப்பப்பட்ட பக்கங்கள்,",
+      },
+      {
+        start: 20,
+        end: 44,
+        text: "ஆனால் ஒவ்வொரு பக்கமும் ஒரு காலத்தில் ராஜ்யங்களுக்கு முன்பும் எல்லைகளுக்கு முன்பும் உண்மையான வாழ்க்கையைக் கொண்டிருந்தது. நெருப்பைக் கண்டுபிடித்து உயிர்வாழக் கற்றுக்கொண்ட மனிதர்கள் இருந்தனர்.",
+      },
+    ],
+    kannada: [
+      {
+        start: 0,
+        end: 18,
+        text: "చరిత్ర అనేది మనం సాధారణంగా చదివేది. తేదీలు, పేర్లు మరియు సుదూర ప్రదేశాలతో నిండిన పేజీలు, కానీ ప్రతి పేజీ ఒకప్పుడు రాజ్యాలకు ముందు మరియు సరిహద్దులకు ముందు నిజ జీవితాలను కలిగి ఉంది.",
+      },
+      {
+        start: 18,
+        end: 34,
+        text: "అగ్నిని కనుగొనడం ద్వారా మనుగడ సాగించడం నేర్చుకునే మానవులు ఉన్నారు.",
+      },
+      { start: 34, end: 44, text: "ఆ ప్రారంభం నుండి, గులాబీ రాజులు మరియు నాగరికతలు," },
+      {
+        start: 44,
+        end: 70,
+        text: "సామ్రాజ్యాలు వచ్చాయి. వనరులు తీసుకోబడ్డాయి. జ్ఞానం నిశ్శబ్దం చేయబడింది మరియు స్వరాలు నియంత్రించబడ్డాయి. పుస్తకాలు తగలబెట్టబడ్డాయి.",
+      },
+      {
+        start: 70,
+        end: 92,
+        text: "గ్రామస్తులను తొలగించారు మరియు తరాలు తాము ఎవరో మరచిపోవలసి వచ్చింది. అది ప్రజలలో నివసించింది. కుటుంబాలలో మరియు కథలలో నిశ్శబ్దంగా కాలం గడిచిపోయింది.",
+      },
+      {
+        start: 92,
+        end: 118,
+        text: "మనం వాటిని చూసినప్పుడు, మనం ఓడిపోయాము. మనం వాటిని గుర్తుంచుకోవడం మాత్రమే కాదు. మనం వారితో మరోసారి మాట్లాడగలిగితే బాగుండును.",
+      },
+      {
+        start: 118,
+        end: 140,
+        text: "గతం మీరు గుర్తుంచుకున్నది కాకపోతే, మీరు అనుభవించగలిగేది అయితే? మళ్ళీ, చరిత్ర మాత్రమే కాదు, సంబంధం. కథలు మాత్రమే కాదు, ఉనికి.",
+      },
+    ],
+    telugu: [
+      {
+        start: 0,
+        end: 18,
+        text: "அந்தத் தொடக்கங்களிலிருந்து, ரோஜா மன்னர்களும் நாகரிகங்களும்,",
+      },
+      {
+        start: 18,
+        end: 40,
+        text: "பேரரசுகள் வந்தன. வளங்கள் பறிக்கப்பட்டன. அறிவு மௌனமாக்கப்பட்டது, குரல்கள் கட்டுப்படுத்தப்பட்டன. புத்தகங்கள் எரிக்கப்பட்டன.",
+      },
+      {
+        start: 40,
+        end: 64,
+        text: "கிராமவாசிகள் பறிக்கப்பட்டனர், தலைமுறைகள் தாங்கள் யார் என்பதை மறக்க வேண்டிய கட்டாயம் ஏற்பட்டது. அது மக்களில் வாழ்ந்தது.",
+      },
+      {
+        start: 64,
+        end: 88,
+        text: "குடும்பங்களிலும் கதைகளிலும் அமைதியாகக் காலத்தைக் கடந்து சென்றது. அவற்றைப் பார்க்கும்போது, நாம் இழந்துவிட்டோம். நாம் அவர்களை நினைவில் கொள்வதில்லை.",
+      },
+      {
+        start: 88,
+        end: 120,
+        text: "நாம் அவர்களிடம் மீண்டும் ஒரு முறை பேச வேண்டும் என்று நாங்கள் விரும்புகிறோம். கடந்த காலம் நீங்கள் நினைவில் வைத்திருப்பது மட்டுமல்லாமல், நீங்கள் அனுபவிக்கக்கூடிய ஒன்றாக இருந்தால் என்ன செய்வது? மீண்டும், வரலாறு மட்டுமல்ல, தொடர்பும். கதைகள் மட்டுமல்ல, இருப்பும்.",
+      },
+    ],
+  },
+};
+
 export default function StoryPlayer() {
   const { id } = useParams();
   const { childProfile, setChildProfile } = useSession();
@@ -207,9 +324,7 @@ export default function StoryPlayer() {
   const [selected, setSelected] = useState(languages[0]);
   const [momentIndex, setMomentIndex] = useState(0);
   const [showMoment, setShowMoment] = useState(false);
-  const [activeSubtitle, setActiveSubtitle] = useState(
-    subtitleTracks[languages[0].id][0].text
-  );
+  const [activeSubtitle, setActiveSubtitle] = useState("Subtitles not available");
 
   useEffect(() => {
     let mounted = true;
@@ -262,9 +377,17 @@ export default function StoryPlayer() {
   }, [childProfile?.id, momentIndex, selected.id, showMoment, story.id]);
 
   useEffect(() => {
+    const tracks = storySubtitles[story.id] || subtitleTracks;
+    const cues = tracks[selected.id] || [];
+    if (!cues.length) {
+      setActiveSubtitle("Subtitles not available");
+      return;
+    }
     const video = videoRef.current;
-    if (!video) return;
-    const cues = subtitleTracks[selected.id] || [];
+    if (!video) {
+      setActiveSubtitle(cues[0].text);
+      return;
+    }
 
     const updateCue = () => {
       const time = video.currentTime;
@@ -279,7 +402,7 @@ export default function StoryPlayer() {
     return () => {
       video.removeEventListener("timeupdate", updateCue);
     };
-  }, [selected.id]);
+  }, [selected.id, story.id]);
 
   return (
     <div className="min-h-screen bg-sparkle px-6 py-10 sm:px-10 lg:px-16">
@@ -304,29 +427,45 @@ export default function StoryPlayer() {
         <div className="mt-8 grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="rounded-3xl border border-white/70 bg-white/80 p-5 shadow-card sm:p-6">
             <div className="relative overflow-hidden rounded-2xl bg-slate-100">
-              <video
-                ref={videoRef}
-                src="/story.mp4"
-                muted
-                loop
-                playsInline
-                autoPlay
-                className="h-[320px] w-full object-cover sm:h-[380px]"
-              />
-              <AnimatePresence>
-                {showMoment && (
-                  <motion.div
-                    key={momentIndex}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.3, ease: "easeOut" }}
-                    className="absolute left-6 top-6 rounded-2xl bg-white/90 px-4 py-3 text-sm font-semibold text-slate-700 shadow-soft"
-                  >
-                    Pause & Ask: {pauseMoments[momentIndex]}
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {story.video ? (
+                <video
+                  ref={videoRef}
+                  muted
+                  loop
+                  playsInline
+                  autoPlay
+                  poster={story.poster}
+                  className="h-[320px] w-full object-cover sm:h-[380px]"
+                >
+                  <source src={story.video} type="video/mp4" />
+                </video>
+              ) : (
+                <div className="flex h-[320px] w-full items-center justify-center sm:h-[380px]">
+                  {story.poster ? (
+                    <img
+                      src={story.poster}
+                      alt={story.title}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : null}
+                </div>
+              )}
+              {story.video ? (
+                <AnimatePresence>
+                  {showMoment && (
+                    <motion.div
+                      key={momentIndex}
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.3, ease: "easeOut" }}
+                      className="absolute left-6 top-6 rounded-2xl bg-white/90 px-4 py-3 text-sm font-semibold text-slate-700 shadow-soft"
+                    >
+                      Pause & Ask: {pauseMoments[momentIndex]}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              ) : null}
               <motion.button
                 type="button"
                 aria-label="Microphone prompt"

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360">
+  <defs>
+    <linearGradient id="g6" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#D7F8E6"/>
+      <stop offset="55%" stop-color="#BFE9E0"/>
+      <stop offset="100%" stop-color="#CBE9FF"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="360" fill="url(#g6)"/>
+  <circle cx="500" cy="90" r="70" fill="#FFFFFF" fill-opacity="0.45"/>
+  <circle cx="160" cy="220" r="90" fill="#FFFFFF" fill-opacity="0.35"/>
+  <path d="M120 260c70-40 140-40 210 0" stroke="#FFFFFF" stroke-opacity="0.7" stroke-width="14" stroke-linecap="round"/>
+  <text x="40" y="320" font-family="Nunito, sans-serif" font-size="22" fill="#2D6A5A" opacity="0.9">Forest of Fireflies</text>
+</svg>

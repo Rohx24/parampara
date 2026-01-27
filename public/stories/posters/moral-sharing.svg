@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360">
+  <defs>
+    <linearGradient id="g3" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFF0C9"/>
+      <stop offset="50%" stop-color="#D7F8E6"/>
+      <stop offset="100%" stop-color="#FFD6C9"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="360" fill="url(#g3)"/>
+  <circle cx="130" cy="100" r="70" fill="#FFFFFF" fill-opacity="0.5"/>
+  <circle cx="520" cy="200" r="90" fill="#FFFFFF" fill-opacity="0.35"/>
+  <path d="M160 250c70-40 140-40 210 0" stroke="#FFFFFF" stroke-opacity="0.75" stroke-width="14" stroke-linecap="round"/>
+  <text x="40" y="320" font-family="Nunito, sans-serif" font-size="22" fill="#8E5C42" opacity="0.9">Mango Learns to Share</text>
+</svg>

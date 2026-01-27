@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360">
+  <defs>
+    <linearGradient id="g4" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#E6E0FF"/>
+      <stop offset="50%" stop-color="#CBE9FF"/>
+      <stop offset="100%" stop-color="#FFE8A6"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="360" fill="url(#g4)"/>
+  <circle cx="500" cy="90" r="60" fill="#FFFFFF" fill-opacity="0.5"/>
+  <circle cx="180" cy="220" r="80" fill="#FFFFFF" fill-opacity="0.35"/>
+  <path d="M320 70l18 40 44 4-34 28 10 44-38-22-38 22 10-44-34-28 44-4z" fill="#FFFFFF" fill-opacity="0.7"/>
+  <text x="40" y="320" font-family="Nunito, sans-serif" font-size="22" fill="#5A5AA6" opacity="0.9">Star of the Sky Queen</text>
+</svg>
