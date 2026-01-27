@@ -435,12 +435,12 @@ export default function StoryPlayer() {
                   playsInline
                   autoPlay
                   poster={story.poster}
-                  className="h-[320px] w-full object-cover sm:h-[380px]"
+                  className="h-[220px] w-full object-cover sm:h-[320px] lg:h-[380px]"
                 >
                   <source src={story.video} type="video/mp4" />
                 </video>
               ) : (
-                <div className="flex h-[320px] w-full items-center justify-center sm:h-[380px]">
+                <div className="flex h-[220px] w-full items-center justify-center sm:h-[320px] lg:h-[380px]">
                   {story.poster ? (
                     <img
                       src={story.poster}

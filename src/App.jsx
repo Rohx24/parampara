@@ -219,7 +219,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-sparkle">
+    <div className="min-h-screen bg-sparkle overflow-x-hidden">
       <Routes>
         <Route path="/start" element={<Start />} />
         <Route path="/parent-setup" element={<ParentSetup />} />
@@ -473,7 +473,7 @@ function Navbar() {
         </nav>
       ) : null}
       {childProfile ? (
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <MotionLink
             to="/home"
             aria-label="Home"
@@ -973,7 +973,7 @@ function PreviewModal({ open, onClose, language, onLanguageChange }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
-            className="w-full max-w-3xl rounded-3xl bg-white/95 p-6 shadow-card"
+            className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white/95 p-6 shadow-card"
           >
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h3 className="font-display text-xl font-semibold text-buddy-cocoa">
