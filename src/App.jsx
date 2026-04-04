@@ -9,12 +9,17 @@ import Parents from "./pages/Parents.jsx";
 import HomeLoggedIn from "./pages/HomeLoggedIn.jsx";
 import Games from "./pages/Games.jsx";
 import LetterMatchGame from "./games/LetterMatch/LetterMatchGame.jsx";
+import FlashCardsGame from "./games/FlashCards/FlashCardsGame.jsx";
+import WordScrambleGame from "./games/WordScramble/WordScrambleGame.jsx";
+import VoiceCoach from "./pages/VoiceCoach.jsx";
+import MakeStory from "./pages/MakeStory.jsx";
+import ParentDashboard from "./pages/ParentDashboard.jsx";
 import Start from "./pages/Start.jsx";
 import ParentSetup from "./pages/ParentSetup.jsx";
 import KidJoin from "./pages/KidJoin.jsx";
 import Mascot3D from "./components/Mascot3D.jsx";
+import OnboardingTour from "./components/OnboardingTour.jsx";
 import { useSession } from "./context/SessionContext.jsx";
-import { logEvent } from "./lib/db";
 import { getActiveCue, useVttCues } from "./hooks/useVttCues.js";
 
 const languages = [
@@ -205,9 +210,9 @@ const MotionLink = motion(Link);
 function App() {
   const location = useLocation();
   const { session, sessionReady } = useSession();
-  const publicRoutes = ["/", "/parents", "/start", "/parent-setup", "/kid-join"];
+  const publicRoutes = ["/", "/parents", "/start", "/parent-setup", "/kid-join", "/signup"];
   const isPublicRoute = publicRoutes.some((path) =>
-    location.pathname.startsWith(path)
+    path === "/" ? location.pathname === "/" : location.pathname.startsWith(path)
   );
 
   if (!sessionReady) {
@@ -220,6 +225,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-sparkle overflow-x-hidden">
+      <OnboardingTour />
       <Routes>
         <Route path="/start" element={<Start />} />
         <Route path="/parent-setup" element={<ParentSetup />} />
@@ -234,9 +240,13 @@ function App() {
         <Route path="/journey" element={<Journey />} />
         <Route path="/stories" element={<Stories />} />
         <Route path="/stories/:id" element={<StoryPlayer />} />
-        <Route path="/voice" element={<VoicePlaceholder />} />
+        <Route path="/voice" element={<VoiceCoach />} />
+        <Route path="/make-story" element={<MakeStory />} />
         <Route path="/games" element={<Games />} />
         <Route path="/games/letter-match" element={<LetterMatchGame />} />
+        <Route path="/games/flash-cards" element={<FlashCardsGame />} />
+        <Route path="/games/word-scramble" element={<WordScrambleGame />} />
+        <Route path="/parent-dashboard" element={<ParentDashboard />} />
       </Routes>
     </div>
   );
@@ -523,38 +533,6 @@ function FeatureCard({ title, description, icon }) {
       <h3 className="font-display text-xl font-semibold text-buddy-cocoa">{title}</h3>
       <p className="mt-2 text-sm text-slate-600">{description}</p>
     </motion.div>
-  );
-}
-
-function VoicePlaceholder() {
-  const { childProfile } = useSession();
-
-  useEffect(() => {
-    if (!childProfile?.id) return undefined;
-    logEvent(childProfile.id, "voice_session", { status: "start" });
-    return () => {
-      logEvent(childProfile.id, "voice_session", { status: "end" });
-    };
-  }, [childProfile?.id]);
-
-  return (
-    <div className="flex min-h-screen items-center justify-center px-6">
-      <div className="max-w-lg rounded-2xl border border-white/60 bg-white/80 p-10 text-center shadow-soft">
-        <h2 className="font-display text-3xl font-semibold text-buddy-cocoa">
-          Voice Practice placeholder
-        </h2>
-        <p className="mt-3 text-sm text-slate-600">
-          This page will host voice practice sessions.
-        </p>
-        <Link
-          to="/"
-          aria-label="Back to home"
-          className="mt-6 inline-flex rounded-full bg-buddy-grape px-5 py-2 text-sm font-semibold text-white shadow-soft transition hover:-translate-y-0.5"
-        >
-          Back to home
-        </Link>
-      </div>
-    </div>
   );
 }
 

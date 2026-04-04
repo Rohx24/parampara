@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 280">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2C1A4A"/>
+      <stop offset="60%" stop-color="#4A2C6A"/>
+      <stop offset="100%" stop-color="#6B3F2A"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFD700" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#FFD700" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="400" height="280" fill="url(#bg)"/>
+  <!-- Stars -->
+  <circle cx="40" cy="30" r="1.5" fill="#FFE566" opacity="0.9"/>
+  <circle cx="80" cy="15" r="1" fill="#FFE566" opacity="0.7"/>
+  <circle cx="130" cy="25" r="1.5" fill="#FFE566"/>
+  <circle cx="200" cy="10" r="1" fill="#FFE566" opacity="0.8"/>
+  <circle cx="260" cy="20" r="2" fill="#FFE566"/>
+  <circle cx="330" cy="35" r="1" fill="#FFE566" opacity="0.6"/>
+  <circle cx="370" cy="15" r="1.5" fill="#FFE566" opacity="0.9"/>
+  <circle cx="310" cy="8" r="1" fill="#FFE566"/>
+  <!-- Oil lamp glow -->
+  <ellipse cx="200" cy="200" rx="60" ry="40" fill="url(#glow)"/>
+  <!-- Ground -->
+  <rect x="0" y="220" width="400" height="60" fill="#3D1F0A" opacity="0.9"/>
+  <!-- Grandmother silhouette -->
+  <ellipse cx="185" cy="195" rx="28" ry="8" fill="#1A0A00" opacity="0.4"/>
+  <rect x="170" y="145" width="30" height="55" rx="10" fill="#5C2D0A"/>
+  <!-- sari drape -->
+  <path d="M170 155 Q155 170 158 200 L185 200 L185 155Z" fill="#7B3F15" opacity="0.7"/>
+  <!-- head -->
+  <circle cx="185" cy="138" r="14" fill="#8B5E3C"/>
+  <!-- bun -->
+  <ellipse cx="185" cy="125" rx="8" ry="6" fill="#2A1A0A"/>
+  <!-- Child silhouette -->
+  <rect x="210" y="160" width="22" height="45" rx="8" fill="#4A2C6A"/>
+  <circle cx="221" cy="153" r="11" fill="#8B5E3C"/>
+  <!-- Oil lamp -->
+  <ellipse cx="200" cy="207" rx="12" ry="5" fill="#B87333"/>
+  <rect x="194" y="198" width="12" height="10" rx="3" fill="#D4943A"/>
+  <!-- Flame -->
+  <path d="M200 194 Q197 188 200 183 Q203 188 200 194Z" fill="#FFD700"/>
+  <path d="M200 192 Q198 188 200 185 Q202 188 200 192Z" fill="#FF6B00"/>
+  <!-- Warm light rays -->
+  <line x1="200" y1="190" x2="160" y2="175" stroke="#FFD700" stroke-width="1" opacity="0.2"/>
+  <line x1="200" y1="190" x2="240" y2="175" stroke="#FFD700" stroke-width="1" opacity="0.2"/>
+  <line x1="200" y1="190" x2="200" y2="165" stroke="#FFD700" stroke-width="1" opacity="0.3"/>
+</svg>

@@ -1,14 +1,35 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
   <defs>
-    <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#D7F8E6"/>
-      <stop offset="50%" stop-color="#CBE9FF"/>
-      <stop offset="100%" stop-color="#FFD6C9"/>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#87CEEB"/>
+      <stop offset="60%" stop-color="#228B22"/>
+      <stop offset="100%" stop-color="#1a5c1a"/>
+    </linearGradient>
+    <linearGradient id="river" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#4FA8D0"/>
+      <stop offset="50%" stop-color="#6EC6E8"/>
+      <stop offset="100%" stop-color="#4FA8D0"/>
     </linearGradient>
   </defs>
-  <rect width="640" height="360" fill="url(#g2)"/>
-  <path d="M60 240c90-80 210-80 300 0" stroke="#FFFFFF" stroke-opacity="0.7" stroke-width="16" stroke-linecap="round"/>
-  <circle cx="500" cy="110" r="70" fill="#FFFFFF" fill-opacity="0.45"/>
-  <circle cx="140" cy="110" r="50" fill="#FFFFFF" fill-opacity="0.6"/>
-  <text x="40" y="320" font-family="Nunito, sans-serif" font-size="22" fill="#2D6A6A" opacity="0.9">The River &amp; The Drum</text>
+  <rect width="400" height="300" fill="url(#bg)"/>
+  <ellipse cx="60" cy="60" rx="35" ry="25" fill="white" opacity="0.7"/>
+  <ellipse cx="120" cy="50" rx="45" ry="28" fill="white" opacity="0.8"/>
+  <ellipse cx="90" cy="55" rx="30" ry="20" fill="white" opacity="0.9"/>
+  <ellipse cx="300" cy="45" rx="40" ry="22" fill="white" opacity="0.7"/>
+  <ellipse cx="350" cy="38" rx="35" ry="20" fill="white" opacity="0.8"/>
+  <path d="M0 180 Q50 160 100 180 Q150 200 200 175 Q250 155 300 180 Q350 200 400 175 L400 300 L0 300Z" fill="url(#river)"/>
+  <path d="M0 190 Q60 175 120 190 Q180 205 240 185 Q300 168 360 190 Q385 200 400 188" stroke="white" stroke-width="2" fill="none" opacity="0.4"/>
+  <circle cx="50" cy="170" r="6" fill="#8B4513"/>
+  <rect x="47" y="130" width="6" height="45" fill="#5c3a1e"/>
+  <ellipse cx="50" cy="118" rx="22" ry="18" fill="#2d7a2d"/>
+  <circle cx="120" cy="165" r="6" fill="#8B4513"/>
+  <rect x="117" y="118" width="6" height="50" fill="#5c3a1e"/>
+  <ellipse cx="120" cy="105" rx="28" ry="20" fill="#1a6b1a"/>
+  <circle cx="330" cy="175" r="5" fill="#8B4513"/>
+  <rect x="327" y="135" width="5" height="45" fill="#5c3a1e"/>
+  <ellipse cx="330" cy="123" rx="20" ry="16" fill="#2d7a2d"/>
+  <ellipse cx="200" cy="185" rx="18" ry="6" fill="#8B6914" opacity="0.8"/>
+  <line x1="182" y1="185" x2="218" y2="185" stroke="#5c4510" stroke-width="3"/>
+  <path d="M190 180 L200 172 L210 180" fill="#D4A830"/>
+  <circle cx="200" cy="168" r="5" fill="#FFDCAA"/>
 </svg>

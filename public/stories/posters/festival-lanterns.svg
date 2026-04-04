@@ -1,15 +1,27 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
   <defs>
-    <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#FFE3C2"/>
-      <stop offset="50%" stop-color="#FFD6EA"/>
-      <stop offset="100%" stop-color="#CBE9FF"/>
+    <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1a1a4e"/>
+      <stop offset="100%" stop-color="#4a2070"/>
     </linearGradient>
   </defs>
-  <rect width="640" height="360" fill="url(#g1)"/>
-  <circle cx="90" cy="90" r="60" fill="#FFFFFF" fill-opacity="0.55"/>
-  <circle cx="520" cy="80" r="70" fill="#FFFFFF" fill-opacity="0.45"/>
-  <circle cx="460" cy="250" r="90" fill="#FFFFFF" fill-opacity="0.35"/>
-  <path d="M120 280c80-60 160-60 240 0" stroke="#FFFFFF" stroke-opacity="0.7" stroke-width="18" stroke-linecap="round"/>
-  <text x="40" y="320" font-family="Nunito, sans-serif" font-size="22" fill="#6B5B95" opacity="0.9">Festival of Lanterns</text>
+  <rect width="400" height="300" fill="url(#sky)"/>
+  <circle cx="40" cy="30" r="1.5" fill="white" opacity="0.8"/>
+  <circle cx="200" cy="15" r="1.5" fill="white" opacity="0.9"/>
+  <circle cx="370" cy="40" r="1.5" fill="white" opacity="0.8"/>
+  <ellipse cx="80" cy="80" rx="18" ry="22" fill="#FFE566"/>
+  <rect x="62" y="58" width="36" height="6" rx="3" fill="#FFD700"/>
+  <rect x="62" y="96" width="36" height="6" rx="3" fill="#FFD700"/>
+  <ellipse cx="170" cy="55" rx="20" ry="25" fill="#FF6B6B"/>
+  <rect x="150" y="30" width="40" height="7" rx="3" fill="#CC3333"/>
+  <rect x="150" y="73" width="40" height="7" rx="3" fill="#CC3333"/>
+  <ellipse cx="280" cy="70" rx="16" ry="20" fill="#FFA040"/>
+  <rect x="264" y="50" width="32" height="5" rx="2.5" fill="#CC6600"/>
+  <rect x="264" y="85" width="32" height="5" rx="2.5" fill="#CC6600"/>
+  <ellipse cx="350" cy="45" rx="14" ry="18" fill="#FF99CC"/>
+  <rect x="93" y="230" width="14" height="45" rx="7" fill="#2a1a3a"/>
+  <circle cx="100" cy="222" r="10" fill="#2a1a3a"/>
+  <rect x="194" y="228" width="12" height="40" rx="6" fill="#2a1a3a"/>
+  <circle cx="200" cy="221" r="9" fill="#2a1a3a"/>
+  <rect x="0" y="285" width="400" height="15" fill="#150d2a"/>
 </svg>

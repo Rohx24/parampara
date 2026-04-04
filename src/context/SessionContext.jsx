@@ -2,51 +2,144 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 import { fetchChildProfile, touchChild, touchFamily } from "../lib/db";
 
 const SESSION_KEY = "paramparaSession";
+const PROFILE_KEY = "paramparaChildProfile";
 const THIRTY_DAYS_MS = 1000 * 60 * 60 * 24 * 30;
+
+const safeParse = (raw) => {
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    return null;
+  }
+};
+
+const readCachedProfile = (familyId, childId) => {
+  if (typeof localStorage === "undefined") return null;
+  const parsed = safeParse(localStorage.getItem(PROFILE_KEY));
+  if (!parsed) return null;
+  if (parsed?.id === childId && parsed?.family_id === familyId) {
+    return parsed;
+  }
+  return null;
+};
+
+const readAnyCachedProfile = () => {
+  if (typeof localStorage === "undefined") return null;
+  const parsed = safeParse(localStorage.getItem(PROFILE_KEY));
+  return parsed || null;
+};
+
+const clearStoredSession = () => {
+  if (typeof localStorage === "undefined") return;
+  localStorage.removeItem(SESSION_KEY);
+};
 
 const SessionContext = createContext(null);
 
 export function SessionProvider({ children }) {
   const [session, setSession] = useState(null);
   const [childProfile, setChildProfile] = useState(null);
+  const [lastChildProfile, setLastChildProfile] = useState(null);
   const [sessionReady, setSessionReady] = useState(false);
+
+  const cacheLastProfile = useCallback((profile) => {
+    if (typeof localStorage === "undefined") return;
+    if (!profile) return;
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+  }, []);
+
+  const setActiveProfile = useCallback(
+    (profile) => {
+      setChildProfile(profile);
+      if (profile) {
+        setLastChildProfile(profile);
+        cacheLastProfile(profile);
+      }
+    },
+    [cacheLastProfile]
+  );
+
+  const clearActiveProfile = useCallback(() => {
+    setChildProfile(null);
+  }, []);
 
   const loadSession = useCallback(async () => {
     try {
-      const raw = localStorage.getItem(SESSION_KEY);
-      if (!raw) {
+      if (typeof localStorage === "undefined") {
         setSessionReady(true);
         return;
       }
-      const parsed = JSON.parse(raw);
+      const raw = localStorage.getItem(SESSION_KEY);
+      if (!raw) {
+        const cached = readAnyCachedProfile();
+        if (cached) {
+          setLastChildProfile(cached);
+        }
+        clearActiveProfile();
+        setSessionReady(true);
+        return;
+      }
+      const parsed = safeParse(raw);
       if (!parsed?.familyId || !parsed?.childId || !parsed?.expiresAt) {
-        localStorage.removeItem(SESSION_KEY);
+        clearStoredSession();
+        const cached = readAnyCachedProfile();
+        if (cached) {
+          setLastChildProfile(cached);
+        }
+        clearActiveProfile();
         setSessionReady(true);
         return;
       }
       const expiresAt = new Date(parsed.expiresAt).getTime();
       if (Number.isNaN(expiresAt) || expiresAt < Date.now()) {
-        localStorage.removeItem(SESSION_KEY);
+        clearStoredSession();
+        const cached = readAnyCachedProfile();
+        if (cached) {
+          setLastChildProfile(cached);
+        }
+        clearActiveProfile();
         setSessionReady(true);
         return;
       }
       setSession(parsed);
-      const profile = await fetchChildProfile({
-        familyId: parsed.familyId,
-        childId: parsed.childId,
-      });
-      setChildProfile(profile);
-      await Promise.all([
-        touchFamily(parsed.familyId),
-        touchChild(parsed.childId),
-      ]);
+      const cachedProfile = readCachedProfile(parsed.familyId, parsed.childId);
+      let profile = null;
+      try {
+        profile = await fetchChildProfile({
+          familyId: parsed.familyId,
+          childId: parsed.childId,
+        });
+      } catch (error) {
+        profile = null;
+      }
+      if (profile) {
+        setActiveProfile(profile);
+        await Promise.all([
+          touchFamily(parsed.familyId),
+          touchChild(parsed.childId),
+        ]);
+      } else if (cachedProfile) {
+        setActiveProfile(cachedProfile);
+      } else {
+        clearStoredSession();
+        setSession(null);
+        const cached = readAnyCachedProfile();
+        if (cached) {
+          setLastChildProfile(cached);
+        } else {
+          setLastChildProfile(null);
+        }
+        clearActiveProfile();
+        return;
+      }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.warn("Failed to load session", error);
     } finally {
       setSessionReady(true);
     }
-  }, []);
+  }, [clearActiveProfile, setActiveProfile]);
 
   useEffect(() => {
     loadSession();
@@ -59,22 +152,24 @@ export function SessionProvider({ children }) {
       childId: nextSession.childId,
       expiresAt,
     };
-    localStorage.setItem(SESSION_KEY, JSON.stringify(payload));
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem(SESSION_KEY, JSON.stringify(payload));
+    }
     setSession(payload);
     if (profile) {
-      setChildProfile(profile);
+      setActiveProfile(profile);
     }
     Promise.all([
       touchFamily(nextSession.familyId),
       touchChild(nextSession.childId),
     ]).catch(() => undefined);
-  }, []);
+  }, [setActiveProfile]);
 
   const logout = useCallback(() => {
-    localStorage.removeItem(SESSION_KEY);
+    clearStoredSession();
     setSession(null);
-    setChildProfile(null);
-  }, []);
+    clearActiveProfile();
+  }, [clearActiveProfile]);
 
   const switchChild = useCallback(() => {
     logout();
@@ -84,14 +179,25 @@ export function SessionProvider({ children }) {
     () => ({
       session,
       childProfile,
-      setChildProfile,
+      lastChildProfile,
+      setChildProfile: setActiveProfile,
       sessionReady,
       loginChild,
       logout,
       switchChild,
       reloadSession: loadSession,
     }),
-    [childProfile, loadSession, loginChild, logout, session, sessionReady, switchChild]
+    [
+      lastChildProfile,
+      childProfile,
+      loadSession,
+      loginChild,
+      logout,
+      session,
+      sessionReady,
+      setActiveProfile,
+      switchChild,
+    ]
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

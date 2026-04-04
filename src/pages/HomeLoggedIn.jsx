@@ -1,9 +1,11 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Mascot3D from "../components/Mascot3D.jsx";
 import SpeechBubble from "../components/SpeechBubble.jsx";
+import MascotChat from "../components/MascotChat.jsx";
 import { useSession } from "../context/SessionContext.jsx";
+import { resetTour } from "../components/OnboardingTour.jsx";
 
 const heroContainer = {
   hidden: { opacity: 0 },
@@ -20,33 +22,32 @@ const heroItem = {
 
 const MotionLink = motion(Link);
 
-const writingEnabled = false;
 const gamesEnabled = true;
 
 const actionCards = [
   {
     id: "stories",
-    title: "Visual Stories",
-    description: "Pause-and-ask moments that keep kids talking.",
+    title: "YouTube Lessons",
+    description: "Search real videos, build vocabulary, and take AI-generated quizzes.",
     to: "/stories",
     enabled: true,
     icon: <BookIcon />,
   },
   {
     id: "voice",
-    title: "Talk to a Friend",
-    description: "Short voice practice with a friendly guide.",
+    title: "Talk to Buddy",
+    description: "Speak in your language — Buddy listens and gives friendly feedback.",
     to: "/voice",
     enabled: true,
     icon: <MicIcon />,
   },
   {
-    id: "writing",
-    title: "Writing Practice",
-    description: "OCR feedback on letters and words.",
-    to: "/writing",
-    enabled: writingEnabled,
-    icon: <PencilIcon />,
+    id: "make-story",
+    title: "Make My Story",
+    description: "Type an idea and AI writes a full story with a quiz at the end.",
+    to: "/make-story",
+    enabled: true,
+    icon: <SparkleIcon />,
   },
   {
     id: "games",
@@ -65,30 +66,61 @@ const progressChips = [
 ];
 
 export default function HomeLoggedIn() {
-  const { childProfile } = useSession();
+  const navigate = useNavigate();
+  const { childProfile, logout } = useSession();
   const nickname = childProfile?.nickname || "Buddy";
   const language = childProfile?.preferred_language || "Language";
   const level = childProfile?.level || "starter";
+  const handleLogout = () => {
+    logout();
+    navigate("/start", { replace: true });
+  };
+
+  const handleRetakeTour = () => {
+    resetTour();
+    window.location.reload();
+  };
 
   return (
     <div className="relative overflow-hidden">
       <div className="pointer-events-none absolute -left-10 top-24 h-28 w-28 rounded-full bg-buddy-mint/50 blur-3xl" />
       <div className="pointer-events-none absolute right-6 top-16 h-24 w-24 rounded-full bg-buddy-peach/60 blur-3xl" />
 
-      <main className="relative z-10 px-6 pb-20 pt-14 sm:px-10 lg:px-16">
+      <main className="relative z-10 px-6 pb-12 pt-10 sm:px-10 lg:px-16">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <div className="rounded-2xl border border-white/70 bg-white/80 px-4 py-2 text-xs font-semibold text-slate-600 shadow-soft">
+            Resume for {nickname} · {language} · Level {level}
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={handleRetakeTour}
+              className="rounded-full bg-buddy-mint/60 px-4 py-2 text-xs font-semibold text-slate-600 shadow-soft transition hover:-translate-y-0.5"
+            >
+              🗺️ Tour
+            </button>
+            <Link
+              to="/parent-dashboard"
+              className="rounded-full bg-buddy-grape/10 px-4 py-2 text-xs font-semibold text-buddy-grape shadow-soft transition hover:-translate-y-0.5"
+            >
+              Parent Dashboard 📊
+            </Link>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="rounded-full bg-white/80 px-4 py-2 text-xs font-semibold text-slate-600 shadow-soft transition hover:-translate-y-0.5"
+            >
+              Log out
+            </button>
+          </div>
+        </div>
         <motion.section
           variants={heroContainer}
           initial="hidden"
           animate="show"
-          className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]"
+          className="grid items-center gap-8 lg:grid-cols-[1.05fr_0.95fr]"
         >
           <div className="space-y-6">
-            <motion.div
-              variants={heroItem}
-              className="rounded-2xl border border-white/70 bg-white/80 px-4 py-3 text-sm font-semibold text-slate-600 shadow-soft"
-            >
-              Resume for {nickname} · {language} · Level {level}
-            </motion.div>
             <motion.h1
               variants={heroItem}
               className="font-display text-4xl font-semibold tracking-tight text-buddy-cocoa sm:text-5xl"
@@ -117,12 +149,13 @@ export default function HomeLoggedIn() {
             variants={heroItem}
             className="relative flex flex-col items-center gap-4"
           >
-            <SpeechBubble text={`Ready for your next story, ${nickname}?`} />
+            <SpeechBubble text={`What will we learn today, ${nickname}?`} />
             <Mascot3D className="lg:scale-[1.03]" />
+            <MascotChat nickname={nickname} language={language} />
           </motion.div>
         </motion.section>
 
-        <section className="mt-12 grid gap-6 lg:grid-cols-[2fr_1fr]">
+        <section className="mt-10 grid gap-6 lg:grid-cols-[2fr_1fr]">
           <div className="grid gap-6 sm:grid-cols-2">
             {actionCards.map((card) => (
               <ActionCard key={card.id} {...card} />
@@ -136,10 +169,10 @@ export default function HomeLoggedIn() {
           >
             <div className="rounded-2xl border border-white/70 bg-white/80 p-6 shadow-soft">
               <h3 className="font-display text-xl font-semibold text-buddy-cocoa">
-                Next recommended step
+                Recommended for today
               </h3>
               <p className="mt-2 text-sm text-slate-600">
-                Recommended: Try a short story checkpoint today.
+                Search a YouTube lesson in {language} and take the AI quiz.
               </p>
               <MotionLink
                 to="/stories"
@@ -147,7 +180,7 @@ export default function HomeLoggedIn() {
                 whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.96 }}
               >
-                Continue stories
+                Start a lesson 🎬
               </MotionLink>
             </div>
             <div className="rounded-2xl border border-white/70 bg-white/80 p-6 text-sm font-semibold text-slate-600 shadow-soft">
@@ -252,6 +285,16 @@ function PencilIcon() {
       />
       <path d="M40 14l6 6" stroke="#7B6CF6" strokeWidth="2" />
       <path d="M14 50l10-2-8-8-2 10Z" fill="#FFB4A3" />
+    </svg>
+  );
+}
+
+function SparkleIcon() {
+  return (
+    <svg className="h-6 w-6" viewBox="0 0 64 64" fill="none">
+      <path d="M32 8 L36 28 L56 32 L36 36 L32 56 L28 36 L8 32 L28 28 Z" fill="#FFD700" stroke="#FF9900" strokeWidth="1.5" strokeLinejoin="round"/>
+      <path d="M52 12 L54 20 L62 22 L54 24 L52 32 L50 24 L42 22 L50 20 Z" fill="#FFE566" opacity="0.7"/>
+      <path d="M14 44 L15.5 49 L20 50.5 L15.5 52 L14 57 L12.5 52 L8 50.5 L12.5 49 Z" fill="#FFE566" opacity="0.6"/>
     </svg>
   );
 }

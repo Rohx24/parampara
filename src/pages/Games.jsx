@@ -8,9 +8,29 @@ const games = [
   {
     id: "letter-match",
     title: "Letter Match",
-    description: "Flash a word, then rebuild it with the right tiles.",
+    description: "Flash a word, then rebuild it letter by letter with the right tiles.",
     to: "/games/letter-match",
     status: "Ready",
+    emoji: "🔤",
+    color: "bg-buddy-mint",
+  },
+  {
+    id: "flash-cards",
+    title: "Flash Cards",
+    description: "See a word in your language — quickly pick the right English meaning from 4 choices!",
+    to: "/games/flash-cards",
+    status: "Ready",
+    emoji: "⚡",
+    color: "bg-buddy-peach",
+  },
+  {
+    id: "word-scramble",
+    title: "Word Scramble",
+    description: "Unscramble jumbled English letters using the native language word as your clue.",
+    to: "/games/word-scramble",
+    status: "Ready",
+    emoji: "🔀",
+    color: "bg-buddy-sky",
   },
 ];
 
@@ -34,6 +54,16 @@ export default function Games() {
       <div className="pointer-events-none absolute right-6 top-20 h-32 w-32 rounded-full bg-buddy-mint/60 blur-3xl" />
 
       <main className="relative z-10 px-6 pb-20 pt-12 sm:px-10 lg:px-16">
+        {/* Back home */}
+        <div className="mb-6 flex justify-end">
+          <Link
+            to="/home"
+            className="rounded-full bg-white/80 px-4 py-2 text-xs font-semibold text-slate-600 shadow-soft transition hover:-translate-y-0.5"
+          >
+            ← Back home
+          </Link>
+        </div>
+
         <motion.section
           variants={container}
           initial="hidden"
@@ -76,10 +106,10 @@ export default function Games() {
               className="rounded-2xl border border-white/60 bg-white/80 p-6 shadow-card"
             >
               <div className="flex items-center justify-between">
-                <div className="rounded-2xl bg-buddy-mint p-3">
-                  <GamepadIcon />
+                <div className={`rounded-2xl ${game.color ?? "bg-buddy-mint"} p-3 text-2xl`}>
+                  {game.emoji ?? <GamepadIcon />}
                 </div>
-                <span className="rounded-full bg-buddy-peach/70 px-3 py-1 text-xs font-semibold text-buddy-cocoa">
+                <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
                   {game.status}
                 </span>
               </div>
@@ -89,9 +119,9 @@ export default function Games() {
               <p className="mt-2 text-sm text-slate-600">{game.description}</p>
               <Link
                 to={game.to}
-                className="mt-4 inline-flex rounded-full bg-buddy-grape px-5 py-2 text-sm font-semibold text-white shadow-soft transition hover:-translate-y-0.5"
+                className="mt-5 inline-flex items-center gap-2 rounded-full bg-buddy-grape px-5 py-2 text-sm font-semibold text-white shadow-soft transition hover:-translate-y-0.5"
               >
-                Play now
+                Play now →
               </Link>
             </motion.div>
           ))}

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { fetchFamilyById, findChildByKidCode, hashPin } from "../lib/db";
+import { fetchFamilyById, findChildByKidCode, hashPin, normalizeKidCode } from "../lib/db";
 import { useSession } from "../context/SessionContext.jsx";
 
 export default function KidJoin() {
@@ -11,13 +11,23 @@ export default function KidJoin() {
   const [pin, setPin] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const pinValid = /^\d{4,6}$/.test(pin);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
+    const normalizedCode = normalizeKidCode(kidCode);
+    if (!normalizedCode || !pin) {
+      setError("Enter your kid code and parent PIN.");
+      return;
+    }
+    if (!pinValid) {
+      setError("PIN must be 4-6 digits.");
+      return;
+    }
     setLoading(true);
     try {
-      const child = await findChildByKidCode(kidCode);
+      const child = await findChildByKidCode(normalizedCode);
       if (!child) {
         setError("We couldn't find that kid code. Check and try again.");
         return;
@@ -33,7 +43,7 @@ export default function KidJoin() {
         return;
       }
       loginChild({ familyId: family.id, childId: child.id }, child);
-      navigate("/stories");
+      navigate(child.onboarding ? "/home" : "/signup", { replace: true });
     } catch (err) {
       setError(err?.message || "Something went wrong. Please try again.");
     } finally {
@@ -73,7 +83,7 @@ export default function KidJoin() {
             <input
               type="text"
               value={kidCode}
-              onChange={(event) => setKidCode(event.target.value)}
+              onChange={(event) => setKidCode(normalizeKidCode(event.target.value))}
               className="w-full rounded-2xl border border-white/70 bg-white/80 px-4 py-3 text-base font-semibold text-slate-700 shadow-soft"
               placeholder="WORD-1234"
             />

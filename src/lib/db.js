@@ -23,6 +23,30 @@ const DEFAULT_PROGRESS = {
   lastWritingAt: null,
 };
 
+const LOCAL_DB_KEY = "paramparaLocalDB";
+
+function readLocalDb() {
+  if (typeof localStorage === "undefined") {
+    return { families: [], children: [] };
+  }
+  const raw = localStorage.getItem(LOCAL_DB_KEY);
+  if (!raw) return { families: [], children: [] };
+  try {
+    const parsed = JSON.parse(raw);
+    return {
+      families: Array.isArray(parsed?.families) ? parsed.families : [],
+      children: Array.isArray(parsed?.children) ? parsed.children : [],
+    };
+  } catch (error) {
+    return { families: [], children: [] };
+  }
+}
+
+function writeLocalDb(next) {
+  if (typeof localStorage === "undefined") return;
+  localStorage.setItem(LOCAL_DB_KEY, JSON.stringify(next));
+}
+
 export function normalizeKidCode(value) {
   return value
     ? value
@@ -50,7 +74,13 @@ function makeKidCode() {
 
 export async function generateKidCode() {
   if (!supabase) {
-    return makeKidCode();
+    const db = readLocalDb();
+    for (let attempt = 0; attempt < 12; attempt += 1) {
+      const code = makeKidCode();
+      const exists = db.children.some((child) => child.kid_code === code);
+      if (!exists) return code;
+    }
+    throw new Error("Unable to generate unique kid code. Try again.");
   }
   for (let attempt = 0; attempt < 12; attempt += 1) {
     const code = makeKidCode();
@@ -67,6 +97,7 @@ export async function generateKidCode() {
 
 export async function createFamilyWithChild({ parentPinHash, child }) {
   if (!supabase) {
+    const normalizedKidCode = normalizeKidCode(child.kidCode) || makeKidCode();
     const family = {
       id: crypto.randomUUID(),
       parent_pin_hash: parentPinHash,
@@ -76,7 +107,7 @@ export async function createFamilyWithChild({ parentPinHash, child }) {
     const childRow = {
       id: crypto.randomUUID(),
       family_id: family.id,
-      kid_code: child.kidCode,
+      kid_code: normalizedKidCode,
       nickname: child.nickname,
       age: child.age,
       preferred_language: child.preferredLanguage,
@@ -87,6 +118,10 @@ export async function createFamilyWithChild({ parentPinHash, child }) {
       created_at: new Date().toISOString(),
       last_active_at: new Date().toISOString(),
     };
+    const db = readLocalDb();
+    db.families.push(family);
+    db.children.push(childRow);
+    writeLocalDb(db);
     return { family, child: childRow };
   }
   const sessionToken = crypto.randomUUID();
@@ -121,7 +156,12 @@ export async function createFamilyWithChild({ parentPinHash, child }) {
 
 export async function fetchChildProfile({ familyId, childId }) {
   if (!familyId || !childId) return null;
-  if (!supabase) return null;
+  if (!supabase) {
+    const db = readLocalDb();
+    return db.children.find(
+      (child) => child.id === childId && child.family_id === familyId
+    ) || null;
+  }
   const { data, error } = await supabase
     .from("children")
     .select("*")
@@ -134,7 +174,10 @@ export async function fetchChildProfile({ familyId, childId }) {
 
 export async function fetchFamilyById(familyId) {
   if (!familyId) return null;
-  if (!supabase) return null;
+  if (!supabase) {
+    const db = readLocalDb();
+    return db.families.find((family) => family.id === familyId) || null;
+  }
   const { data, error } = await supabase
     .from("families")
     .select("*")
@@ -147,7 +190,10 @@ export async function fetchFamilyById(familyId) {
 export async function findChildByKidCode(kidCode) {
   const normalized = normalizeKidCode(kidCode);
   if (!normalized) return null;
-  if (!supabase) return null;
+  if (!supabase) {
+    const db = readLocalDb();
+    return db.children.find((child) => child.kid_code === normalized) || null;
+  }
   const { data, error } = await supabase
     .from("children")
     .select("*")
@@ -159,7 +205,15 @@ export async function findChildByKidCode(kidCode) {
 
 export async function updateChildOnboarding(childId, onboarding) {
   if (!childId) return null;
-  if (!supabase) return { id: childId, onboarding };
+  if (!supabase) {
+    const db = readLocalDb();
+    const index = db.children.findIndex((child) => child.id === childId);
+    if (index === -1) return { id: childId, onboarding };
+    const updated = { ...db.children[index], onboarding };
+    db.children[index] = updated;
+    writeLocalDb(db);
+    return updated;
+  }
   const { data, error } = await supabase
     .from("children")
     .update({ onboarding })
@@ -172,7 +226,15 @@ export async function updateChildOnboarding(childId, onboarding) {
 
 export async function updateProgressSummary(childId, progressSummary) {
   if (!childId) return null;
-  if (!supabase) return { id: childId, progress_summary: progressSummary };
+  if (!supabase) {
+    const db = readLocalDb();
+    const index = db.children.findIndex((child) => child.id === childId);
+    if (index === -1) return { id: childId, progress_summary: progressSummary };
+    const updated = { ...db.children[index], progress_summary: progressSummary };
+    db.children[index] = updated;
+    writeLocalDb(db);
+    return updated;
+  }
   const { data, error } = await supabase
     .from("children")
     .update({ progress_summary: progressSummary })
@@ -185,7 +247,17 @@ export async function updateProgressSummary(childId, progressSummary) {
 
 export async function touchFamily(familyId) {
   if (!familyId) return;
-  if (!supabase) return;
+  if (!supabase) {
+    const db = readLocalDb();
+    const index = db.families.findIndex((family) => family.id === familyId);
+    if (index === -1) return;
+    db.families[index] = {
+      ...db.families[index],
+      last_active_at: new Date().toISOString(),
+    };
+    writeLocalDb(db);
+    return;
+  }
   await supabase
     .from("families")
     .update({ last_active_at: new Date().toISOString() })
@@ -194,7 +266,17 @@ export async function touchFamily(familyId) {
 
 export async function touchChild(childId) {
   if (!childId) return;
-  if (!supabase) return;
+  if (!supabase) {
+    const db = readLocalDb();
+    const index = db.children.findIndex((child) => child.id === childId);
+    if (index === -1) return;
+    db.children[index] = {
+      ...db.children[index],
+      last_active_at: new Date().toISOString(),
+    };
+    writeLocalDb(db);
+    return;
+  }
   await supabase
     .from("children")
     .update({ last_active_at: new Date().toISOString() })

@@ -1,14 +1,39 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
   <defs>
-    <linearGradient id="g4" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#E6E0FF"/>
-      <stop offset="50%" stop-color="#CBE9FF"/>
-      <stop offset="100%" stop-color="#FFE8A6"/>
+    <linearGradient id="cosmos" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0d0330"/>
+      <stop offset="50%" stop-color="#1a0a5c"/>
+      <stop offset="100%" stop-color="#0a1a4a"/>
     </linearGradient>
+    <radialGradient id="starGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFD700" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#FFD700" stop-opacity="0"/>
+    </radialGradient>
   </defs>
-  <rect width="640" height="360" fill="url(#g4)"/>
-  <circle cx="500" cy="90" r="60" fill="#FFFFFF" fill-opacity="0.5"/>
-  <circle cx="180" cy="220" r="80" fill="#FFFFFF" fill-opacity="0.35"/>
-  <path d="M320 70l18 40 44 4-34 28 10 44-38-22-38 22 10-44-34-28 44-4z" fill="#FFFFFF" fill-opacity="0.7"/>
-  <text x="40" y="320" font-family="Nunito, sans-serif" font-size="22" fill="#5A5AA6" opacity="0.9">Star of the Sky Queen</text>
+  <rect width="400" height="300" fill="url(#cosmos)"/>
+  <circle cx="30" cy="20" r="1" fill="white" opacity="0.9"/>
+  <circle cx="80" cy="45" r="1.5" fill="white" opacity="0.7"/>
+  <circle cx="150" cy="10" r="1" fill="white" opacity="0.8"/>
+  <circle cx="250" cy="30" r="1.5" fill="white" opacity="0.9"/>
+  <circle cx="320" cy="15" r="1" fill="white" opacity="0.6"/>
+  <circle cx="380" cy="55" r="1" fill="white" opacity="0.8"/>
+  <circle cx="50" cy="80" r="1" fill="white" opacity="0.7"/>
+  <circle cx="340" cy="70" r="1.5" fill="white" opacity="0.9"/>
+  <circle cx="180" cy="60" r="1" fill="white" opacity="0.6"/>
+  <polygon points="200,40 212,80 255,80 222,103 233,143 200,120 167,143 178,103 145,80 188,80" fill="#FFD700"/>
+  <circle cx="200" cy="92" r="30" fill="url(#starGlow)" opacity="0.4"/>
+  <circle cx="200" cy="92" r="15" fill="#FFE566" opacity="0.6"/>
+  <circle cx="90" cy="200" r="30" fill="#7B68EE" opacity="0.3"/>
+  <circle cx="90" cy="200" r="22" fill="#9370DB" opacity="0.5"/>
+  <circle cx="90" cy="200" r="15" fill="#B19CD9"/>
+  <circle cx="310" cy="220" r="25" fill="#FF6B9D" opacity="0.3"/>
+  <circle cx="310" cy="220" r="18" fill="#FF8FAB" opacity="0.5"/>
+  <circle cx="310" cy="220" r="12" fill="#FFB3C6"/>
+  <path d="M90 178 L310 198" stroke="#FFD700" stroke-width="1" stroke-dasharray="5,5" opacity="0.5"/>
+  <path d="M200 122 L90 200" stroke="#9370DB" stroke-width="1" stroke-dasharray="5,5" opacity="0.4"/>
+  <path d="M200 122 L310 220" stroke="#FF8FAB" stroke-width="1" stroke-dasharray="5,5" opacity="0.4"/>
+  <rect x="0" y="270" width="400" height="30" fill="#0a0220"/>
+  <polygon points="80,270 88,248 96,270" fill="#C0A060"/>
+  <polygon points="200,270 210,240 220,270" fill="#C0A060"/>
+  <polygon points="330,270 338,252 346,270" fill="#C0A060"/>
 </svg>

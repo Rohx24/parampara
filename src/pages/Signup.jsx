@@ -45,12 +45,21 @@ export default function Signup() {
   const [step, setStep] = useState(1);
   const [onboarding, setOnboarding] = useState({
     age: 8,
-    role: "Parent",
+    role: "Child",
     focus: [],
     vibe: "gentle",
   });
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [accessInfo, setAccessInfo] = useState(null);
+  const [accessCopied, setAccessCopied] = useState(false);
 
-  const progress = useMemo(() => (step / 3) * 100, [step]);
+  const totalSteps = accessInfo ? 4 : 3;
+  const currentStep = accessInfo ? totalSteps : step;
+  const progress = useMemo(
+    () => (currentStep / totalSteps) * 100,
+    [currentStep, totalSteps]
+  );
 
   const toggleFocus = (label) => {
     setOnboarding((prev) => {
@@ -67,6 +76,8 @@ export default function Signup() {
       navigate("/parent-setup", { replace: true });
       return;
     }
+    setError("");
+    setSaving(true);
     localStorage.setItem("bhashabuddy_onboarding", JSON.stringify(onboarding));
     if (childProfile?.id) {
       try {
@@ -75,7 +86,13 @@ export default function Signup() {
       } catch (error) {
         // eslint-disable-next-line no-console
         console.warn("Failed to persist onboarding", error);
+        setError("We couldn't save your preferences. Please try again.");
+        setSaving(false);
+        return;
       }
+      setSaving(false);
+      navigate("/journey", { replace: true });
+      return;
     } else {
       try {
         const tempPin = String(Math.floor(100000 + Math.random() * 900000));
@@ -92,12 +109,35 @@ export default function Signup() {
           },
         });
         loginChild({ familyId: family.id, childId: child.id }, child);
+        setAccessInfo({
+          kidCode: child.kid_code || kidCode,
+          parentPin: tempPin,
+        });
       } catch (error) {
         // eslint-disable-next-line no-console
         console.warn("Failed to create child profile", error);
+        setError("We couldn't create your profile. Please try again.");
+        setSaving(false);
+        return;
       }
     }
+    setSaving(false);
+  };
+
+  const handleContinue = () => {
     navigate("/journey", { replace: true });
+  };
+
+  const handleCopyAccess = async () => {
+    if (!accessInfo) return;
+    const text = `Kid code: ${accessInfo.kidCode}\nParent PIN: ${accessInfo.parentPin}`;
+    try {
+      await navigator.clipboard.writeText(text);
+      setAccessCopied(true);
+      setTimeout(() => setAccessCopied(false), 2000);
+    } catch (error) {
+      setAccessCopied(false);
+    }
   };
 
   return (
@@ -120,9 +160,15 @@ export default function Signup() {
           </Link>
         </header>
 
+        {error ? (
+          <div className="rounded-2xl bg-buddy-peach/60 px-4 py-3 text-sm font-semibold text-slate-700">
+            {error}
+          </div>
+        ) : null}
+
         <div className="space-y-3">
           <div className="flex items-center justify-between text-xs font-semibold text-slate-500">
-            <span>Step {step} of 3</span>
+            <span>Step {currentStep} of {totalSteps}</span>
             <span>{Math.round(progress)}% done</span>
           </div>
           <div className="h-2 w-full rounded-full bg-white/70">
@@ -134,18 +180,64 @@ export default function Signup() {
             />
           </div>
           <div className="flex gap-2">
-            {[1, 2, 3].map((index) => (
+            {Array.from({ length: totalSteps }, (_, index) => index + 1).map((index) => (
               <span
                 key={index}
                 className={`h-2 w-2 rounded-full ${
-                  step >= index ? "bg-buddy-coral" : "bg-slate-200"
+                  currentStep >= index ? "bg-buddy-coral" : "bg-slate-200"
                 }`}
               />
             ))}
           </div>
         </div>
 
-        <AnimatePresence mode="wait">
+        {accessInfo ? (
+          <motion.section
+            key="access-info"
+            variants={stepVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.35, ease: "easeInOut" }}
+            className="space-y-6 text-center"
+          >
+            <div>
+              <h2 className="font-display text-2xl font-semibold text-buddy-cocoa">
+                Save your access details
+              </h2>
+              <p className="mt-2 text-sm text-slate-600">
+                You will need these to log in again. The PIN can&apos;t be recovered.
+              </p>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="rounded-2xl border border-white/70 bg-white/90 px-6 py-5 text-xl font-semibold text-buddy-cocoa shadow-soft">
+                Kid code
+                <div className="mt-2 text-2xl text-slate-700">{accessInfo.kidCode}</div>
+              </div>
+              <div className="rounded-2xl border border-white/70 bg-white/90 px-6 py-5 text-xl font-semibold text-buddy-cocoa shadow-soft">
+                Parent PIN
+                <div className="mt-2 text-2xl text-slate-700">{accessInfo.parentPin}</div>
+              </div>
+            </div>
+            <motion.button
+              type="button"
+              whileTap={{ scale: 0.96 }}
+              onClick={handleCopyAccess}
+              className="rounded-full bg-buddy-coral px-6 py-2 text-xs font-semibold text-white shadow-soft"
+            >
+              {accessCopied ? "Copied" : "Copy details"}
+            </motion.button>
+            <motion.button
+              type="button"
+              whileTap={{ scale: 0.96 }}
+              onClick={handleContinue}
+              className="rounded-full bg-buddy-grape px-6 py-2 text-sm font-semibold text-white shadow-soft"
+            >
+              Continue to journey
+            </motion.button>
+          </motion.section>
+        ) : (
+          <AnimatePresence mode="wait">
           {step === 1 && (
             <motion.section
               key="step-1"
@@ -315,15 +407,16 @@ export default function Signup() {
               </div>
             </motion.section>
           )}
-        </AnimatePresence>
+          </AnimatePresence>
+        )}
 
         <div className="flex flex-wrap items-center justify-between gap-4 pt-4">
           <button
             type="button"
             onClick={() => setStep((prev) => Math.max(1, prev - 1))}
-            disabled={step === 1}
+            disabled={step === 1 || saving || accessInfo}
             className={`rounded-full px-5 py-2 text-sm font-semibold transition ${
-              step === 1
+              step === 1 || saving || accessInfo
                 ? "cursor-not-allowed bg-slate-100 text-slate-400"
                 : "bg-white/90 text-slate-600 shadow-soft hover:-translate-y-0.5"
             }`}
@@ -331,25 +424,37 @@ export default function Signup() {
             Back
           </button>
 
-          {step < 3 ? (
+          {step < 3 && !accessInfo ? (
             <motion.button
               type="button"
               whileTap={{ scale: 0.96 }}
               onClick={() => setStep((prev) => Math.min(3, prev + 1))}
-              className="rounded-full bg-buddy-grape px-6 py-2 text-sm font-semibold text-white shadow-soft"
+              disabled={saving}
+              className={`rounded-full px-6 py-2 text-sm font-semibold shadow-soft ${
+                saving
+                  ? "cursor-not-allowed bg-slate-200 text-slate-400"
+                  : "bg-buddy-grape text-white"
+              }`}
             >
               Next
             </motion.button>
-          ) : (
+          ) : null}
+
+          {step === 3 && !accessInfo ? (
             <motion.button
               type="button"
               whileTap={{ scale: 0.96 }}
               onClick={handleFinish}
-              className="rounded-full bg-buddy-grape px-6 py-2 text-sm font-semibold text-white shadow-soft"
+              disabled={saving}
+              className={`rounded-full px-6 py-2 text-sm font-semibold shadow-soft ${
+                saving
+                  ? "cursor-not-allowed bg-slate-200 text-slate-400"
+                  : "bg-buddy-grape text-white"
+              }`}
             >
-              Start journey
+              {saving ? "Saving..." : "Start journey"}
             </motion.button>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

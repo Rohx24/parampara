@@ -24,10 +24,13 @@ export default function ParentSetup() {
   const [kidCode, setKidCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [copied, setCopied] = useState(false);
 
   const progress = useMemo(() => (step / 3) * 100, [step]);
   const pinValid = /^\d{4,6}$/.test(pin) && pin === confirmPin;
   const childValid = nickname.trim().length >= 2;
+  const showPinError = !pinValid && (pin.length > 0 || confirmPin.length > 0);
+  const showNicknameError = !childValid && nickname.trim().length > 0;
 
   const handleCreate = async () => {
     if (!pinValid || !childValid) return;
@@ -57,6 +60,17 @@ export default function ParentSetup() {
 
   const handleStart = () => {
     navigate(childProfile?.onboarding ? "/journey" : "/signup");
+  };
+
+  const handleCopyCode = async () => {
+    if (!kidCode) return;
+    try {
+      await navigator.clipboard.writeText(kidCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      setCopied(false);
+    }
   };
 
   return (
@@ -126,7 +140,7 @@ export default function ParentSetup() {
                   Set your Parent PIN
                 </h2>
                 <p className="mt-2 text-sm text-slate-600">
-                  Choose a 4–6 digit PIN. This stays with your family.
+                  Choose a 4-6 digit PIN. This stays with your family.
                 </p>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
@@ -153,9 +167,9 @@ export default function ParentSetup() {
                   />
                 </label>
               </div>
-              {!pinValid && pin.length > 0 ? (
+              {showPinError ? (
                 <p className="text-xs font-semibold text-buddy-coral">
-                  PINs must match and be 4–6 digits.
+                  PINs must match and be 4-6 digits.
                 </p>
               ) : null}
             </motion.section>
@@ -189,6 +203,11 @@ export default function ParentSetup() {
                   placeholder="Little Mango"
                 />
               </label>
+              {showNicknameError ? (
+                <p className="text-xs font-semibold text-buddy-coral">
+                  Please enter at least 2 characters.
+                </p>
+              ) : null}
               <div className="rounded-2xl border border-white/70 bg-white/80 p-5 shadow-soft">
                 <div className="flex items-center justify-between text-sm font-semibold text-slate-600">
                   <span>Age</span>
@@ -250,6 +269,17 @@ export default function ParentSetup() {
               <div className="rounded-3xl border border-white/70 bg-white/90 px-6 py-5 text-2xl font-semibold text-buddy-cocoa shadow-soft">
                 {kidCode}
               </div>
+              <p className="text-xs font-semibold text-slate-500">
+                Save this kid code and your parent PIN. The PIN can&apos;t be recovered.
+              </p>
+              <motion.button
+                type="button"
+                whileTap={{ scale: 0.96 }}
+                onClick={handleCopyCode}
+                className="rounded-full bg-buddy-coral px-5 py-2 text-xs font-semibold text-white shadow-soft"
+              >
+                {copied ? "Copied" : "Copy kid code"}
+              </motion.button>
               <motion.button
                 type="button"
                 whileTap={{ scale: 0.96 }}
