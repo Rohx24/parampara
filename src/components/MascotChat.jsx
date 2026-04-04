@@ -56,20 +56,7 @@ export default function MascotChat({ nickname, language }) {
   };
 
   return (
-    <div className="relative">
-      {/* Chat bubble toggle */}
-      <motion.button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        whileHover={{ scale: 1.08 }}
-        whileTap={{ scale: 0.94 }}
-        className="flex items-center gap-2 rounded-full bg-buddy-grape px-4 py-2 text-xs font-semibold text-white shadow-soft"
-        aria-label="Chat with Buddy"
-      >
-        <ChatIcon />
-        Ask Buddy anything
-      </motion.button>
-
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
       <AnimatePresence>
         {open && (
           <motion.div
@@ -77,7 +64,7 @@ export default function MascotChat({ nickname, language }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.96 }}
             transition={{ duration: 0.22, ease: "easeOut" }}
-            className="absolute bottom-12 left-0 z-50 w-72 rounded-3xl border border-white/70 bg-white/95 shadow-card sm:w-80"
+            className="w-72 rounded-3xl border border-white/70 bg-white/95 shadow-card sm:w-80"
           >
             {/* Header */}
             <div className="flex items-center justify-between rounded-t-3xl bg-buddy-grape/10 px-4 py-3">
@@ -138,6 +125,19 @@ export default function MascotChat({ nickname, language }) {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Floating toggle button */}
+      <motion.button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.94 }}
+        className="flex items-center gap-2 rounded-full bg-buddy-grape px-5 py-3 text-sm font-bold text-white shadow-soft"
+        aria-label="Chat with Buddy"
+      >
+        <ChatIcon />
+        Ask Buddy anything
+      </motion.button>
     </div>
   );
 }
