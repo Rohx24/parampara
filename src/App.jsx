@@ -947,12 +947,9 @@ function BouncingStar({ className }) {
 function PreviewModal({ open, onClose, language, onLanguageChange }) {
   const dialogRef = useRef(null);
   const videoRef = useRef(null);
-  const audioRef = useRef(null);
   const lastCueRef = useRef("");
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioMuted, setAudioMuted] = useState(false);
-  const [audioError, setAudioError] = useState(false);
-  const [regenStatus, setRegenStatus] = useState("");
   const [activeCue, setActiveCue] = useState("");
 
   const languageAssets = useMemo(
@@ -1010,24 +1007,22 @@ function PreviewModal({ open, onClose, language, onLanguageChange }) {
     };
   }, [open, onClose]);
 
+  // Stop TTS when modal closes or muted
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.muted = audioMuted;
-  }, [audioMuted]);
+    if (!open || audioMuted) {
+      window.speechSynthesis?.cancel();
+    }
+    if (!open) setIsPlaying(false);
+  }, [open, audioMuted]);
 
+  // Reset on language / open change
   useEffect(() => {
-    if (!open) return;
-    setAudioError(false);
-    setRegenStatus("");
     lastCueRef.current = "";
     setActiveCue("");
-    const audio = audioRef.current;
-    if (audio) {
-      audio.load();
-    }
-  }, [assets.audio, assets.vtt, open]);
+    window.speechSynthesis?.cancel();
+  }, [assets.vtt, open]);
 
+  // Track active subtitle cue from video time
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -1044,68 +1039,41 @@ function PreviewModal({ open, onClose, language, onLanguageChange }) {
     };
   }, [cues]);
 
+  // Speak each new cue via Web Speech API (instant, no mp3 files needed)
   useEffect(() => {
-    const video = videoRef.current;
-    const audio = audioRef.current;
-    if (!video) return undefined;
-
-    const syncAudio = () => {
-      if (!audio || audioError) return;
-      audio.currentTime = video.currentTime;
-    };
-
-    const handlePlay = () => {
-      if (!audio || audioError) return;
-      audio.play().catch(() => setAudioError(true));
-    };
-
-    const handlePause = () => {
-      if (audio) audio.pause();
-    };
-
-    video.addEventListener("seeking", syncAudio);
-    video.addEventListener("play", handlePlay);
-    video.addEventListener("pause", handlePause);
-
-    return () => {
-      video.removeEventListener("seeking", syncAudio);
-      video.removeEventListener("play", handlePlay);
-      video.removeEventListener("pause", handlePause);
-    };
-  }, [audioError]);
-
-  useEffect(() => {
-    if (!open) {
-      setIsPlaying(false);
-    }
-  }, [open]);
+    if (!activeCue || audioMuted || !isPlaying) return;
+    if (activeCue === lastCueRef.current) return;
+    lastCueRef.current = activeCue;
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(activeCue);
+    utter.lang = assets.speech;
+    utter.rate = 0.9;
+    // Prefer Google neural voice for the language
+    const voices = window.speechSynthesis.getVoices();
+    const best = voices.find((v) => /google/i.test(v.name) && v.lang.startsWith(assets.speech.split("-")[0]))
+      || voices.find((v) => v.lang === assets.speech)
+      || voices.find((v) => v.lang.startsWith(assets.speech.split("-")[0]));
+    if (best) utter.voice = best;
+    window.speechSynthesis.speak(utter);
+  }, [activeCue, audioMuted, isPlaying, assets.speech]);
 
   const startPlayback = async () => {
     const video = videoRef.current;
-    const audio = audioRef.current;
     if (!video) return;
     video.currentTime = 0;
-    if (audio) audio.currentTime = 0;
+    lastCueRef.current = "";
     setIsPlaying(true);
     try {
       await video.play();
-    } catch (error) {
+    } catch {
       setIsPlaying(false);
-    }
-    if (audio && !audioError) {
-      try {
-        await audio.play();
-      } catch (error) {
-        setAudioError(true);
-      }
     }
   };
 
   const pausePlayback = () => {
-    const video = videoRef.current;
-    const audio = audioRef.current;
-    video?.pause();
-    audio?.pause();
+    videoRef.current?.pause();
+    window.speechSynthesis?.cancel();
     setIsPlaying(false);
   };
 
@@ -1115,28 +1083,13 @@ function PreviewModal({ open, onClose, language, onLanguageChange }) {
     } else {
       pausePlayback();
     }
-  }, [open, assets.audio]);
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const subtitleText = loading
     ? "Loading subtitles..."
     : error || !cues.length
-    ? "Subtitles not available"
+    ? "Narration will play when story starts"
     : activeCue || "…";
-
-  const handleRegenerate = async () => {
-    setRegenStatus("Checking local voice server…");
-    try {
-      const response = await fetch("/api/tts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lang: activeLangId, text: activeCue || "" }),
-      });
-      if (!response.ok) throw new Error("offline");
-      setRegenStatus("Voice regenerated.");
-    } catch (error) {
-      setRegenStatus("Offline demo mode: pre-generated voices.");
-    }
-  };
 
   return (
     <AnimatePresence>
@@ -1223,7 +1176,7 @@ function PreviewModal({ open, onClose, language, onLanguageChange }) {
                     onClick={() => setAudioMuted((prev) => !prev)}
                     className="rounded-full bg-white/90 px-4 py-2 text-xs font-semibold text-slate-600 shadow-soft"
                   >
-                    {audioMuted ? "Unmute narration" : "Mute narration"}
+                    {audioMuted ? "🔇 Unmute" : "🔊 Mute narration"}
                   </button>
                 </div>
 
@@ -1248,11 +1201,6 @@ function PreviewModal({ open, onClose, language, onLanguageChange }) {
               </div>
             </div>
 
-            <audio
-              ref={audioRef}
-              src={assets.audio}
-              onError={() => setAudioError(true)}
-            />
           </motion.div>
         </motion.div>
       ) : null}
