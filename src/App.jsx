@@ -23,6 +23,7 @@ import Mascot3D from "./components/Mascot3D.jsx";
 import OnboardingTour from "./components/OnboardingTour.jsx";
 import { useSession } from "./context/SessionContext.jsx";
 import { getActiveCue, useVttCues } from "./hooks/useVttCues.js";
+import { speakText } from "./lib/voice.js";
 
 const languages = [
   {
@@ -1039,23 +1040,12 @@ function PreviewModal({ open, onClose, language, onLanguageChange }) {
     };
   }, [cues]);
 
-  // Speak each new cue via Web Speech API (instant, no mp3 files needed)
+  // Speak each new cue using the same speakText used in Voice Coach
   useEffect(() => {
     if (!activeCue || audioMuted || !isPlaying) return;
     if (activeCue === lastCueRef.current) return;
     lastCueRef.current = activeCue;
-    if (!window.speechSynthesis) return;
-    window.speechSynthesis.cancel();
-    const utter = new SpeechSynthesisUtterance(activeCue);
-    utter.lang = assets.speech;
-    utter.rate = 0.9;
-    // Prefer Google neural voice for the language
-    const voices = window.speechSynthesis.getVoices();
-    const best = voices.find((v) => /google/i.test(v.name) && v.lang.startsWith(assets.speech.split("-")[0]))
-      || voices.find((v) => v.lang === assets.speech)
-      || voices.find((v) => v.lang.startsWith(assets.speech.split("-")[0]));
-    if (best) utter.voice = best;
-    window.speechSynthesis.speak(utter);
+    speakText(activeCue, assets.speech, "gentle");
   }, [activeCue, audioMuted, isPlaying, assets.speech]);
 
   const startPlayback = async () => {
