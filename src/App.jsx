@@ -386,33 +386,248 @@ function LandingPage() {
           </motion.div>
         </section>
 
-        <section id="stories" className="mt-16 grid gap-6 lg:grid-cols-3 scroll-mt-24">
-          <FeatureCard
-            title="Stories that pause and ask you"
-            description="Listen, answer, giggle, repeat. Stories pause to keep kids talking."
-            icon={<BookIcon />}
-          />
-          <FeatureCard
-            title="A friendly guide inspired by family"
-            description="Our buddy feels like a cousin who cheers you on, not a teacher."
-            icon={<BellIcon />}
-          />
-          <FeatureCard
-            title="Parents see progress, not pressure"
-            description="Short check-ins, soft milestones, and a stress-free dashboard."
-            icon={<PhoneIcon />}
-          />
-        </section>
+        {/* ── Stats banner ── */}
+        <motion.section
+          initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }} transition={{ duration: 0.5 }}
+          className="mt-14 grid grid-cols-2 gap-4 sm:grid-cols-4"
+        >
+          {[
+            { value: "5", label: "Indian languages", icon: "🌏" },
+            { value: "AI", label: "Powered quizzes", icon: "🧠" },
+            { value: "100%", label: "Kid-safe design", icon: "🔒" },
+            { value: "Free", label: "To get started", icon: "🎁" },
+          ].map((s) => (
+            <div key={s.label} className="rounded-2xl border border-white/60 bg-white/75 p-4 text-center shadow-soft">
+              <div className="text-2xl mb-1">{s.icon}</div>
+              <p className="font-display text-2xl font-extrabold text-buddy-cocoa">{s.value}</p>
+              <p className="text-xs font-semibold text-slate-500 mt-0.5">{s.label}</p>
+            </div>
+          ))}
+        </motion.section>
 
-        <section id="parents" className="mt-12 scroll-mt-24">
-          <div className="rounded-2xl border border-white/60 bg-white/70 px-6 py-4 text-center text-sm font-semibold text-slate-600 shadow-soft">
-            Stylized avatars. No identity cloning. Kid-safe by design.
+        {/* ── Feature cards ── */}
+        <section id="stories" className="mt-16 scroll-mt-24">
+          <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-8 text-center">
+            <h2 className="font-display text-3xl font-extrabold text-buddy-cocoa sm:text-4xl">Everything a child needs to learn</h2>
+            <p className="mt-2 text-slate-600">Four fun activities — powered by real AI, built for Indian families.</p>
+          </motion.div>
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              {
+                icon: "🎬",
+                bg: "bg-red-50",
+                iconBg: "bg-red-100",
+                title: "YouTube Lessons",
+                desc: "Search any topic — animals, space, food. AI generates vocab cards, MCQ quizzes, and speaking exercises from real videos.",
+                badge: "AI Quiz",
+                badgeColor: "bg-red-100 text-red-600",
+                to: "/stories",
+              },
+              {
+                icon: "🎤",
+                bg: "bg-purple-50",
+                iconBg: "bg-purple-100",
+                title: "Voice Coach",
+                desc: "Buddy listens as your child speaks. Real-time pronunciation scoring, confidence meter, and friendly tips.",
+                badge: "Speech AI",
+                badgeColor: "bg-purple-100 text-purple-600",
+                to: "/voice",
+              },
+              {
+                icon: "✨",
+                bg: "bg-amber-50",
+                iconBg: "bg-amber-100",
+                title: "Story Builder",
+                desc: "Type any idea and AI writes a personalised story in 5 languages with a comprehension quiz at the end.",
+                badge: "GPT-4o",
+                badgeColor: "bg-amber-100 text-amber-600",
+                to: "/make-story",
+              },
+              {
+                icon: "🎮",
+                bg: "bg-emerald-50",
+                iconBg: "bg-emerald-100",
+                title: "Word Games",
+                desc: "Flash Cards, Word Scramble, and Letter Match — three games that build vocabulary while having fun.",
+                badge: "3 Games",
+                badgeColor: "bg-emerald-100 text-emerald-600",
+                to: "/games",
+              },
+            ].map((card, i) => (
+              <motion.div
+                key={card.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                whileHover={{ y: -6 }}
+                className={`rounded-3xl border border-white/60 ${card.bg} p-6 shadow-card flex flex-col gap-4`}
+              >
+                <div className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl ${card.iconBg} text-2xl`}>
+                  {card.icon}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="font-display text-base font-extrabold text-buddy-cocoa">{card.title}</h3>
+                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${card.badgeColor}`}>{card.badge}</span>
+                  </div>
+                  <p className="text-sm text-slate-600 leading-relaxed">{card.desc}</p>
+                </div>
+                <MotionLink
+                  to={card.to}
+                  className="mt-auto inline-flex items-center gap-1 text-xs font-bold text-buddy-grape hover:gap-2 transition-all"
+                  whileHover={{ x: 2 }}
+                >
+                  Try it free →
+                </MotionLink>
+              </motion.div>
+            ))}
           </div>
         </section>
+
+        {/* ── How it works ── */}
+        <section className="mt-20">
+          <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-10 text-center">
+            <h2 className="font-display text-3xl font-extrabold text-buddy-cocoa sm:text-4xl">How it works</h2>
+            <p className="mt-2 text-slate-600">Three steps — no setup, no pressure.</p>
+          </motion.div>
+          <div className="grid gap-6 sm:grid-cols-3">
+            {[
+              { step: "1", icon: "👤", title: "Create a profile", desc: "Tell Buddy your child's name, age, and preferred language. Takes 30 seconds.", color: "border-buddy-grape/30 bg-buddy-grape/5" },
+              { step: "2", icon: "🎯", title: "Pick an activity", desc: "Watch a YouTube lesson, speak with Buddy, write a story, or play a word game.", color: "border-buddy-coral/30 bg-buddy-coral/5" },
+              { step: "3", icon: "📊", title: "Track progress", desc: "The Parent Dashboard shows daily minutes, skill scores, and an AI-written weekly report.", color: "border-emerald-300/60 bg-emerald-50/60" },
+            ].map((s, i) => (
+              <motion.div
+                key={s.step}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.15 }}
+                className={`rounded-3xl border-2 ${s.color} p-6 shadow-soft relative overflow-hidden`}
+              >
+                <div className="absolute -right-3 -top-3 text-7xl font-extrabold text-slate-100/80 select-none">{s.step}</div>
+                <div className="text-4xl mb-3">{s.icon}</div>
+                <h3 className="font-display text-lg font-extrabold text-buddy-cocoa">{s.title}</h3>
+                <p className="mt-2 text-sm text-slate-600 leading-relaxed">{s.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── Language showcase ── */}
+        <motion.section
+          initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+          className="mt-20 rounded-3xl border border-white/60 bg-white/70 p-8 shadow-card text-center"
+        >
+          <h2 className="font-display text-2xl font-extrabold text-buddy-cocoa">Supports the languages your family speaks</h2>
+          <p className="mt-2 text-slate-600 text-sm">Your child learns in their mother tongue — English comes naturally.</p>
+          <div className="mt-6 flex flex-wrap justify-center gap-4">
+            {[
+              { lang: "Hindi", native: "हिन्दी", color: "bg-orange-50 border-orange-200" },
+              { lang: "Tamil", native: "தமிழ்", color: "bg-red-50 border-red-200" },
+              { lang: "Telugu", native: "తెలుగు", color: "bg-purple-50 border-purple-200" },
+              { lang: "Kannada", native: "ಕನ್ನಡ", color: "bg-blue-50 border-blue-200" },
+              { lang: "English", native: "English", color: "bg-emerald-50 border-emerald-200" },
+            ].map((l) => (
+              <div key={l.lang} className={`rounded-2xl border-2 ${l.color} px-5 py-3 text-center shadow-soft`}>
+                <p className="font-display text-xl font-extrabold text-buddy-cocoa">{l.native}</p>
+                <p className="text-xs font-semibold text-slate-500 mt-0.5">{l.lang}</p>
+              </div>
+            ))}
+          </div>
+        </motion.section>
+
+        {/* ── For parents ── */}
+        <section id="parents" className="mt-20 scroll-mt-24">
+          <div className="grid gap-6 lg:grid-cols-2 items-center">
+            <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
+              <p className="text-xs font-bold uppercase tracking-widest text-buddy-grape mb-2">For Parents</p>
+              <h2 className="font-display text-3xl font-extrabold text-buddy-cocoa">See progress, not just screen time</h2>
+              <p className="mt-3 text-slate-600 leading-relaxed">
+                The Parent Dashboard shows exactly what your child practiced, how their pronunciation improved, and what to work on next — with a weekly AI-written report in plain English.
+              </p>
+              <div className="mt-5 space-y-3">
+                {[
+                  { icon: "📈", text: "Skill scores: pronunciation, vocabulary, fluency, comprehension, reading" },
+                  { icon: "📅", text: "Daily practice chart — see which days they practiced and for how long" },
+                  { icon: "🤖", text: "AI Coach chat — ask any question about your child's learning journey" },
+                  { icon: "🔒", text: "Kid-safe by design — no ads, no social features, no data sold" },
+                ].map((f) => (
+                  <div key={f.text} className="flex items-start gap-3">
+                    <span className="text-xl shrink-0">{f.icon}</span>
+                    <p className="text-sm text-slate-600">{f.text}</p>
+                  </div>
+                ))}
+              </div>
+              <MotionLink
+                to="/parent-dashboard"
+                whileHover={{ y: -2 }} whileTap={{ scale: 0.97 }}
+                className="mt-6 inline-block rounded-full bg-buddy-grape px-6 py-3 text-sm font-bold text-white shadow-soft transition"
+              >
+                View Parent Dashboard →
+              </MotionLink>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
+              className="grid grid-cols-2 gap-4"
+            >
+              {[
+                { label: "Minutes this week", value: "103", icon: "⏱️", color: "bg-buddy-grape/10" },
+                { label: "Day streak", value: "4 🔥", icon: "📅", color: "bg-amber-50" },
+                { label: "Pronunciation", value: "72%", icon: "🎤", color: "bg-purple-50" },
+                { label: "Comprehension", value: "80%", icon: "🧠", color: "bg-emerald-50" },
+              ].map((s) => (
+                <div key={s.label} className={`rounded-2xl ${s.color} border border-white/60 p-4 shadow-soft text-center`}>
+                  <div className="text-2xl mb-1">{s.icon}</div>
+                  <p className="font-display text-2xl font-extrabold text-buddy-cocoa">{s.value}</p>
+                  <p className="text-[11px] font-semibold text-slate-500 mt-0.5">{s.label}</p>
+                </div>
+              ))}
+            </motion.div>
+          </div>
+        </section>
+
+        {/* ── Final CTA ── */}
+        <motion.section
+          initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+          className="mt-20 rounded-3xl bg-gradient-to-br from-buddy-grape via-violet-500 to-buddy-coral p-10 text-center text-white shadow-2xl"
+        >
+          <div className="text-5xl mb-4">🦋</div>
+          <h2 className="font-display text-3xl font-extrabold sm:text-4xl">Ready to start learning?</h2>
+          <p className="mt-3 text-white/80 text-lg">Free to try · No credit card · 5 languages · AI-powered</p>
+          <div className="mt-7 flex flex-wrap justify-center gap-4">
+            <MotionLink
+              to="/signup"
+              whileHover={{ y: -3, scale: 1.03 }} whileTap={{ scale: 0.97 }}
+              className="rounded-full bg-white px-8 py-4 text-base font-extrabold text-buddy-grape shadow-xl"
+            >
+              Create free account →
+            </MotionLink>
+            <MotionLink
+              to="/start"
+              whileHover={{ y: -3 }} whileTap={{ scale: 0.97 }}
+              className="rounded-full border-2 border-white/50 bg-white/10 px-8 py-4 text-base font-bold text-white backdrop-blur"
+            >
+              Sign in
+            </MotionLink>
+          </div>
+        </motion.section>
       </main>
 
-      <footer className="px-6 pb-10 text-center text-sm text-slate-500 sm:px-10 lg:px-16">
-        Made with warm stories and gentle voices. © 2026 BhashaBuddy
+      <footer className="mt-16 border-t border-white/40 px-6 pb-10 pt-8 sm:px-10 lg:px-16">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <BellIcon className="h-5 w-5" />
+            <span className="font-display text-lg font-bold text-buddy-cocoa">BhashaBuddy</span>
+          </div>
+          <div className="flex flex-wrap gap-5 text-xs font-semibold text-slate-500">
+            <MotionLink to="/parents" whileHover={{ y: -1 }} className="hover:text-buddy-grape transition">For Parents</MotionLink>
+            <MotionLink to="/start" whileHover={{ y: -1 }} className="hover:text-buddy-grape transition">Sign In</MotionLink>
+            <MotionLink to="/parent-dashboard" whileHover={{ y: -1 }} className="hover:text-buddy-grape transition">Dashboard</MotionLink>
+          </div>
+          <p className="text-xs text-slate-400">Made with warm stories and gentle voices · © 2026 BhashaBuddy</p>
+        </div>
       </footer>
 
       <PreviewModal
@@ -856,19 +1071,7 @@ function PreviewModal({ open, onClose, language, onLanguageChange }) {
   }, [audioError]);
 
   useEffect(() => {
-    if (!open || !isPlaying || !audioError || !activeCue || audioMuted) return;
-    if (lastCueRef.current === activeCue) return;
-    lastCueRef.current = activeCue;
-    if (!window.speechSynthesis) return;
-    window.speechSynthesis.cancel();
-    const utter = new SpeechSynthesisUtterance(activeCue);
-    utter.lang = assets.speech;
-    window.speechSynthesis.speak(utter);
-  }, [activeCue, assets.speech, audioError, audioMuted, isPlaying, open]);
-
-  useEffect(() => {
     if (!open) {
-      window.speechSynthesis?.cancel();
       setIsPlaying(false);
     }
   }, [open]);
@@ -1018,20 +1221,7 @@ function PreviewModal({ open, onClose, language, onLanguageChange }) {
                   >
                     {audioMuted ? "Unmute narration" : "Mute narration"}
                   </button>
-                  <button
-                    type="button"
-                    onClick={handleRegenerate}
-                    className="rounded-full bg-white/90 px-4 py-2 text-xs font-semibold text-slate-600 shadow-soft"
-                  >
-                    Regenerate voice
-                  </button>
                 </div>
-
-                {regenStatus ? (
-                  <div className="mt-3 text-xs font-semibold text-slate-500">
-                    {regenStatus}
-                  </div>
-                ) : null}
 
                 <div className="mt-4 rounded-full bg-buddy-mint/70 px-4 py-2 text-center text-sm font-semibold text-slate-600">
                   {subtitleText}
@@ -1040,11 +1230,16 @@ function PreviewModal({ open, onClose, language, onLanguageChange }) {
 
               <div className="flex flex-col gap-4">
                 <div className="rounded-2xl border border-white/70 bg-white/85 p-4 text-sm text-slate-600 shadow-soft">
-                  Narration audio plays from local files. If audio is missing,
-                  Buddy will read subtitles aloud using your browser.
+                  <p className="font-bold text-buddy-cocoa mb-1">🎧 Tip</p>
+                  Use headphones for the best experience. Pause the story and ask your child to repeat the highlighted words aloud!
                 </div>
-                <div className="rounded-2xl border border-white/70 bg-white/85 p-4 text-sm text-slate-600 shadow-soft">
-                  Tips: use headphones and let kids repeat the highlighted words.
+                <div className="rounded-2xl bg-buddy-mint/40 border border-buddy-mint/60 p-4 text-sm text-slate-600">
+                  <p className="font-bold text-buddy-cocoa mb-1">✨ What happens next?</p>
+                  After the story, Buddy asks comprehension questions and gives pronunciation feedback — all in your child's native language.
+                </div>
+                <div className="rounded-2xl bg-buddy-peach/30 border border-buddy-peach/50 p-4 text-sm text-slate-600">
+                  <p className="font-bold text-buddy-cocoa mb-1">🌐 5 languages supported</p>
+                  Hindi · Tamil · Telugu · Kannada · English — switch anytime.
                 </div>
               </div>
             </div>
