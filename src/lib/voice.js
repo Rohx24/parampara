@@ -174,26 +174,52 @@ export function decideNextStep(context) {
 }
 
 export function pickVoice(langCode) {
+  return pickBestVoice(langCode);
+}
+
+function pickBestVoice(langCode) {
+  if (!window.speechSynthesis) return null;
   const voices = window.speechSynthesis.getVoices();
+  if (!voices.length) return null;
+  // Prefer Google or Microsoft neural voices for the language
+  const googleExact = voices.find((v) => /google/i.test(v.name) && v.lang === langCode);
+  if (googleExact) return googleExact;
+  const msExact = voices.find((v) => /microsoft/i.test(v.name) && v.lang === langCode);
+  if (msExact) return msExact;
   const exact = voices.find((v) => v.lang === langCode);
   if (exact) return exact;
   const prefix = langCode.split("-")[0];
+  const googlePrefix = voices.find((v) => /google/i.test(v.name) && v.lang.startsWith(prefix));
+  if (googlePrefix) return googlePrefix;
   return voices.find((v) => v.lang.startsWith(prefix)) ?? null;
 }
 
 export function speakText(text, langCode, style = "gentle") {
-  if (!text) return;
-  // Use OpenAI TTS for a natural human voice; fall back to browser TTS if unavailable.
-  openaiSpeak(text, "nova").catch(() => _browserSpeak(text, langCode, style));
+  if (!text || !window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = langCode;
+  utter.rate = style === "funny" ? 1.1 : style === "adventurous" ? 1.05 : 0.92;
+  utter.pitch = style === "funny" ? 1.2 : style === "adventurous" ? 1.05 : 1;
+  const doSpeak = () => {
+    const voice = pickBestVoice(langCode);
+    if (voice) utter.voice = voice;
+    window.speechSynthesis.speak(utter);
+  };
+  if (window.speechSynthesis.getVoices().length > 0) {
+    doSpeak();
+  } else {
+    window.speechSynthesis.onvoiceschanged = doSpeak;
+  }
 }
 
 function _browserSpeak(text, langCode, style) {
   if (!window.speechSynthesis) return;
   const utter = new SpeechSynthesisUtterance(text);
   utter.lang = langCode;
-  utter.rate = style === "funny" ? 1.1 : style === "adventurous" ? 1.05 : 0.95;
+  utter.rate = style === "funny" ? 1.1 : style === "adventurous" ? 1.05 : 0.92;
   utter.pitch = style === "funny" ? 1.2 : style === "adventurous" ? 1.05 : 1;
-  const voice = pickVoice(langCode);
+  const voice = pickBestVoice(langCode);
   if (voice) utter.voice = voice;
   window.speechSynthesis.cancel();
   window.speechSynthesis.speak(utter);

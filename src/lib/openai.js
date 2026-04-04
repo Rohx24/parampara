@@ -1,34 +1,62 @@
 const BASE_URL = "https://api.openai.com/v1";
 
-// ── OpenAI TTS ────────────────────────────────────────────────────────────────
-// Cache blob URLs so repeated calls for the same text don't hit the API twice.
-const _ttsCache = new Map();
-let _currentAudio = null;
+// ── Instant TTS via browser Web Speech API ────────────────────────────────────
+// Uses the best available neural voice (Google/Microsoft/Apple) — zero latency.
+// Preferred voice priority: Google > Microsoft > Apple > any.
 
-export async function openaiSpeak(text, voice = "nova") {
-  if (!text) return;
-  if (_currentAudio) { _currentAudio.pause(); _currentAudio = null; }
-  const key = `${voice}::${text}`;
-  let url = _ttsCache.get(key);
-  if (!url) {
-    const res = await fetch(`${BASE_URL}/audio/speech`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${getKey()}` },
-      body: JSON.stringify({ model: "tts-1", input: text, voice }),
-    });
-    if (!res.ok) throw new Error(`OpenAI TTS ${res.status}`);
-    const blob = await res.blob();
-    url = URL.createObjectURL(blob);
-    _ttsCache.set(key, url);
+let _voiceCache = null;
+
+function _getBestEnglishVoice() {
+  if (!window.speechSynthesis) return null;
+  const voices = window.speechSynthesis.getVoices();
+  if (!voices.length) return null;
+
+  // Priority list — these are the neural voices that sound most human
+  const preferred = [
+    (v) => /google/i.test(v.name) && v.lang.startsWith("en"),
+    (v) => /microsoft.*natural/i.test(v.name) && v.lang.startsWith("en"),
+    (v) => /microsoft/i.test(v.name) && v.lang.startsWith("en"),
+    (v) => /zira|david|mark|hazel|susan|george/i.test(v.name) && v.lang.startsWith("en"),
+    (v) => /samantha|karen|moira|daniel|oliver/i.test(v.name) && v.lang.startsWith("en"),
+    (v) => v.lang === "en-US",
+    (v) => v.lang.startsWith("en"),
+  ];
+
+  for (const match of preferred) {
+    const found = voices.find(match);
+    if (found) return found;
   }
-  const audio = new Audio(url);
-  _currentAudio = audio;
-  audio.play();
-  return audio;
+  return voices[0] ?? null;
+}
+
+export function openaiSpeak(text, _voice = "nova") {
+  return new Promise((resolve, reject) => {
+    if (!text || !window.speechSynthesis) { reject(new Error("no speech")); return; }
+    window.speechSynthesis.cancel();
+
+    const speak = () => {
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = "en-US";
+      utter.rate = 0.92;
+      utter.pitch = 1;
+      const voice = _voiceCache || _getBestEnglishVoice();
+      if (voice) { _voiceCache = voice; utter.voice = voice; }
+      utter.onend = resolve;
+      utter.onerror = reject;
+      window.speechSynthesis.speak(utter);
+    };
+
+    // Voices may not be loaded yet on first call — wait for them
+    if (window.speechSynthesis.getVoices().length > 0) {
+      speak();
+    } else {
+      window.speechSynthesis.onvoiceschanged = () => { speak(); };
+    }
+  });
 }
 
 export function stopOpenaiSpeak() {
-  if (_currentAudio) { _currentAudio.pause(); _currentAudio = null; }
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
 }
 
 function getKey() {
