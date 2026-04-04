@@ -11,6 +11,8 @@ import Games from "./pages/Games.jsx";
 import LetterMatchGame from "./games/LetterMatch/LetterMatchGame.jsx";
 import FlashCardsGame from "./games/FlashCards/FlashCardsGame.jsx";
 import WordScrambleGame from "./games/WordScramble/WordScrambleGame.jsx";
+import SpellingBeeGame from "./games/SpellingBee/SpellingBeeGame.jsx";
+import WordMatchGame from "./games/WordMatch/WordMatchGame.jsx";
 import VoiceCoach from "./pages/VoiceCoach.jsx";
 import MakeStory from "./pages/MakeStory.jsx";
 import ParentDashboard from "./pages/ParentDashboard.jsx";
@@ -246,6 +248,8 @@ function App() {
         <Route path="/games/letter-match" element={<LetterMatchGame />} />
         <Route path="/games/flash-cards" element={<FlashCardsGame />} />
         <Route path="/games/word-scramble" element={<WordScrambleGame />} />
+        <Route path="/games/spelling-bee" element={<SpellingBeeGame />} />
+        <Route path="/games/word-match" element={<WordMatchGame />} />
         <Route path="/parent-dashboard" element={<ParentDashboard />} />
       </Routes>
     </div>

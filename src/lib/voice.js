@@ -1,4 +1,6 @@
-const CLEAN_PUNCT = /[.,!?;:"'’“”()\-]/g;
+import { openaiSpeak } from "./openai.js";
+
+const CLEAN_PUNCT = /[.,!?;:”’’””()\-]/g;
 
 export const VOICE_LANGUAGES = [
   { id: "tamil", label: "Tamil", speechCode: "ta-IN" },
@@ -180,7 +182,13 @@ export function pickVoice(langCode) {
 }
 
 export function speakText(text, langCode, style = "gentle") {
-  if (!text || !window.speechSynthesis) return;
+  if (!text) return;
+  // Use OpenAI TTS for a natural human voice; fall back to browser TTS if unavailable.
+  openaiSpeak(text, "nova").catch(() => _browserSpeak(text, langCode, style));
+}
+
+function _browserSpeak(text, langCode, style) {
+  if (!window.speechSynthesis) return;
   const utter = new SpeechSynthesisUtterance(text);
   utter.lang = langCode;
   utter.rate = style === "funny" ? 1.1 : style === "adventurous" ? 1.05 : 0.95;

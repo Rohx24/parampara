@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { openaiSpeak } from "../../lib/openai.js";
 
 // ─── Vocab Bank ───────────────────────────────────────────────────────────────
 
@@ -186,13 +187,15 @@ export default function FlashCardsGame() {
   }, [chosen, current, qi, deck]);
 
   const hear = (text) => {
-    if (!window.speechSynthesis) return;
-    window.speechSynthesis.cancel();
-    const utt = new SpeechSynthesisUtterance(text);
-    const codes = { hindi: "hi-IN", tamil: "ta-IN", telugu: "te-IN", kannada: "kn-IN", english: "en-IN" };
-    utt.lang = codes[language] ?? "hi-IN";
-    utt.rate = 0.85;
-    window.speechSynthesis.speak(utt);
+    openaiSpeak(text, "nova").catch(() => {
+      if (!window.speechSynthesis) return;
+      window.speechSynthesis.cancel();
+      const utt = new SpeechSynthesisUtterance(text);
+      const codes = { hindi: "hi-IN", tamil: "ta-IN", telugu: "te-IN", kannada: "kn-IN", english: "en-IN" };
+      utt.lang = codes[language] ?? "hi-IN";
+      utt.rate = 0.85;
+      window.speechSynthesis.speak(utt);
+    });
   };
 
   return (

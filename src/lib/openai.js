@@ -1,5 +1,36 @@
 const BASE_URL = "https://api.openai.com/v1";
 
+// ── OpenAI TTS ────────────────────────────────────────────────────────────────
+// Cache blob URLs so repeated calls for the same text don't hit the API twice.
+const _ttsCache = new Map();
+let _currentAudio = null;
+
+export async function openaiSpeak(text, voice = "nova") {
+  if (!text) return;
+  if (_currentAudio) { _currentAudio.pause(); _currentAudio = null; }
+  const key = `${voice}::${text}`;
+  let url = _ttsCache.get(key);
+  if (!url) {
+    const res = await fetch(`${BASE_URL}/audio/speech`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${getKey()}` },
+      body: JSON.stringify({ model: "tts-1", input: text, voice }),
+    });
+    if (!res.ok) throw new Error(`OpenAI TTS ${res.status}`);
+    const blob = await res.blob();
+    url = URL.createObjectURL(blob);
+    _ttsCache.set(key, url);
+  }
+  const audio = new Audio(url);
+  _currentAudio = audio;
+  audio.play();
+  return audio;
+}
+
+export function stopOpenaiSpeak() {
+  if (_currentAudio) { _currentAudio.pause(); _currentAudio = null; }
+}
+
 function getKey() {
   const key = import.meta.env.VITE_OPENAI_API_KEY;
   if (!key) throw new Error("VITE_OPENAI_API_KEY is not set in .env");

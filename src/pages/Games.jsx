@@ -6,15 +6,6 @@ import { useSession } from "../context/SessionContext.jsx";
 
 const games = [
   {
-    id: "letter-match",
-    title: "Letter Match",
-    description: "Flash a word, then rebuild it letter by letter with the right tiles.",
-    to: "/games/letter-match",
-    status: "Ready",
-    emoji: "🔤",
-    color: "bg-buddy-mint",
-  },
-  {
     id: "flash-cards",
     title: "Flash Cards",
     description: "See a word in your language — quickly pick the right English meaning from 4 choices!",
@@ -24,6 +15,24 @@ const games = [
     color: "bg-buddy-peach",
   },
   {
+    id: "word-match",
+    title: "Word Match",
+    description: "Tap a native word on the left, then find its English twin on the right. Match all pairs to win!",
+    to: "/games/word-match",
+    status: "Ready",
+    emoji: "🔗",
+    color: "bg-purple-100",
+  },
+  {
+    id: "spelling-bee",
+    title: "Spelling Bee",
+    description: "See the word in your language — type the correct English spelling before the timer runs out!",
+    to: "/games/spelling-bee",
+    status: "Ready",
+    emoji: "🐝",
+    color: "bg-amber-100",
+  },
+  {
     id: "word-scramble",
     title: "Word Scramble",
     description: "Unscramble jumbled English letters using the native language word as your clue.",
@@ -31,6 +40,15 @@ const games = [
     status: "Ready",
     emoji: "🔀",
     color: "bg-buddy-sky",
+  },
+  {
+    id: "letter-match",
+    title: "Letter Match",
+    description: "Flash a word, then rebuild it letter by letter with the right tiles.",
+    to: "/games/letter-match",
+    status: "Ready",
+    emoji: "🔤",
+    color: "bg-buddy-mint",
   },
 ];
 
