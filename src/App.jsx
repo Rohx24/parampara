@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState, Component } from "react";
 import { Routes, Route, Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import Signup from "./pages/Signup.jsx";
@@ -1331,4 +1331,43 @@ function PhoneIcon() {
   );
 }
 
-export default App;
+class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error) {
+    console.error("App error boundary caught:", error);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen flex flex-col items-center justify-center bg-buddy-sky gap-4 p-8 text-center">
+          <div className="text-6xl">🦋</div>
+          <h2 className="font-display text-2xl font-extrabold text-buddy-cocoa">Oops, something went wrong!</h2>
+          <p className="text-slate-500 max-w-xs">Don't worry — just tap the button below to go back to the home screen.</p>
+          <button
+            onClick={() => { this.setState({ hasError: false }); window.location.href = "/home"; }}
+            className="rounded-full bg-buddy-grape px-8 py-3 font-bold text-white shadow-soft"
+          >
+            Go Home
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+function AppWithBoundary() {
+  return (
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  );
+}
+
+export default AppWithBoundary;
