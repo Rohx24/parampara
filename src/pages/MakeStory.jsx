@@ -1,9 +1,17 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { streamCompletion, chatCompletion } from "../lib/openai";
 import { useSession } from "../context/SessionContext.jsx";
 import { getSpeechRecognition, VOICE_LANGUAGES } from "../lib/voice";
+import { getStoryContext } from "../lib/rag";
+import {
+  fetchWeakItems,
+  buildAdaptivePromptContext,
+  buildAdaptiveQuizContext,
+  recordQuizMistake,
+} from "../lib/adaptiveDifficulty";
+import { logEvent, insertSessionResult } from "../lib/db";
 
 const LANG_LABELS = {
   tamil: "Tamil",
@@ -21,7 +29,12 @@ const GENRES = [
   { id: "festival",  label: "🪔 Festival",  style: "joyful, celebrating Indian culture and festivals" },
 ];
 
-function buildStoryPrompt(language, ageGroup, genre, character) {
+/**
+ * Build the story generation system prompt.
+ * Accepts optional ragContext (cultural context injection) and
+ * adaptiveContext (weak-word reinforcement) appended at the end.
+ */
+function buildStoryPrompt(language, ageGroup, genre, character, ragContext = "", adaptiveContext = "") {
   const langLabel = LANG_LABELS[language] || language;
   const genreMeta = GENRES.find((g) => g.id === genre) || GENRES[0];
   const charLine = character?.trim()
@@ -35,16 +48,55 @@ Use vivid descriptions, emotions, and dialogue to make it come alive.
 Use simple vocabulary appropriate for children aged ${ageGroup}.
 Make it ${genreMeta.style}.
 Add a gentle moral at the very end as a final sentence starting with "Moral: ".
-Do NOT include any headings, titles, or numbering — just the story paragraphs.`;
+Do NOT include any headings, titles, or numbering — just the story paragraphs.${ragContext}${adaptiveContext}`;
 }
 
-function buildQuestionPrompt(language, ageGroup) {
+/**
+ * Build the quiz question generation prompt.
+ * Accepts optional adaptiveQuizContext to focus questions on weak words.
+ */
+function buildQuestionPrompt(language, ageGroup, adaptiveQuizContext = "") {
   const langLabel = LANG_LABELS[language] || language;
   return `You are a comprehension quiz teacher for Indian children aged ${ageGroup}.
 Given the story below, generate exactly 3 comprehension questions about it.
 Write the questions in ${langLabel} script${language === "english" ? "" : " (no Roman letters or English words)"}.
 Return ONLY the 3 questions, one per line, numbered 1. 2. 3.
-Make questions simple and age-appropriate — ask about characters, events, and the moral.`;
+Make questions simple and age-appropriate — ask about characters, events, and the moral.${adaptiveQuizContext}`;
+}
+
+// ─── localStorage session result writer ───────────────────────────────────────
+
+const SESSION_RESULTS_KEY = (id) => `bbashabuddy_session_results_${id}`;
+
+/**
+ * Persist a completed session result to localStorage so OutcomeDashboard
+ * can display it. Also fires a Supabase logEvent (best-effort).
+ */
+function saveSessionResult(childId, result) {
+  if (!childId) return;
+
+  // ── 1. localStorage (offline / instant) ───────────────────────────────────
+  if (typeof localStorage !== "undefined") {
+    try {
+      const key      = SESSION_RESULTS_KEY(childId);
+      const existing = JSON.parse(localStorage.getItem(key) || "[]");
+      const next     = Array.isArray(existing) ? [...existing, result] : [result];
+      localStorage.setItem(key, JSON.stringify(next.slice(-200)));
+    } catch { /* non-fatal */ }
+  }
+
+  // ── 2. Supabase session_results table (authoritative) ─────────────────────
+  insertSessionResult(childId, result).catch(() => {});
+
+  // ── 3. Supabase events log (for per-day activity minutes) ─────────────────
+  logEvent(childId, "quiz_complete", {
+    language:       result.language,
+    genre:          result.genre,
+    wordsInStory:   result.wordsInStory,
+    questionsTotal: result.questionsTotal,
+    correctCount:   result.correctCount,
+    accuracyPct:    result.accuracyPct,
+  }).catch(() => {});
 }
 
 function buildEvalPrompt(language, ageGroup, question, story) {
@@ -66,7 +118,8 @@ Keep your response to 2–3 sentences in English. Start with praise if they got 
 // phase: "compose" | "story" | "quizLoading" | "quiz" | "evaluating" | "complete"
 
 export default function MakeStory() {
-  const { childProfile } = useSession();
+  const { childProfile, session } = useSession();
+  const childId    = session?.childId || childProfile?.id || null;
   const defaultLang = (childProfile?.preferred_language || "hindi").toLowerCase();
   const ageGroup = childProfile?.age
     ? childProfile.age <= 7 ? "5–7" : childProfile.age <= 11 ? "8–11" : "12–15"
@@ -90,8 +143,34 @@ export default function MakeStory() {
   const [feedback, setFeedback] = useState("");
   const [results, setResults] = useState([]);
 
-  const ideaRecRef = useRef(null);
-  const answerRecRef = useRef(null);
+  // ── Adaptive difficulty & RAG state ─────────────────────────────────────────
+  // weakItems: loaded once on mount; null = still loading; [] = no weak items
+  const [weakItems,        setWeakItems]        = useState(null);
+  // adaptiveContext: built from weakItems once loaded
+  const adaptiveContextRef = useRef("");
+  // adaptiveQuizContext: focused on weak words for quiz questions
+  const adaptiveQuizRef    = useRef("");
+
+  const ideaRecRef    = useRef(null);
+  const answerRecRef  = useRef(null);
+  // Track correct count within current session for result logging
+  const correctCountRef = useRef(0);
+
+  // ── Load weak items on mount ─────────────────────────────────────────────────
+  useEffect(() => {
+    let alive = true;
+    fetchWeakItems(childId, 8)
+      .then((items) => {
+        if (!alive) return;
+        setWeakItems(items);
+        adaptiveContextRef.current  = buildAdaptivePromptContext(items);
+        adaptiveQuizRef.current     = buildAdaptiveQuizContext(items);
+      })
+      .catch(() => {
+        if (alive) setWeakItems([]);
+      });
+    return () => { alive = false; };
+  }, [childId]);
 
   const generate = async () => {
     const trimmed = idea.trim();
@@ -104,10 +183,23 @@ export default function MakeStory() {
     setResults([]);
     setCurrentQ(0);
     setFeedback("");
+    correctCountRef.current = 0;
+
+    // ── RAG: retrieve culturally relevant context for the query ───────────────
+    // Build query from genre + character + idea for best retrieval signal
+    const ragQuery   = `${genre} ${character} ${trimmed}`;
+    const ragContext = getStoryContext(ragQuery, language, 2);
+
+    // ── Adaptive: use pre-loaded weak items context ───────────────────────────
+    const adaptiveCtx = adaptiveContextRef.current;
+
     try {
       await streamCompletion(
         [
-          { role: "system", content: buildStoryPrompt(language, ageGroup, genre, character) },
+          {
+            role: "system",
+            content: buildStoryPrompt(language, ageGroup, genre, character, ragContext, adaptiveCtx),
+          },
           { role: "user", content: `Story idea: ${trimmed}` },
         ],
         (chunk) => setStoryText((prev) => prev + chunk),
@@ -158,7 +250,10 @@ export default function MakeStory() {
     try {
       const raw = await chatCompletion(
         [
-          { role: "system", content: buildQuestionPrompt(language, ageGroup) },
+          {
+            role: "system",
+            content: buildQuestionPrompt(language, ageGroup, adaptiveQuizRef.current),
+          },
           { role: "user", content: storyText },
         ],
         { max_tokens: 300, temperature: 0.5 }
@@ -228,8 +323,31 @@ export default function MakeStory() {
         ],
         { max_tokens: 150, temperature: 0.6 }
       );
+
+      // ── Correctness detection ────────────────────────────────────────────────
+      // Positive evaluations start with praise words (matches production eval prompt)
+      const isCorrect = /^(great|excellent|perfect|well done|correct|right|wonderful|amazing|good job|that's right|yes|bravo|brilliant|super)/i
+        .test(fb.trim());
+
+      if (isCorrect) {
+        correctCountRef.current += 1;
+      } else {
+        // Record the question's key term as a vocabulary miss for adaptive learning
+        // Extract first 3 meaningful words from the question as a proxy vocabulary item
+        const questionKey = questions[currentQ]
+          .replace(/[^\w\s]/g, "")
+          .split(/\s+/)
+          .filter((w) => w.length > 3)
+          .slice(0, 2)
+          .join(" ")
+          .toLowerCase();
+        if (questionKey && childId) {
+          recordQuizMistake(childId, questionKey);
+        }
+      }
+
       setFeedback(fb);
-      setResults((prev) => [...prev, { question: questions[currentQ], answer, feedback: fb }]);
+      setResults((prev) => [...prev, { question: questions[currentQ], answer, feedback: fb, correct: isCorrect }]);
       setPhase("quiz");
     } catch {
       setError("Could not evaluate answer. Try again.");
@@ -239,6 +357,28 @@ export default function MakeStory() {
 
   const nextQuestion = () => {
     if (currentQ + 1 >= questions.length) {
+      // ── Save session result ─────────────────────────────────────────────────
+      const wordsInStory  = storyText.split(/\s+/).filter(Boolean).length;
+      const correctCount  = correctCountRef.current;
+      const totalAnswered = questions.length;
+      const accuracyPct   = totalAnswered > 0
+        ? Math.round((correctCount / totalAnswered) * 100)
+        : 0;
+
+      saveSessionResult(childId, {
+        sessionId:         crypto.randomUUID(),
+        ts:                new Date().toISOString(),
+        language,
+        genre,
+        wordsInStory,
+        questionsTotal:    totalAnswered,
+        questionsAnswered: totalAnswered,
+        correctCount,
+        accuracyPct,
+        weakWordsUsed:     (weakItems || []).slice(0, 5).map((w) => w.item),
+        ragEnabled:        adaptiveContextRef.current.length > 0 || true,
+      });
+
       setPhase("complete");
     } else {
       setCurrentQ((i) => i + 1);
@@ -266,6 +406,7 @@ export default function MakeStory() {
     setFeedback("");
     setError("");
     setCopied(false);
+    correctCountRef.current = 0;
     window.speechSynthesis?.cancel();
   };
 
@@ -377,6 +518,20 @@ export default function MakeStory() {
                     {listening ? "Stop" : "🎙️"}
                   </motion.button>
                 </div>
+              </div>
+
+              {/* Adaptive difficulty & RAG status badges */}
+              <div className="flex flex-wrap gap-2">
+                {weakItems !== null && weakItems.length > 0 && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-buddy-grape/10 px-3 py-1 text-[11px] font-semibold text-buddy-grape">
+                    <span className="h-1.5 w-1.5 rounded-full bg-buddy-grape" />
+                    Adaptive: reinforcing {weakItems.length} weak word{weakItems.length !== 1 ? "s" : ""}
+                  </span>
+                )}
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-buddy-mint/40 px-3 py-1 text-[11px] font-semibold text-slate-600">
+                  <span className="h-1.5 w-1.5 rounded-full bg-buddy-mint" />
+                  RAG: cultural context active
+                </span>
               </div>
 
               <motion.button

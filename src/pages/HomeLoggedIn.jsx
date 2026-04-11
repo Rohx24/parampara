@@ -44,7 +44,7 @@ const actionCards = [
   {
     id: "make-story",
     title: "Make My Story",
-    description: "Type an idea and AI writes a full story with a quiz at the end.",
+    description: "Type an idea — AI writes a RAG-enhanced story with adaptive quiz.",
     to: "/make-story",
     enabled: true,
     icon: <SparkleIcon />,
@@ -56,6 +56,22 @@ const actionCards = [
     to: "/games",
     enabled: gamesEnabled,
     icon: <GameIcon />,
+  },
+  {
+    id: "outcome-dashboard",
+    title: "My Results",
+    description: "See your quiz accuracy, words learned, and language breakdown with charts.",
+    to: "/outcome-dashboard",
+    enabled: true,
+    icon: <ChartIcon />,
+  },
+  {
+    id: "dataset-eval",
+    title: "AI Benchmark",
+    description: "Generate a synthetic story dataset and run the accuracy benchmark.",
+    to: "/dataset-eval",
+    enabled: true,
+    icon: <LabIcon />,
   },
 ];
 
@@ -156,7 +172,7 @@ export default function HomeLoggedIn() {
         </motion.section>
 
         <section className="mt-10 grid gap-6 lg:grid-cols-[2fr_1fr]">
-          <div className="grid gap-6 sm:grid-cols-2">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {actionCards.map((card) => (
               <ActionCard key={card.id} {...card} />
             ))}
@@ -316,6 +332,46 @@ function GameIcon() {
       <path d="M21 29v6" stroke="#7B6CF6" strokeWidth="3" strokeLinecap="round" />
       <circle cx="40" cy="30" r="2.5" fill="#FF7D6B" />
       <circle cx="46" cy="34" r="2.5" fill="#FFB4A3" />
+    </svg>
+  );
+}
+
+function ChartIcon() {
+  return (
+    <svg className="h-6 w-6" viewBox="0 0 64 64" fill="none">
+      {/* Line chart */}
+      <rect x="8" y="8" width="48" height="40" rx="6" fill="#EEF0FF" stroke="#7B6CF6" strokeWidth="2" />
+      {/* Y-axis */}
+      <line x1="18" y1="14" x2="18" y2="40" stroke="#7B6CF6" strokeWidth="1.5" />
+      {/* X-axis */}
+      <line x1="18" y1="40" x2="50" y2="40" stroke="#7B6CF6" strokeWidth="1.5" />
+      {/* Rising line */}
+      <polyline points="22,34 30,26 38,20 46,16" stroke="#FF7D6B" strokeWidth="2.5"
+        strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      {/* Dots */}
+      <circle cx="22" cy="34" r="2" fill="#FF7D6B" />
+      <circle cx="30" cy="26" r="2" fill="#FF7D6B" />
+      <circle cx="38" cy="20" r="2" fill="#FF7D6B" />
+      <circle cx="46" cy="16" r="2" fill="#FF7D6B" />
+      {/* Legend bar at bottom */}
+      <rect x="16" y="52" width="32" height="4" rx="2" fill="#7B6CF6" opacity="0.3" />
+    </svg>
+  );
+}
+
+function LabIcon() {
+  return (
+    <svg className="h-6 w-6" viewBox="0 0 64 64" fill="none">
+      {/* Flask */}
+      <path d="M24 8 L24 28 L10 50 Q8 54 12 56 L52 56 Q56 54 54 50 L40 28 L40 8 Z"
+        fill="#d1fae5" stroke="#22c55e" strokeWidth="2" strokeLinejoin="round" />
+      <line x1="24" y1="8" x2="40" y2="8" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" />
+      {/* Bubbles inside */}
+      <circle cx="26" cy="44" r="3" fill="#22c55e" opacity="0.6" />
+      <circle cx="36" cy="48" r="2" fill="#7B6CF6" opacity="0.7" />
+      <circle cx="32" cy="40" r="2.5" fill="#FF7D6B" opacity="0.6" />
+      {/* Checkmark */}
+      <path d="M20 20 L22 22 L26 16" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }

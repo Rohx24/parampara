@@ -328,4 +328,153 @@ export function getScopedSupabase(sessionToken) {
   return getSupabaseClient(sessionToken);
 }
 
+// ─── Session Results ──────────────────────────────────────────────────────────
+
+/**
+ * Insert one completed story+quiz session into the session_results table.
+ * Falls back silently if Supabase is unavailable (localStorage is the fallback store).
+ */
+export async function insertSessionResult(childId, result) {
+  if (!childId || !supabase) return null;
+  const payload = {
+    child_id:          childId,
+    ts:                result.ts || new Date().toISOString(),
+    language:          result.language,
+    genre:             result.genre,
+    words_in_story:    result.wordsInStory   || 0,
+    questions_total:   result.questionsTotal  || 0,
+    questions_answered: result.questionsAnswered || 0,
+    correct_count:     result.correctCount    || 0,
+    accuracy_pct:      result.accuracyPct     || 0,
+    weak_words_used:   result.weakWordsUsed   || null,
+    rag_enabled:       result.ragEnabled      ?? true,
+  };
+  const { data, error } = await supabase
+    .from("session_results")
+    .insert(payload)
+    .select()
+    .single();
+  if (error) {
+    // eslint-disable-next-line no-console
+    console.warn("insertSessionResult failed", error);
+    return null;
+  }
+  return data;
+}
+
+/**
+ * Fetch all session_results for a child, newest-first, normalised to camelCase.
+ * Falls back to localStorage key bbashabuddy_session_results_${childId}.
+ */
+export async function fetchSessionResults(childId, limit = 200) {
+  if (!childId) return [];
+
+  // ── Supabase path ──────────────────────────────────────────────────────────
+  if (supabase) {
+    const { data, error } = await supabase
+      .from("session_results")
+      .select("*")
+      .eq("child_id", childId)
+      .order("ts", { ascending: true })
+      .limit(limit);
+    if (!error && Array.isArray(data) && data.length > 0) {
+      return data.map((r) => ({
+        sessionId:         r.id,
+        ts:                r.ts,
+        language:          r.language,
+        genre:             r.genre,
+        wordsInStory:      r.words_in_story,
+        questionsTotal:    r.questions_total,
+        questionsAnswered: r.questions_answered,
+        correctCount:      r.correct_count,
+        accuracyPct:       r.accuracy_pct,
+        weakWordsUsed:     r.weak_words_used,
+        ragEnabled:        r.rag_enabled,
+      }));
+    }
+    // Fall through to localStorage on error or empty
+  }
+
+  // ── localStorage fallback ──────────────────────────────────────────────────
+  if (typeof localStorage === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(`bbashabuddy_session_results_${childId}`);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+// ─── Mistakes ─────────────────────────────────────────────────────────────────
+
+/**
+ * Fetch all mistakes for a child from Supabase, sorted by count DESC.
+ * Falls back to localStorage key bhashabuddy_voice_mistakes_${childId}.
+ */
+export async function fetchMistakesForChild(childId, limit = 30) {
+  if (!childId) return [];
+
+  if (supabase) {
+    const { data, error } = await supabase
+      .from("mistakes")
+      .select("domain, item, count, last_seen_at")
+      .eq("child_id", childId)
+      .order("count", { ascending: false })
+      .limit(limit);
+    if (!error && Array.isArray(data) && data.length > 0) return data;
+    // Fall through
+  }
+
+  if (typeof localStorage === "undefined") return [];
+  try {
+    const raw =
+      localStorage.getItem(`bhashabuddy_voice_mistakes_${childId}`) ||
+      localStorage.getItem("bhashabuddy_voice_mistakes");
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (typeof parsed !== "object" || Array.isArray(parsed)) return [];
+    return Object.entries(parsed)
+      .map(([item, count]) => ({ domain: "speech", item, count: Number(count), last_seen_at: null }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, limit);
+  } catch {
+    return [];
+  }
+}
+
+// ─── Events ───────────────────────────────────────────────────────────────────
+
+/**
+ * Fetch events for a child filtered by type and optional date range.
+ * Returns [] when Supabase is unavailable (events are Supabase-only, no local fallback).
+ *
+ * @param {string}   childId
+ * @param {string[]} types   e.g. ["voice_feedback", "voice_advance", "quiz_complete"]
+ * @param {string|null} since  ISO timestamp lower bound (inclusive)
+ * @param {number}   limit
+ */
+export async function fetchEventsForChild(childId, types = [], since = null, limit = 300) {
+  if (!childId || !supabase) return [];
+  try {
+    let query = supabase
+      .from("events")
+      .select("type, ts, metadata")
+      .eq("child_id", childId)
+      .order("ts", { ascending: false })
+      .limit(limit);
+    if (types.length > 0) query = query.in("type", types);
+    if (since)            query = query.gte("ts", since);
+    const { data, error } = await query;
+    if (error) {
+      // eslint-disable-next-line no-console
+      console.warn("fetchEventsForChild failed", error);
+      return [];
+    }
+    return data || [];
+  } catch {
+    return [];
+  }
+}
+
 export { DEFAULT_PROGRESS };

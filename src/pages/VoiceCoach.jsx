@@ -68,12 +68,14 @@ export default function VoiceCoach() {
   const [chatMessages, setChatMessages] = useState([]);
   const [interimText, setInterimText]   = useState("");
   const [liveWordCount, setLiveWordCount] = useState(0);
-  const [mistakeCounts, setMistakeCounts] = useState(() => {
-    try {
-      const stored = localStorage.getItem("bhashabuddy_voice_mistakes");
-      return stored ? JSON.parse(stored) : {};
-    } catch { return {}; }
-  });
+  // Session-level tracking for Supabase event logging
+  const sessionStartRef  = useRef(Date.now());
+  const sessionScoresRef = useRef([]); // accumulate per-transcript scores
+  const sessionPromptsRef = useRef(0); // count of voice_advance events this session
+
+  // Mistakes — initialise empty; populated from localStorage in useEffect
+  // so we have access to childProfile.id
+  const [mistakeCounts, setMistakeCounts] = useState({});
 
   const ageGroup     = getAgeGroup(childProfile?.age);
   const languageMeta = VOICE_LANGUAGES.find((l) => l.id === language) || VOICE_LANGUAGES[0];
@@ -83,6 +85,48 @@ export default function VoiceCoach() {
 
   // Sync language from profile
   useEffect(() => { setLanguage(initialLanguage); }, [initialLanguage]);
+
+  // ── Load child-specific mistakes from localStorage ─────────────────────────
+  // VoiceCoach previously only wrote to the generic key, causing ParentDashboard
+  // to read nothing. We now read from (and write to) the child-specific key.
+  useEffect(() => {
+    if (!childProfile?.id) return;
+    try {
+      const childKey = localStorage.getItem(`bhashabuddy_voice_mistakes_${childProfile.id}`);
+      // Merge generic fallback in case of prior sessions
+      const generic  = localStorage.getItem("bhashabuddy_voice_mistakes");
+      const parsed   = childKey ? JSON.parse(childKey)
+        : generic    ? JSON.parse(generic)
+        : {};
+      if (typeof parsed === "object" && !Array.isArray(parsed)) {
+        setMistakeCounts(parsed);
+      }
+    } catch { /* non-fatal */ }
+  }, [childProfile?.id]);
+
+  // ── Log voice_session event on unmount ────────────────────────────────────
+  // This gives ParentDashboard real per-day minute data.
+  useEffect(() => {
+    sessionStartRef.current = Date.now();
+    return () => {
+      const durationMs = Date.now() - sessionStartRef.current;
+      // Only log if the user actually did something (> 10 seconds)
+      if (durationMs < 10_000 || !childProfile?.id) return;
+      const durationSeconds = Math.round(durationMs / 1000);
+      const scores          = sessionScoresRef.current;
+      const avgScore        = scores.length
+        ? Math.round(scores.reduce((s, v) => s + v, 0) / scores.length)
+        : null;
+      logEvent(childProfile.id, "voice_session", {
+        durationSeconds,
+        language,
+        promptsCompleted: sessionPromptsRef.current,
+        avgScore,
+        mode,
+      });
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // intentionally only on mount/unmount
 
   // Reset chat on mode / language change
   useEffect(() => {
@@ -128,7 +172,11 @@ export default function VoiceCoach() {
   const updateMistakeLocal = (word) => {
     setMistakeCounts((prev) => {
       const next = { ...prev, [word]: (prev[word] || 0) + 1 };
+      // Write to BOTH keys so ParentDashboard (child-specific) and legacy code both work
       localStorage.setItem("bhashabuddy_voice_mistakes", JSON.stringify(next));
+      if (childProfile?.id) {
+        localStorage.setItem(`bhashabuddy_voice_mistakes_${childProfile.id}`, JSON.stringify(next));
+      }
       return next;
     });
   };
@@ -182,6 +230,9 @@ export default function VoiceCoach() {
     });
 
     setScore(evaluation.score);
+    // Accumulate score for session-level average (logged on unmount)
+    sessionScoresRef.current = [...sessionScoresRef.current, evaluation.score];
+
     const positives = [
       evaluation.score > 80
         ? "Pronunciation sounded confident!"
@@ -207,6 +258,7 @@ export default function VoiceCoach() {
       setAttempts(0);
       setOverridePrompt(null);
       setSupportMessage("");
+      sessionPromptsRef.current += 1;
       logEvent(childProfile?.id, "voice_advance", {
         mode, lang: language, score: evaluation.score, promptId: activePrompt?.id,
       });

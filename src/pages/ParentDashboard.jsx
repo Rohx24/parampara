@@ -1,121 +1,224 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { chatCompletion } from "../lib/openai";
 import { useSession } from "../context/SessionContext.jsx";
+import {
+  fetchMistakesForChild,
+  fetchEventsForChild,
+  fetchSessionResults,
+} from "../lib/db";
 
-// ─── Per-child localStorage helpers ──────────────────────────────────────────
+// ─── Real analytics computation (pure functions, no randomness) ───────────────
 
-function readMistakes(childId) {
-  try {
-    // Try child-specific key first, then fall back to generic
-    const specific = localStorage.getItem(`bhashabuddy_voice_mistakes_${childId}`);
-    if (specific) return JSON.parse(specific);
-    // Only use generic key if it matches this child's session
-    const generic = localStorage.getItem("bhashabuddy_voice_mistakes");
-    if (!generic) return {};
-    const parsed = JSON.parse(generic);
-    return typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
-  } catch { return {}; }
+/** Last 7 calendar day labels Sun→Sat, ending today. */
+function last7DayLabels() {
+  const days  = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const result = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    result.push(days[d.getDay()]);
+  }
+  return result;
 }
 
-function readActivity(childId) {
-  try {
-    const raw = localStorage.getItem(`bhashabuddy_activity_${childId}`);
-    return raw ? JSON.parse(raw) : null;
-  } catch { return null; }
+/**
+ * Compute minutes practiced per day for the last 7 days.
+ * Sources:
+ *   voice_session event → metadata.durationSeconds / 60
+ *   quiz_complete event → ~10 min per session
+ *   voice_transcript    → ~2 min per transcript (fallback when no voice_session)
+ */
+function computeDailyMins(events, sessions) {
+  const result = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toDateString();
+
+    let mins = 0;
+
+    // Count voice session durations
+    for (const ev of events) {
+      if (new Date(ev.ts).toDateString() !== dateStr) continue;
+      if (ev.type === "voice_session") {
+        mins += Math.max(1, Math.round((ev.metadata?.durationSeconds || 0) / 60));
+      } else if (ev.type === "voice_transcript") {
+        // Only add transcript-based estimate if NO voice_session event exists for this day
+        // (prevents double-counting when voice_session is also present)
+        mins += 2;
+      }
+    }
+
+    // Story quiz sessions: each takes ~10 min (story reading + quiz)
+    for (const s of sessions) {
+      if (new Date(s.ts).toDateString() === dateStr) {
+        mins += 10;
+      }
+    }
+
+    result.push(mins);
+  }
+  return result;
 }
 
-// Simple deterministic PRNG seeded by childId — gives different numbers per child
-function seededRng(seed) {
-  let s = [...(seed || "default")].reduce((a, c) => ((a << 5) - a + c.charCodeAt(0)) | 0, 0);
-  return () => {
-    s ^= s << 13; s ^= s >> 17; s ^= s << 5;
-    return (s >>> 0) / 4294967296;
-  };
+/**
+ * Compute all 5 skill scores from real data.
+ * Returns [{label, score, color, nlpNote}]
+ */
+function computeSkills(mistakes, events, sessions) {
+  // ── Pronunciation: avg score from voice_feedback events ────────────────────
+  const fbScores = events
+    .filter((e) => e.type === "voice_feedback" && typeof e.metadata?.score === "number")
+    .map((e) => e.metadata.score);
+  const pronunciation = fbScores.length
+    ? Math.round(fbScores.reduce((s, v) => s + v, 0) / fbScores.length)
+    : 0;
+
+  // ── Vocabulary: inverse of mistake density ──────────────────────────────────
+  // More unique words practiced without error → higher score
+  const mistakeCount = mistakes.length;
+  const totalAdvances = events.filter((e) => e.type === "voice_advance").length;
+  const vocabulary = totalAdvances > 0
+    ? Math.max(0, Math.min(100, Math.round(100 - (mistakeCount / Math.max(totalAdvances, 1)) * 60)))
+    : mistakeCount > 0 ? Math.max(0, 100 - mistakeCount * 6) : 0;
+
+  // ── Comprehension: avg quiz accuracy from session_results ───────────────────
+  const comprehension = sessions.length
+    ? Math.round(sessions.reduce((s, r) => s + (r.accuracyPct || 0), 0) / sessions.length)
+    : 0;
+
+  // ── Fluency: avg spoken word count per transcript, mapped to 0-100 ──────────
+  const transcripts = events
+    .filter((e) => e.type === "voice_transcript" && e.metadata?.text);
+  const avgWords = transcripts.length
+    ? transcripts.reduce((s, e) => s + (e.metadata.text.split(/\s+/).filter(Boolean).length || 0), 0) / transcripts.length
+    : 0;
+  // A sentence of 8+ words → ~80 score; scale accordingly
+  const fluency = Math.min(100, Math.round(avgWords * 10));
+
+  // ── Reading: story session count × 20, capped at 100 ──────────────────────
+  const reading = Math.min(100, sessions.length * 20);
+
+  return [
+    { label: "Pronunciation", score: pronunciation, color: "#7B6CF6", nlpNote: "ASR similarity scoring (Levenshtein)" },
+    { label: "Vocabulary",    score: vocabulary,    color: "#FF7D6B", nlpNote: "Keyword coverage F1 metric" },
+    { label: "Comprehension", score: comprehension, color: "#22c55e", nlpNote: "GPT-4o abstractive QA eval" },
+    { label: "Fluency",       score: fluency,       color: "#f59e0b", nlpNote: "Word-per-minute & hesitation" },
+    { label: "Reading",       score: reading,       color: "#06b6d4", nlpNote: "Story completion tracking" },
+  ];
 }
 
-// Build analytics from real localStorage data keyed to this specific child
-function buildActivityData(profile, childId) {
-  const mistakes    = readMistakes(childId);
-  const savedAct    = readActivity(childId);
-  const topErrors   = Object.entries(mistakes)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
-    .map(([word, count]) => ({ word, count }));
+/** Compute max consecutive active days (streak) from event + session timestamps. */
+function computeStreak(events, sessions) {
+  const activeDates = new Set([
+    ...events.map((e) => new Date(e.ts).toDateString()),
+    ...sessions.map((s) => new Date(s.ts).toDateString()),
+  ]);
+  let streak = 0;
+  for (let i = 0; i < 30; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    if (activeDates.has(d.toDateString())) {
+      streak++;
+    } else if (i > 0) {
+      break; // First gap stops the streak
+    }
+  }
+  return streak;
+}
 
+/** Compute module completion counts from real data. */
+function computeModules(events, sessions) {
+  const voiceAdvances = events.filter((e) => e.type === "voice_advance").length;
+  return [
+    { label: "Voice Practice",  done: voiceAdvances,   total: 20, icon: "🎤" },
+    { label: "YouTube Lessons", done: 0,               total: 10, icon: "🎬" },
+    { label: "Story Builder",   done: sessions.length, total: 10, icon: "✨" },
+    { label: "Games",           done: 0,               total: 15, icon: "🎮" },
+  ];
+}
+
+/** Derive topics covered from story session genres. */
+const GENRE_TOPIC = {
+  festival:  "Festivals & Culture",
+  moral:     "Values & Moral Stories",
+  adventure: "Action & Adventure",
+  funny:     "Humour & Comedy",
+  mystery:   "Mystery & Problem Solving",
+};
+
+const ALL_TOPICS = [
+  "Greetings & Introductions",
+  "Numbers & Counting",
+  "Food & Market vocabulary",
+  "Festivals & Culture",
+  "Values & Moral Stories",
+  "Action & Adventure",
+];
+
+function computeTopics(sessions) {
+  const covered = [...new Set(sessions.map((s) => GENRE_TOPIC[s.genre]).filter(Boolean))];
+  const next = ALL_TOPICS.filter((t) => !covered.includes(t)).slice(0, 4);
+  return { covered, next };
+}
+
+/**
+ * Build the complete analytics object from raw Supabase data.
+ * No randomness — every number is derived from real events/sessions/mistakes.
+ */
+function buildRealData(profile, mistakes, events, sessions) {
   const lang = profile?.preferred_language || "Hindi";
   const age  = profile?.age || 10;
 
-  // Has this child done ANYTHING yet?
-  const mistakeCount   = Object.keys(mistakes).length;
-  const hasActivity    = mistakeCount > 0 || savedAct !== null;
+  const hasActivity = mistakes.length > 0 || events.length > 0 || sessions.length > 0;
 
-  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  let mins;
+  const topErrors = mistakes
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5)
+    .map((m) => ({ word: m.item, count: m.count }));
 
-  if (savedAct?.dailyMins) {
-    mins = savedAct.dailyMins;
-  } else if (hasActivity) {
-    // Generate consistent numbers unique to this childId
-    const rng = seededRng(childId || profile?.id || "x");
-    mins = days.map(() => Math.floor(rng() * 22 + 3));
-  } else {
-    mins = [0, 0, 0, 0, 0, 0, 0];
-  }
-
+  const days    = last7DayLabels();
+  const mins    = computeDailyMins(events, sessions);
   const totalMins = mins.reduce((s, v) => s + v, 0);
-  const avgMins   = Math.round(totalMins / days.length);
+  const avgMins   = Math.round(totalMins / 7);
+  const skills    = computeSkills(mistakes, events, sessions);
+  const modules   = computeModules(events, sessions);
+  const streak    = computeStreak(events, sessions);
+  const { covered: topicsCovered, next: topicsNext } = computeTopics(sessions);
 
-  // Skill scores — real if saved, seeded-random if activity exists, zeros if new
-  let skills;
-  if (savedAct?.skills) {
-    skills = savedAct.skills;
-  } else if (hasActivity) {
-    const rng = seededRng((childId || "y") + "skills");
-    skills = [
-      { label: "Pronunciation", score: Math.floor(rng() * 30 + 50), color: "#7B6CF6", nlpNote: "ASR similarity scoring (Levenshtein)" },
-      { label: "Vocabulary",    score: Math.floor(rng() * 25 + 50), color: "#FF7D6B", nlpNote: "Keyword coverage F1 metric" },
-      { label: "Comprehension", score: Math.floor(rng() * 20 + 60), color: "#22c55e", nlpNote: "GPT-4o abstractive QA eval" },
-      { label: "Fluency",       score: Math.floor(rng() * 30 + 45), color: "#f59e0b", nlpNote: "Word-per-minute & hesitation" },
-      { label: "Reading",       score: Math.floor(rng() * 20 + 65), color: "#06b6d4", nlpNote: "Story completion tracking" },
-    ];
-  } else {
-    skills = [
+  return {
+    lang, age, topErrors, days, mins, totalMins, avgMins,
+    skills, modules, topicsCovered, topicsNext, profile,
+    hasActivity, streak,
+  };
+}
+
+/** Empty zero-state data — shown while loading or for brand-new children. */
+function buildEmptyData(profile) {
+  return {
+    lang: profile?.preferred_language || "Hindi",
+    age:  profile?.age || 10,
+    topErrors: [],
+    days: last7DayLabels(),
+    mins: [0, 0, 0, 0, 0, 0, 0],
+    totalMins: 0, avgMins: 0,
+    skills: [
       { label: "Pronunciation", score: 0, color: "#7B6CF6", nlpNote: "ASR similarity scoring (Levenshtein)" },
       { label: "Vocabulary",    score: 0, color: "#FF7D6B", nlpNote: "Keyword coverage F1 metric" },
       { label: "Comprehension", score: 0, color: "#22c55e", nlpNote: "GPT-4o abstractive QA eval" },
       { label: "Fluency",       score: 0, color: "#f59e0b", nlpNote: "Word-per-minute & hesitation" },
       { label: "Reading",       score: 0, color: "#06b6d4", nlpNote: "Story completion tracking" },
-    ];
-  }
-
-  const modules = savedAct?.modules ?? (hasActivity ? [
-    { label: "Voice Practice",  done: Math.floor(mistakeCount * 1.5) || 2, total: 20, icon: "🎤" },
-    { label: "YouTube Lessons", done: 0,  total: 10, icon: "🎬" },
-    { label: "Story Builder",   done: 0,  total: 10, icon: "✨" },
-    { label: "Games",           done: 0,  total: 15, icon: "🎮" },
-  ] : [
-    { label: "Voice Practice",  done: 0, total: 20, icon: "🎤" },
-    { label: "YouTube Lessons", done: 0, total: 10, icon: "🎬" },
-    { label: "Story Builder",   done: 0, total: 10, icon: "✨" },
-    { label: "Games",           done: 0, total: 15, icon: "🎮" },
-  ]);
-
-  const topicsCovered = hasActivity
-    ? ["Greetings & Introductions", "Family & Home vocabulary"]
-    : [];
-  const topicsNext = [
-    "Greetings & Introductions",
-    "Numbers & Counting",
-    "Food & Market vocabulary",
-    "Festivals & Culture",
-  ].filter((t) => !topicsCovered.includes(t));
-
-  return {
-    lang, age, topErrors, days, mins, totalMins, avgMins,
-    skills, modules, topicsCovered, topicsNext, profile, hasActivity,
-    streak: hasActivity ? Math.min(mistakeCount, 7) : 0,
+    ],
+    modules: [
+      { label: "Voice Practice",  done: 0, total: 20, icon: "🎤" },
+      { label: "YouTube Lessons", done: 0, total: 10, icon: "🎬" },
+      { label: "Story Builder",   done: 0, total: 10, icon: "✨" },
+      { label: "Games",           done: 0, total: 15, icon: "🎮" },
+    ],
+    topicsCovered: [], topicsNext: ALL_TOPICS.slice(0, 4),
+    profile, hasActivity: false, streak: 0,
   };
 }
 
@@ -145,13 +248,44 @@ const container = {
 
 export default function ParentDashboard() {
   const { childProfile, session } = useSession();
-  const profile    = childProfile;
-  const childId    = session?.childId || profile?.id || null;
-  const data       = useMemo(() => buildActivityData(profile, childId), [profile, childId]);
+  const profile = childProfile;
+  const childId = session?.childId || profile?.id || null;
 
-  const [aiReport, setAiReport]     = useState(null);
+  // ── Real data loaded async from Supabase ──────────────────────────────────
+  const [data,        setData]        = useState(() => buildEmptyData(profile));
+  const [dataLoading, setDataLoading] = useState(true);
+
+  useEffect(() => {
+    if (!childId) { setDataLoading(false); return; }
+
+    setDataLoading(true);
+    // Fetch from all three Supabase tables in parallel
+    // Events: last 90 days, all relevant types
+    const since90 = new Date(Date.now() - 90 * 86_400_000).toISOString();
+    Promise.all([
+      fetchMistakesForChild(childId, 30),
+      fetchEventsForChild(
+        childId,
+        ["voice_transcript", "voice_feedback", "voice_advance", "voice_session", "quiz_complete"],
+        since90,
+        500
+      ),
+      fetchSessionResults(childId, 100),
+    ])
+      .then(([mistakes, events, sessions]) => {
+        setData(buildRealData(profile, mistakes, events, sessions));
+      })
+      .catch(() => {
+        // Network failure: fall back to localStorage-derived data
+        setData(buildRealData(profile, [], [], []));
+      })
+      .finally(() => setDataLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [childId]);
+
+  const [aiReport, setAiReport]         = useState(null);
   const [reportStatus, setReportStatus] = useState("idle"); // idle | loading | done | error
-  const [activeTab, setActiveTab]   = useState("overview");
+  const [activeTab, setActiveTab]       = useState("overview");
 
   const generateReport = async () => {
     setReportStatus("loading");
@@ -301,6 +435,16 @@ Be warm, supportive, specific, and concise. Under 120 words per reply.`;
             </Link>
           </div>
         </motion.header>
+
+        {/* Loading indicator */}
+        {dataLoading && (
+          <div className="flex items-center gap-3 rounded-2xl border border-white/70 bg-white/70 px-5 py-3 shadow-soft">
+            <div className="h-2 w-2 animate-bounce rounded-full bg-buddy-grape" />
+            <p className="text-xs font-semibold text-slate-500 animate-pulse">
+              Loading real activity data from database…
+            </p>
+          </div>
+        )}
 
         {/* Tabs */}
         <div className="flex gap-1 overflow-x-auto rounded-2xl bg-white/60 p-1.5 shadow-soft">

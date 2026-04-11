@@ -1,0 +1,335 @@
+[
+  {
+    "id": "diwali",
+    "title": "Diwali – Festival of Lights",
+    "category": "festival",
+    "languages": ["hindi", "tamil", "telugu", "kannada", "english"],
+    "keywords": ["diwali", "deepavali", "light", "lamp", "diya", "festival", "lakshmi", "ram", "ramayana", "fireworks", "sweets", "celebration", "darkness", "victory"],
+    "content": "Diwali, also called Deepavali, is celebrated across India for five joyful days. People light thousands of clay oil lamps called diyas to welcome Goddess Lakshmi and celebrate the return of Lord Ram to Ayodhya after defeating Ravana. Families clean and decorate their homes with rangoli patterns made from coloured powder, share sweets like ladoo and barfi, burst fireworks, and wear new clothes. Children love exchanging gifts and sweets with neighbours.",
+    "moral": "Light always conquers darkness; goodness always triumphs over evil."
+  },
+  {
+    "id": "holi",
+    "title": "Holi – Festival of Colours",
+    "category": "festival",
+    "languages": ["hindi", "telugu", "kannada", "english"],
+    "keywords": ["holi", "colour", "color", "gulal", "spring", "holika", "prahlad", "celebration", "water", "dance", "krishna", "radha", "pichkari"],
+    "content": "Holi is the vibrant spring festival celebrated mainly in North and Central India. People throw bright coloured powders called gulal and spray coloured water at each other using pichkaris (water guns). The night before Holi, bonfires called Holika Dahan are lit to celebrate the victory of devotee Prahlad over the demoness Holika. In Vrindavan and Mathura, Holi is celebrated with songs about Krishna and Radha.",
+    "moral": "Joy is greatest when shared with others; love and laughter dissolve all differences."
+  },
+  {
+    "id": "pongal",
+    "title": "Pongal – Tamil Harvest Festival",
+    "category": "festival",
+    "languages": ["tamil", "english"],
+    "keywords": ["pongal", "harvest", "sun", "surya", "tamil", "sugarcane", "rice", "cow", "mattu", "kolam", "thanjavur", "jallikattu"],
+    "content": "Pongal is the most important Tamil festival, celebrated over four days in January to thank the Sun god and the earth for a good harvest. Families cook the special dish called Pongal — sweet rice boiled in milk and jaggery — in a clay pot outdoors until it overflows, which is a symbol of abundance and prosperity. Cows are decorated with flowers and bells on Mattu Pongal day. Kolam designs made from rice flour decorate the entrance of every home.",
+    "moral": "Gratitude for nature's gifts brings peace and prosperity to all."
+  },
+  {
+    "id": "onam",
+    "title": "Onam – Kerala's Grand Harvest Festival",
+    "category": "festival",
+    "languages": ["english"],
+    "keywords": ["onam", "kerala", "mahabali", "sadya", "boat race", "flower", "pookalam", "harvest", "vallamkali", "athapookalam"],
+    "content": "Onam is Kerala's most celebrated festival, lasting ten days in August-September. It marks the annual homecoming of the legendary King Mahabali, who is remembered for his wisdom and generosity. Families create elaborate flower carpets called Pookalam outside their homes. The grand feast called Sadya — served on a banana leaf with 26 vegetarian dishes — is the highlight. The Vallamkali snake boat race attracts thousands of spectators.",
+    "moral": "A just and generous ruler is remembered with love for generations."
+  },
+  {
+    "id": "navratri",
+    "title": "Navratri – Nine Nights of Goddess Durga",
+    "category": "festival",
+    "languages": ["hindi", "telugu", "kannada", "english"],
+    "keywords": ["navratri", "durga", "garba", "dandiya", "goddess", "nine", "golu", "shakti", "devi", "fast", "victory", "evil"],
+    "content": "Navratri means 'nine nights' and celebrates the power of Goddess Durga in her nine forms. In Gujarat, people dance the energetic Garba and Dandiya Raas in circles every evening. In Tamil Nadu and Andhra Pradesh, families arrange Golu — a display of dolls and figurines on stepped platforms. In the North, effigies of the demon Ravana are burnt on the tenth day, called Dussehra, to celebrate Goddess Durga's victory over the buffalo demon Mahishasura.",
+    "moral": "Inner strength and courage can overcome any obstacle."
+  },
+  {
+    "id": "eid",
+    "title": "Eid ul-Fitr – Festival of Breaking the Fast",
+    "category": "festival",
+    "languages": ["hindi", "english"],
+    "keywords": ["eid", "ramadan", "fast", "prayer", "mosque", "sevai", "biryani", "moon", "charity", "zakat", "celebration", "family"],
+    "content": "Eid ul-Fitr is celebrated by Muslims at the end of the holy month of Ramadan, during which people fast from sunrise to sunset. On Eid morning, everyone wears their best clothes and goes to the mosque for a special prayer. Families greet each other with 'Eid Mubarak', share delicious sweets like sevai and sheer khurma, and give gifts and money called Eidi to children. Giving charity called Zakat to those in need is an important part of this festival.",
+    "moral": "Sharing food and kindness with others multiplies joy for everyone."
+  },
+  {
+    "id": "panchatantra-tortoise",
+    "title": "The Tortoise and the Geese – Panchatantra",
+    "category": "folklore",
+    "languages": ["hindi", "tamil", "telugu", "kannada", "english"],
+    "keywords": ["tortoise", "geese", "stick", "sky", "silence", "wisdom", "panchatantra", "bird", "clever", "lesson", "flying"],
+    "content": "In a pond lived a tortoise named Kambugriva and his two dear friends, the geese Sankata and Vikata. When the pond dried up, the geese decided to carry the tortoise to a new lake. They held a stick between them and asked the tortoise to bite it tightly with his mouth and stay absolutely silent during the flight. As they flew over a village, the children below pointed and laughed at the strange sight. Unable to control himself, the tortoise opened his mouth to scold them — and fell to the ground.",
+    "moral": "Guard your tongue carefully; speaking at the wrong moment can cause great harm."
+  },
+  {
+    "id": "panchatantra-lion-mouse",
+    "title": "The Lion and the Mouse – Panchatantra",
+    "category": "folklore",
+    "languages": ["hindi", "tamil", "telugu", "kannada", "english"],
+    "keywords": ["lion", "mouse", "forest", "net", "hunter", "kindness", "friendship", "small", "help", "repay", "gratitude"],
+    "content": "A mighty lion was sleeping in the forest when a tiny mouse accidentally ran over his face. The furious lion caught the mouse in his paw. The terrified mouse begged for mercy, promising to help the lion one day. The lion laughed at the idea of such a small creature helping him, but released the mouse out of kindness. Days later, hunters trapped the lion in a strong net. The mouse heard his roar, ran to him, and gnawed through the ropes until the lion was free.",
+    "moral": "No act of kindness is ever wasted; even the smallest friend can save you."
+  },
+  {
+    "id": "panchatantra-crow-pitcher",
+    "title": "The Thirsty Crow – Panchatantra",
+    "category": "folklore",
+    "languages": ["hindi", "tamil", "telugu", "kannada", "english"],
+    "keywords": ["crow", "pitcher", "water", "pebbles", "thirst", "clever", "intelligence", "problem", "solution", "smart"],
+    "content": "On a hot summer day, a thirsty crow flew over fields and villages searching for water. At last he spotted a clay pitcher with a little water at the bottom, too deep for his beak to reach. Instead of giving up, the clever crow picked up pebbles one by one and dropped them into the pitcher. Gradually the water level rose until the crow could drink to his heart's content.",
+    "moral": "Intelligence and perseverance can solve problems that brute strength cannot."
+  },
+  {
+    "id": "birbal-wisdom",
+    "title": "Akbar and Birbal – The Witty Minister",
+    "category": "folklore",
+    "languages": ["hindi", "english"],
+    "keywords": ["akbar", "birbal", "emperor", "mughal", "minister", "clever", "wit", "riddle", "answer", "court", "wisdom", "palace"],
+    "content": "Emperor Akbar's court had many brilliant ministers, but none as quick-witted as Birbal. When Akbar once asked all his ministers to draw a line on the ground and make it shorter without touching or erasing it, everyone was baffled. Birbal simply walked up and drew a longer line beside it. Akbar's original line was now the shorter one. Birbal used this logic again and again to solve impossible riddles, comfort the poor, and outwit greedy nobles who tried to trick the Emperor.",
+    "moral": "True wisdom lies in thinking creatively rather than following the obvious path."
+  },
+  {
+    "id": "tenali-raman",
+    "title": "Tenali Raman – The Court Jester of Vijayanagara",
+    "category": "folklore",
+    "languages": ["telugu", "tamil", "english"],
+    "keywords": ["tenali", "raman", "vijayanagara", "krishnadevaraya", "king", "clever", "jester", "poet", "wit", "brahmin", "south india"],
+    "content": "Tenali Ramakrishna, known as Tenali Raman, was the most beloved court poet and jester of King Krishnadevaraya of Vijayanagara. Born in Tenali village in Andhra Pradesh, he was famous for his quick wit and ability to expose greed and hypocrisy. When greedy priests demanded golden mangoes as gifts from the king each year, Tenali poured boiling water over their hands, saying the king had ordered golden mango treatment. The priests instantly gave up their unfair demand.",
+    "moral": "Wit and humour are powerful tools against greed and injustice."
+  },
+  {
+    "id": "ganga-river",
+    "title": "River Ganga – Sacred River of India",
+    "category": "nature",
+    "languages": ["hindi", "english"],
+    "keywords": ["ganga", "ganges", "river", "himalaya", "sacred", "holy", "varanasi", "banaras", "temple", "prayer", "puja", "water", "goddess"],
+    "content": "The Ganga is India's most sacred river, originating from the Gangotri glacier high in the Himalayas. It flows through Rishikesh, Haridwar, Allahabad, and Varanasi before emptying into the Bay of Bengal. Hindus believe bathing in the Ganga cleanses all sins. Varanasi, one of the world's oldest living cities, sees thousands of pilgrims performing sunrise prayers called Aarti on the river ghats every single day. The river supports the livelihoods of over 400 million people.",
+    "moral": "Water is life; protect nature and it will nurture generations to come."
+  },
+  {
+    "id": "banyan-tree",
+    "title": "The Banyan Tree – India's National Tree",
+    "category": "nature",
+    "languages": ["hindi", "tamil", "telugu", "kannada", "english"],
+    "keywords": ["banyan", "tree", "roots", "shade", "national", "village", "peepal", "aerial", "branches", "shelter", "wisdom"],
+    "content": "The Banyan tree is India's National Tree and a symbol of wisdom, longevity, and protection. Its remarkable aerial roots grow downward from branches, form new trunks, and allow the tree to spread over enormous areas. A single Banyan in Kolkata's botanical garden is over 250 years old and covers an area larger than a football field. In Indian villages, the Banyan tree serves as a community gathering place where elders share stories, settle disputes, and teach children.",
+    "moral": "Like the banyan's roots, community ties give strength to all who shelter beneath them."
+  },
+  {
+    "id": "taj-mahal",
+    "title": "The Taj Mahal – A Monument of Love",
+    "category": "history",
+    "languages": ["hindi", "english"],
+    "keywords": ["taj mahal", "agra", "mughal", "shah jahan", "mumtaz", "marble", "love", "monument", "wonder", "yamuna", "architecture", "beautiful"],
+    "content": "The Taj Mahal stands on the banks of the Yamuna river in Agra, built by Mughal Emperor Shah Jahan between 1632 and 1653. He built it as a mausoleum for his beloved wife Mumtaz Mahal, who died giving birth to their fourteenth child. Over 20,000 artisans from across the Mughal Empire worked for 22 years using white marble, precious stones, and intricate calligraphy. The Taj changes colour from pinkish at dawn to dazzling white at noon to golden in the moonlight.",
+    "moral": "Love expressed through dedication and craftsmanship creates beauty that lasts forever."
+  },
+  {
+    "id": "buddha-bodh-gaya",
+    "title": "The Buddha and the Bodhi Tree",
+    "category": "history",
+    "languages": ["hindi", "english"],
+    "keywords": ["buddha", "bodhi", "tree", "enlightenment", "meditation", "suffering", "peace", "nirvana", "india", "siddhartha", "prince", "wisdom"],
+    "content": "Prince Siddhartha Gautama was born in Lumbini over 2,500 years ago. After seeing suffering in the world — old age, sickness, and death — he left his palace, his family, and royal life to seek the truth. For six years he meditated and searched for answers. Sitting beneath a sacred Peepal tree in Bodh Gaya, he attained enlightenment and became the Buddha, the Awakened One. He spent the rest of his long life teaching that compassion, truth, and the Middle Way lead to peace.",
+    "moral": "True wealth is not gold or power but wisdom, compassion, and inner peace."
+  },
+  {
+    "id": "mahabharata-karna",
+    "title": "Karna – The Generous Warrior of Mahabharata",
+    "category": "mythology",
+    "languages": ["hindi", "telugu", "kannada", "english"],
+    "keywords": ["karna", "mahabharata", "warrior", "arjuna", "kunti", "generous", "charity", "dana", "kavach", "kundala", "sun", "kurukshetra"],
+    "content": "Karna was born to Kunti and the Sun god Surya, but was set adrift on a river in a basket and raised by a charioteer's family. Despite being mocked for his low birth, Karna became one of the greatest archers in the world. He was most famous for his generosity — it is said he never refused any request made at the right time. Even on the morning of the great Kurukshetra war, when the god Indra disguised as a beggar asked for Karna's magical armour, Karna gave it away without hesitation.",
+    "moral": "True nobility lies in a generous heart, not in birth or status."
+  },
+  {
+    "id": "ramayana-hanuman",
+    "title": "Hanuman – The Devoted Servant of Lord Ram",
+    "category": "mythology",
+    "languages": ["hindi", "tamil", "telugu", "kannada", "english"],
+    "keywords": ["hanuman", "ram", "ramayana", "monkey", "devotion", "strength", "lanka", "sita", "ocean", "jump", "fly", "mountain", "medicine"],
+    "content": "Hanuman is the son of the Wind god and the greatest devotee of Lord Ram in the Ramayana. When Sita was kidnapped by the demon king Ravana, Hanuman leaped across the ocean to Lanka to find her. He burned the golden city of Lanka with his blazing tail, brought back a mountain carrying the life-saving Sanjeevani herb to revive Lakshmana, and helped Ram's army build a stone bridge across the sea. When asked about his power, Hanuman always replied: 'It is Ram's grace, not mine.'",
+    "moral": "Devotion, humility, and selfless service are the greatest sources of strength."
+  },
+  {
+    "id": "krishna-maakhan",
+    "title": "Young Krishna – The Butter Thief of Vrindavan",
+    "category": "mythology",
+    "languages": ["hindi", "english"],
+    "keywords": ["krishna", "butter", "maakhan", "vrindavan", "gopi", "flute", "childhood", "playful", "radha", "yashoda", "cow", "friend"],
+    "content": "As a young boy in the village of Vrindavan, Krishna was famously mischievous. He loved stealing butter and curd from the clay pots that the gopis — village women — kept hung from the ceiling. Krishna would form a human pyramid with his friends to reach the highest pots. When caught by his mother Yashoda, he would flash his most charming smile and win her heart instantly. The whole village laughed at his pranks, yet loved him completely. He also played his flute so sweetly that peacocks would dance and deer would approach without fear.",
+    "moral": "True joy is found in simple moments of laughter, play, and love with those around us."
+  },
+  {
+    "id": "independence-day",
+    "title": "Indian Independence – 15 August 1947",
+    "category": "history",
+    "languages": ["hindi", "english"],
+    "keywords": ["independence", "freedom", "gandhi", "nehru", "british", "1947", "flag", "tricolour", "jawaharlal", "national", "swaraj", "partition"],
+    "content": "On 15 August 1947, India became a free nation after nearly 200 years of British rule. Pandit Jawaharlal Nehru delivered his famous 'Tryst with Destiny' speech at midnight in Delhi's Parliament. The Indian National Flag — with three horizontal bands of saffron, white, and green, and the Ashoka Chakra wheel at the centre — was raised for the first time. Mahatma Gandhi, who led the non-violent independence movement, spent the day in Calcutta fasting and praying for Hindu-Muslim unity.",
+    "moral": "Freedom earned through truth and non-violence is the most precious gift a nation can hold."
+  },
+  {
+    "id": "rangoli",
+    "title": "Rangoli – Art at the Doorstep",
+    "category": "culture",
+    "languages": ["hindi", "tamil", "telugu", "kannada", "english"],
+    "keywords": ["rangoli", "kolam", "muggu", "design", "colour", "pattern", "flower", "festival", "entrance", "welcome", "rice", "chalk", "art"],
+    "content": "Rangoli is one of India's oldest folk art traditions, created by drawing intricate geometric patterns, flowers, and peacocks at the entrance of homes using coloured powders, flower petals, or rice flour. In Tamil Nadu it is called Kolam and is drawn daily at dawn; in Andhra Pradesh it is called Muggu. During festivals like Diwali, Onam, and Pongal, rangolis become especially elaborate. Making rangoli is believed to welcome prosperity and positive energy into the home.",
+    "moral": "Beauty created with care and shared with all brings joy to every passer-by."
+  },
+  {
+    "id": "classical-dance-bharatanatyam",
+    "title": "Bharatanatyam – Classical Dance of Tamil Nadu",
+    "category": "culture",
+    "languages": ["tamil", "english"],
+    "keywords": ["bharatanatyam", "dance", "classical", "tamil", "mudra", "expression", "temple", "devadasi", "abhinaya", "rhythm", "music", "art"],
+    "content": "Bharatanatyam is one of India's eight classical dance forms, originating from the temples of Tamil Nadu. It is characterised by bent knees, intricate footwork called Nritta, expressive hand gestures called mudras, and facial expressions called Abhinaya that tell stories from Hindu mythology. Traditionally performed in temples, it requires years of dedicated training. Today dancers perform Bharatanatyam on grand concert stages, preserving an art form over 2,000 years old.",
+    "moral": "Art that honours tradition and requires dedication is worth preserving across generations."
+  },
+  {
+    "id": "spices-india",
+    "title": "India – Land of Spices",
+    "category": "food",
+    "languages": ["hindi", "tamil", "telugu", "kannada", "english"],
+    "keywords": ["spice", "turmeric", "pepper", "cardamom", "cinnamon", "chilli", "ginger", "market", "trade", "cooking", "masala", "aroma", "kitchen"],
+    "content": "India has been called the 'Land of Spices' for thousands of years. Black pepper from Kerala was so valuable in ancient trade that it was called 'black gold'. Turmeric, used in cooking and traditional medicine, grows across India and turns dishes a golden yellow. Cardamom from the Western Ghats perfumes tea, sweets, and biriyani. Chillies, brought by Portuguese traders in the 16th century, were adopted so enthusiastically that Indian cuisine became known worldwide for its heat and complexity. Every Indian family has its own secret masala blend.",
+    "moral": "The richness of any culture is tasted in its food, which carries centuries of history in every bite."
+  },
+  {
+    "id": "tiger-india",
+    "title": "The Bengal Tiger – India's National Animal",
+    "category": "nature",
+    "languages": ["hindi", "tamil", "telugu", "kannada", "english"],
+    "keywords": ["tiger", "bengal", "national animal", "forest", "stripes", "sundarban", "ranthambore", "protect", "endangered", "project tiger", "wildlife"],
+    "content": "The Royal Bengal Tiger is India's national animal, a symbol of strength, courage, and grace. India is home to over 70% of the world's wild tiger population, protected in reserves like Ranthambore in Rajasthan, Corbett in Uttarakhand, and the Sundarbans mangrove forest in West Bengal. Project Tiger, launched in 1973, saved the species from near extinction. Tigers are solitary hunters who can swim long distances and leap up to 10 metres in a single bound. Each tiger's striped pattern is as unique as a fingerprint.",
+    "moral": "When humans commit to protecting nature, even the most endangered life can return to thrive."
+  },
+  {
+    "id": "peacock-india",
+    "title": "The Peacock – India's National Bird",
+    "category": "nature",
+    "languages": ["hindi", "tamil", "telugu", "kannada", "english"],
+    "keywords": ["peacock", "national bird", "feather", "dance", "rain", "monsoon", "krishna", "beauty", "colorful", "blue", "fan"],
+    "content": "The Indian Peacock, with its dazzling blue-green plumage and spectacular tail fan of over a hundred iridescent feathers, is India's national bird. The male peacock fans out his magnificent tail and performs an elaborate dancing display to attract the peahen during the monsoon season. Peacock feathers are deeply woven into Indian art, religion, and decoration — Lord Krishna always wore a peacock feather in his crown. Peacocks are intelligent birds that give loud alarm calls to warn forest animals about approaching predators.",
+    "moral": "True beauty is not just on the outside; it shines brightest when paired with a purpose."
+  },
+  {
+    "id": "yoga-india",
+    "title": "Yoga – Ancient Science of Mind and Body",
+    "category": "culture",
+    "languages": ["hindi", "english"],
+    "keywords": ["yoga", "meditation", "mind", "body", "asana", "pranayama", "ancient", "health", "peace", "rishikesh", "spiritual", "breathing"],
+    "content": "Yoga is an ancient Indian system of physical, mental, and spiritual practices dating back over 5,000 years, described in texts like the Yoga Sutras of Patanjali. It combines physical postures called asanas, breathing exercises called pranayama, and meditation to create harmony between the mind, body, and spirit. The city of Rishikesh in the Himalayas is called the 'Yoga Capital of the World'. The United Nations declared 21 June as International Yoga Day, celebrated in over 177 countries.",
+    "moral": "Stillness of the mind is the greatest strength; peace within creates peace around."
+  },
+  {
+    "id": "makar-sankranti",
+    "title": "Makar Sankranti – Kite Festival",
+    "category": "festival",
+    "languages": ["hindi", "english"],
+    "keywords": ["makar sankranti", "kite", "uttarayan", "til", "sesame", "harvest", "sun", "Gujarat", "lohri", "bihu", "january", "sky"],
+    "content": "Makar Sankranti is celebrated on 14 January to mark the sun's transition into the zodiac sign of Capricorn. Across India it takes different names and traditions — Uttarayan in Gujarat where thousands of colourful kites fill the sky in a friendly aerial battle, Lohri in Punjab with bonfires and folk dances, Bihu in Assam with singing and feasting. Everyone shares sesame-jaggery sweets called til-gud and the greeting 'til-gud ghya, god god bola' meaning 'eat sweets and speak sweetly'.",
+    "moral": "Different people celebrate the same sun in a thousand beautiful ways; diversity is India's strength."
+  },
+  {
+    "id": "varsha-monsoon",
+    "title": "The Indian Monsoon – Season of Life",
+    "category": "nature",
+    "languages": ["hindi", "tamil", "english"],
+    "keywords": ["monsoon", "rain", "season", "cloud", "river", "farmer", "harvest", "wet", "june", "thunder", "petrichor", "Kerala"],
+    "content": "The Indian monsoon arrives on the Kerala coast in June and sweeps across the entire subcontinent over six weeks, bringing 80% of India's annual rainfall. Farmers call it the most important season because their crops — rice, wheat, sugarcane — depend entirely on the monsoon rains. Children run out to play in the first rains, relishing the smell of earth after the first shower, called petrichor. The sound of rain on a tin roof, frogs croaking in fields, and rivers rising after months of drought is celebrated in poems and songs across every Indian language.",
+    "moral": "Patience and hope through the dry season are always rewarded when the rains finally arrive."
+  },
+  {
+    "id": "vikram-betaal",
+    "title": "Vikramaditya and Betaal – Tales of Wisdom",
+    "category": "folklore",
+    "languages": ["hindi", "english"],
+    "keywords": ["vikramaditya", "vikram", "betaal", "vampire", "riddle", "king", "answer", "silence", "justice", "wisdom", "throne"],
+    "content": "King Vikramaditya of Ujjain was famous for his wisdom and justice. A mysterious sage challenged him to fetch the spirit Betaal who hung from a tree in a cremation ground. Each time Vikram carried Betaal on his shoulder, the spirit told him a riddle-story and warned: if Vikram knew the answer but stayed silent, his head would burst. So Vikram always answered correctly. After twenty-five such riddle-tales, Vikram's wisdom and courage finally earned him Betaal's help against the treacherous sage.",
+    "moral": "Wisdom used to serve justice, even at great personal cost, is the mark of a true king."
+  },
+  {
+    "id": "chess-india",
+    "title": "Chess – India's Gift to the World",
+    "category": "history",
+    "languages": ["hindi", "english"],
+    "keywords": ["chess", "chaturanga", "india", "game", "strategy", "king", "queen", "bishop", "invention", "gupta", "ancient"],
+    "content": "Chess was invented in India during the Gupta Empire around the 6th century CE. Its original name was Chaturanga, meaning 'four divisions of the military' — infantry, cavalry, elephants, and chariots — which became the pawn, knight, bishop, and rook of modern chess. From India, the game spread to Persia, the Arab world, and eventually to medieval Europe. Today chess is played by over 600 million people worldwide, making it one of India's greatest intellectual gifts to humanity.",
+    "moral": "Great ideas created with care and thought can change the entire world."
+  },
+  {
+    "id": "zero-india",
+    "title": "Zero – India's Mathematical Revolution",
+    "category": "history",
+    "languages": ["hindi", "english"],
+    "keywords": ["zero", "aryabhata", "brahmagupta", "mathematics", "number", "invention", "ancient", "decimal", "place value", "science"],
+    "content": "The concept of zero as a number was first clearly defined and used by the Indian mathematician Brahmagupta in 628 CE, building on earlier work by Aryabhata. Before zero, it was impossible to write large numbers efficiently or do algebra. The Indian decimal place-value number system, using zero, was adopted by Arab scholars and then spread to Europe, replacing Roman numerals. Without India's invention of zero, modern mathematics, computers, and science would not exist.",
+    "moral": "The greatest ideas are often the simplest — sometimes what seems like nothing changes everything."
+  },
+  {
+    "id": "jataka-elephant",
+    "title": "The Elephant and the Blind Men – Jataka Tale",
+    "category": "folklore",
+    "languages": ["hindi", "english"],
+    "keywords": ["elephant", "blind", "jataka", "touch", "truth", "perspective", "understanding", "wisdom", "different", "part", "whole"],
+    "content": "A king once gathered six blind scholars and placed an elephant before them, asking each to describe what an elephant is. The first touched the leg and said an elephant is like a pillar. The second touched the tail and said it is like a rope. The third touched the trunk and said it is like a thick branch. The fourth touched the ear and said it is like a large fan. Each was certain they alone understood the truth. The king explained: you are all partially right, but none of you knows the whole elephant.",
+    "moral": "Wisdom requires humility — our own view is always just one part of a larger truth."
+  },
+  {
+    "id": "saraswati-puja",
+    "title": "Saraswati Puja – Celebrating Knowledge",
+    "category": "festival",
+    "languages": ["hindi", "english"],
+    "keywords": ["saraswati", "goddess", "knowledge", "books", "music", "veena", "swan", "puja", "student", "vasant panchami", "yellow", "education"],
+    "content": "Saraswati Puja, also called Vasant Panchami, is celebrated in late January or February to honour Goddess Saraswati — the deity of knowledge, music, arts, and learning. Students place their books, musical instruments, and tools of their craft at the goddess's feet to receive her blessings. Everything is dressed in yellow — the colour of spring and knowledge. Schools and colleges hold special prayers, and children dress in yellow clothes. It marks the beginning of spring and the season of learning.",
+    "moral": "Knowledge is the most powerful gift in the world; nurture it every day."
+  },
+  {
+    "id": "rickshaw-india",
+    "title": "The Cycle Rickshaw – Streets of India",
+    "category": "culture",
+    "languages": ["hindi", "english"],
+    "keywords": ["rickshaw", "cycle", "street", "city", "transport", "bazaar", "market", "children", "school", "ride", "driver"],
+    "content": "The cycle rickshaw is one of the most recognisable sights across Indian cities and towns. Hundreds of thousands of cycle rickshaw drivers pedal passengers through narrow bazaar lanes, school routes, and neighbourhood streets where cars cannot reach. Beautifully decorated with bright paintwork, mirrors, and colourful curtains, each rickshaw reflects its owner's personality. For millions of children across India, the rickshaw ride to school is a beloved daily adventure full of the sights, smells, and sounds of Indian street life.",
+    "moral": "Every person who works with honesty and effort, however humble the work, deserves respect and dignity."
+  },
+  {
+    "id": "guru-shishya",
+    "title": "Guru-Shishya Tradition – The Bond of Teacher and Student",
+    "category": "culture",
+    "languages": ["hindi", "tamil", "telugu", "kannada", "english"],
+    "keywords": ["guru", "teacher", "shishya", "student", "respect", "knowledge", "tradition", "learning", "ashram", "devotion", "discipline", "gurukul"],
+    "content": "The Guru-Shishya tradition is one of ancient India's most treasured relationships — the sacred bond between a teacher and a dedicated student. In the old Gurukul system, students lived with the guru's family for years, learning not just academic subjects but character, discipline, and the wisdom to face life. The student served the guru with complete devotion, and in return the guru shared everything he knew. This tradition continues in Indian classical music, dance, and martial arts, where masters pass entire art forms to one student at a time.",
+    "moral": "True learning requires respect, patience, and a heart open enough to receive wisdom."
+  },
+  {
+    "id": "kerala-boat-race",
+    "title": "Vallam Kali – Kerala Snake Boat Race",
+    "category": "culture",
+    "languages": ["english"],
+    "keywords": ["boat", "race", "kerala", "snake", "onam", "vallam", "kali", "team", "rhythm", "river", "champion", "paddle", "village"],
+    "content": "The Vallam Kali snake boat race is Kerala's most thrilling spectacle, held on the rivers and backwaters during the Onam festival. The Chundan Vallam — snake boats — are over 30 metres long and decorated with golden umbrellas at the stern. Each boat is rowed by over 100 oarsmen who must paddle in perfect unison to the beat of drumming and the call of a helmsman's song. Villages compete fiercely for the championship. The Nehru Trophy Boat Race on Punnamada Lake is the most famous, drawing hundreds of thousands of spectators.",
+    "moral": "When many individuals work in perfect harmony, they can achieve what no single person ever could."
+  },
+  {
+    "id": "monsoon-frog",
+    "title": "The Frog Who Complained About Rain",
+    "category": "folklore",
+    "languages": ["hindi", "tamil", "english"],
+    "keywords": ["frog", "rain", "monsoon", "pond", "croaking", "complain", "gratitude", "gift", "nature", "appreciate"],
+    "content": "A frog lived in a dried-up pond for months, croaking miserably: 'Oh, if only it would rain! Just one shower and I would be the happiest creature alive.' When the monsoon finally arrived and filled his pond to overflowing, the frog sat on a lily pad and croaked angrily: 'Too much water! Too noisy! Too many mosquitoes!' A wise old crane heard him and said, 'Friend, you complained in drought and you complain in abundance. Happiness is not found in circumstances — it lives only in a grateful heart.'",
+    "moral": "Gratitude transforms any situation; those who see blessings are always richer than those who count troubles."
+  },
+  {
+    "id": "india-languages",
+    "title": "India's Languages – A Symphony of Voices",
+    "category": "culture",
+    "languages": ["hindi", "tamil", "telugu", "kannada", "english"],
+    "keywords": ["language", "hindi", "tamil", "telugu", "kannada", "bengali", "marathi", "diversity", "constitution", "script", "mother tongue", "india"],
+    "content": "India is home to over 1,600 spoken languages and dialects, making it one of the most linguistically diverse nations on earth. The Indian Constitution recognises 22 official languages, each with its own script, literature, and cultural heritage stretching back thousands of years. Tamil is one of the world's oldest living classical languages with a literary tradition of over 2,000 years. Telugu is celebrated as the 'Italian of the East' for its melodious syllables. Every Indian state has its own mother tongue and literary giants whose works have inspired generations.",
+    "moral": "Each language is a window into a unique way of seeing the world; knowing more than one multiplies your joy."
+  }
+]
