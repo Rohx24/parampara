@@ -21,8 +21,9 @@ import React, { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "../context/SessionContext.jsx";
-import { fetchWeakItems } from "../lib/adaptiveDifficulty";
+import { fetchWeakItems, getSpacedRepetitionStats } from "../lib/adaptiveDifficulty";
 import { fetchSessionResults } from "../lib/db";
+import { getConceptMastery, getMasterySummary } from "../lib/bkt";
 
 // ─── Language colour palette ──────────────────────────────────────────────────
 const LANG_COLOURS = {
@@ -343,7 +344,7 @@ function StatCard({ label, value, sub, colour = "#7B6CF6" }) {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
-const TABS = ["Overview", "Accuracy", "Words", "Languages", "Weak Areas"];
+const TABS = ["Overview", "Accuracy", "Words", "Languages", "Weak Areas", "Knowledge"];
 
 export default function OutcomeDashboard() {
   const { childProfile, session } = useSession();
@@ -356,6 +357,8 @@ export default function OutcomeDashboard() {
   const [loadingWeak,  setLoadingWeak]  = useState(true);
   const [isDemoData,   setIsDemoData]   = useState(false);
   const [sessions,     setSessions]     = useState([]);
+  const [conceptMastery, setConceptMastery] = useState([]);
+  const [srStats,      setSrStats]      = useState({ total: 0, due: 0, mastered: 0, new: 0 });
   const [loadingSessions, setLoadingSessions] = useState(true);
 
   // ── Load session results: Supabase → localStorage → empty state ────────────
@@ -418,7 +421,7 @@ export default function OutcomeDashboard() {
     return { totalSessions, avgAccuracy, totalWords, bestStreak, topGenre };
   }, [sessions]);
 
-  // ── Load weak items ─────────────────────────────────────────────────────────
+  // ── Load weak items + BKT + SR stats ─────────────────────────────────────────
   useEffect(() => {
     let alive = true;
     setLoadingWeak(true);
@@ -426,6 +429,13 @@ export default function OutcomeDashboard() {
       .then((items) => { if (alive) setWeakItems(items); })
       .catch(() => {})
       .finally(() => { if (alive) setLoadingWeak(false); });
+
+    // BKT and SR are synchronous localStorage reads — safe to call directly
+    if (childId) {
+      setConceptMastery(getConceptMastery(childId));
+      setSrStats(getSpacedRepetitionStats(childId));
+    }
+
     return () => { alive = false; };
   }, [childId]);
 
@@ -830,6 +840,126 @@ export default function OutcomeDashboard() {
                     <p><strong>Reinforce:</strong> When GPT generates the next story, the top
                     weak words are injected into the prompt so they appear naturally in dialogue
                     and narrative — giving the child repeated, contextual exposure.</p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ── KNOWLEDGE TAB (BKT + SM-2) ──────────────────────────────────── */}
+          {activeTab === "Knowledge" && (
+            <motion.div key="knowledge"
+              initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+              className="space-y-6">
+
+              {/* SM-2 deck summary */}
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                {[
+                  { label: "Cards in Deck",   value: srStats.total,    colour: "#7B6CF6", icon: "🃏" },
+                  { label: "Due Today",        value: srStats.due,      colour: "#FF7D6B", icon: "⏰" },
+                  { label: "Mastered (SM-2)",  value: srStats.mastered, colour: "#22c55e", icon: "🏆" },
+                  { label: "New Cards",        value: srStats.new,      colour: "#f59e0b", icon: "✨" },
+                ].map((s) => (
+                  <div key={s.label} className="rounded-2xl border border-white/70 bg-white/85 p-4 shadow-soft text-center">
+                    <p className="text-xl">{s.icon}</p>
+                    <p className="text-2xl font-bold mt-1" style={{ color: s.colour }}>{s.value}</p>
+                    <p className="text-[11px] font-semibold text-slate-400 mt-0.5">{s.label}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* BKT concept mastery bars */}
+              <div className="rounded-3xl border border-white/70 bg-white/85 p-6 shadow-card">
+                <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                  <h3 className="font-display text-lg font-semibold text-buddy-cocoa">
+                    Concept Mastery — Bayesian Knowledge Tracing
+                  </h3>
+                  <span className="rounded-full bg-buddy-grape/10 px-3 py-1 text-xs font-semibold text-buddy-grape">
+                    {getMasterySummary(childId).mastered}/{getMasterySummary(childId).total} mastered
+                  </span>
+                </div>
+
+                {conceptMastery.length === 0 ? (
+                  <p className="text-sm text-slate-400 text-center py-6">
+                    Complete some story quizzes to start tracking concept mastery.
+                  </p>
+                ) : (
+                  <div className="space-y-4">
+                    {conceptMastery.map((concept) => {
+                      const pct = Math.round(concept.pKnown * 100);
+                      const barColour = concept.mastered
+                        ? "#22c55e"
+                        : concept.pKnown > 0.6
+                          ? "#7B6CF6"
+                          : concept.pKnown > 0.3
+                            ? "#f59e0b"
+                            : "#FF7D6B";
+                      return (
+                        <div key={concept.id}>
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-base">{concept.emoji}</span>
+                              <span className="text-sm font-semibold text-slate-700">{concept.label}</span>
+                              {concept.mastered && (
+                                <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-bold text-green-600">
+                                  MASTERED
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-slate-400">{concept.trials} trials</span>
+                              <span className="text-sm font-bold" style={{ color: barColour }}>{pct}%</span>
+                            </div>
+                          </div>
+                          <div className="h-3 rounded-full bg-slate-100 overflow-hidden">
+                            <motion.div
+                              className="h-full rounded-full"
+                              initial={{ width: 0 }}
+                              animate={{ width: `${pct}%` }}
+                              transition={{ duration: 0.7, ease: "easeOut" }}
+                              style={{ background: barColour }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* BKT explanation */}
+              <div className="rounded-3xl border border-buddy-grape/20 bg-white/85 p-6 shadow-card">
+                <h3 className="font-display text-lg font-semibold text-buddy-cocoa mb-3">
+                  How Knowledge Tracing Works
+                </h3>
+                <div className="grid gap-4 sm:grid-cols-2 text-sm text-slate-600">
+                  <div className="flex gap-3">
+                    <span className="text-xl shrink-0">🧮</span>
+                    <div>
+                      <p className="font-semibold text-slate-700">Bayesian Knowledge Tracing (BKT)</p>
+                      <p className="mt-0.5">Each concept has a hidden "known" probability updated after every quiz answer using Bayes' theorem — the same algorithm used by Khan Academy and Carnegie Learning.</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-xl shrink-0">📅</span>
+                    <div>
+                      <p className="font-semibold text-slate-700">SM-2 Spaced Repetition</p>
+                      <p className="mt-0.5">Vocabulary words use the SM-2 algorithm (Anki/Duolingo) to schedule reviews at increasing intervals — minimising forgetting while maximising retention efficiency.</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-xl shrink-0">🎯</span>
+                    <div>
+                      <p className="font-semibold text-slate-700">Mastery Threshold</p>
+                      <p className="mt-0.5">A concept is "mastered" when P(known) ≥ 95% — the standard threshold in Intelligent Tutoring System (ITS) literature.</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <span className="text-xl shrink-0">🔄</span>
+                    <div>
+                      <p className="font-semibold text-slate-700">Adaptive Feedback Loop</p>
+                      <p className="mt-0.5">Weak concepts (low P(known)) are detected and their themes are injected into the next story prompt, so GPT naturally reinforces what the child needs most.</p>
+                    </div>
                   </div>
                 </div>
               </div>

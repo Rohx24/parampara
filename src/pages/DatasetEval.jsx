@@ -27,7 +27,7 @@
 import React, { useState, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { chatCompletion } from "../lib/openai";
+import { chatCompletion, uploadTrainingFile, createFineTuneJob, getFineTuneJob } from "../lib/openai";
 
 // ─── Config options ────────────────────────────────────────────────────────────
 
@@ -152,6 +152,14 @@ export default function DatasetEval() {
   const [progress,       setProgress]       = useState(0);      // 0–numPairs
   const [currentLabel,   setCurrentLabel]   = useState("");
   const [globalError,    setGlobalError]    = useState("");
+
+  // ── Fine-tune state ───────────────────────────────────────────────────────────
+  const [ftPhase,        setFtPhase]        = useState("idle"); // idle | uploading | training | done | error
+  const [ftJobId,        setFtJobId]        = useState(() => localStorage.getItem("bashabuddy_ft_job_id") || "");
+  const [ftModelId,      setFtModelId]      = useState(() => localStorage.getItem("bashabuddy_finetuned_model") || "");
+  const [ftStatus,       setFtStatus]       = useState("");
+  const [ftError,        setFtError]        = useState("");
+  const [showFtPreview,  setShowFtPreview]  = useState(false);
 
   const abortRef = useRef(false);
 
@@ -307,6 +315,101 @@ export default function DatasetEval() {
   }, [numPairs, selLanguages, selGenres, ageGroup]);
 
   const stopPipeline = () => { abortRef.current = true; };
+
+  // ── Fine-tune helpers ─────────────────────────────────────────────────────────
+
+  /**
+   * Convert completed pairs into OpenAI fine-tune JSONL format.
+   * Each story+question+answer triple becomes one training example.
+   * System prompt matches the production story generation prompt.
+   */
+  function buildFineTuneJSONL(pairsData) {
+    const lines = [];
+    for (const p of pairsData) {
+      if (!p.success || !p.story) continue;
+      // Training example 1: story generation
+      lines.push(JSON.stringify({
+        messages: [
+          {
+            role: "system",
+            content: `You are a creative storyteller for Indian children. Write engaging, culturally rich stories in ${LANG_LABELS[p.language]}.`,
+          },
+          {
+            role: "user",
+            content: `Write a ${p.genre} story for children aged ${p.ageGroup} in ${LANG_LABELS[p.language]}.`,
+          },
+          { role: "assistant", content: p.story },
+        ],
+      }));
+      // Training examples 2+: correct answer pairs
+      for (const ev of p.evalCorrect) {
+        if (ev.positive && ev.answer) {
+          lines.push(JSON.stringify({
+            messages: [
+              {
+                role: "system",
+                content: `You are a language teacher evaluating a child's answer. Story: ${p.story.substring(0, 200)}`,
+              },
+              { role: "user",      content: `Question: ${ev.question}\nAnswer: ${ev.answer}` },
+              { role: "assistant", content: ev.eval },
+            ],
+          }));
+        }
+      }
+    }
+    return lines.join("\n");
+  }
+
+  /** Upload JSONL + start fine-tune job */
+  const startFineTune = useCallback(async () => {
+    const successfulPairs = pairs.filter((p) => p.success);
+    if (successfulPairs.length < 5) {
+      setFtError("Need at least 5 successful pairs to fine-tune. Generate more data first.");
+      return;
+    }
+    setFtError("");
+    setFtPhase("uploading");
+    setFtStatus("Uploading training file to OpenAI…");
+    try {
+      const jsonl    = buildFineTuneJSONL(successfulPairs);
+      const fileObj  = await uploadTrainingFile(jsonl, `bashabuddy_${Date.now()}.jsonl`);
+      setFtStatus(`File uploaded (${fileObj.id}). Starting fine-tune job…`);
+      setFtPhase("training");
+      const job = await createFineTuneJob(fileObj.id);
+      setFtJobId(job.id);
+      localStorage.setItem("bashabuddy_ft_job_id", job.id);
+      setFtStatus(`Fine-tune job started! Job ID: ${job.id} — Status: ${job.status}`);
+      setFtPhase("done");
+    } catch (err) {
+      setFtError(err?.message || "Fine-tune failed");
+      setFtPhase("error");
+    }
+  }, [pairs]);
+
+  /** Poll fine-tune job status */
+  const checkFineTuneStatus = useCallback(async () => {
+    if (!ftJobId) return;
+    setFtError("");
+    try {
+      const job = await getFineTuneJob(ftJobId);
+      setFtStatus(`Status: ${job.status}${job.fine_tuned_model ? ` — Model: ${job.fine_tuned_model}` : ""}`);
+      if (job.fine_tuned_model) {
+        setFtModelId(job.fine_tuned_model);
+        localStorage.setItem("bashabuddy_finetuned_model", job.fine_tuned_model);
+      }
+    } catch (err) {
+      setFtError(err?.message || "Status check failed");
+    }
+  }, [ftJobId]);
+
+  const clearFineTuneModel = () => {
+    localStorage.removeItem("bashabuddy_finetuned_model");
+    localStorage.removeItem("bashabuddy_ft_job_id");
+    setFtModelId("");
+    setFtJobId("");
+    setFtStatus("");
+    setFtPhase("idle");
+  };
 
   // ── Aggregate metrics ─────────────────────────────────────────────────────────
   const metrics = (() => {
@@ -700,6 +803,109 @@ export default function DatasetEval() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* ── Fine-Tune Pipeline ─────────────────────────────────────────────── */}
+        <div className="rounded-3xl border border-white/70 bg-white/85 p-6 shadow-card space-y-5">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
+              Fine-Tuning Pipeline
+            </p>
+            <h3 className="mt-1 font-display text-xl font-semibold text-buddy-cocoa">
+              Train a Custom Model on Your Dataset 🧠
+            </h3>
+            <p className="mt-1 text-sm text-slate-500 max-w-xl">
+              Convert generated story–quiz pairs into OpenAI fine-tune training examples
+              (JSONL), upload them, and start a fine-tune job. The resulting custom model
+              will be used automatically for story generation in Make My Story.
+            </p>
+          </div>
+
+          {ftModelId && (
+            <div className="rounded-2xl bg-green-50 border border-green-200 px-4 py-3 flex items-start justify-between gap-3 flex-wrap">
+              <div>
+                <p className="text-xs font-bold text-green-700 uppercase tracking-wider">Active Fine-Tuned Model</p>
+                <p className="text-xs text-green-600 font-mono mt-0.5 break-all">{ftModelId}</p>
+                <p className="text-xs text-green-500 mt-1">Make My Story will use this model automatically.</p>
+              </div>
+              <button type="button" onClick={clearFineTuneModel}
+                className="rounded-full bg-white border border-green-200 px-3 py-1 text-xs font-semibold text-slate-600 shrink-0">
+                Clear
+              </button>
+            </div>
+          )}
+
+          {/* JSONL preview */}
+          {phase === "done" && pairs.filter((p) => p.success).length > 0 && (
+            <div>
+              <button type="button" onClick={() => setShowFtPreview((v) => !v)}
+                className="text-xs font-semibold text-buddy-grape underline">
+                {showFtPreview ? "Hide" : "Show"} JSONL preview
+              </button>
+              {showFtPreview && (
+                <pre className="mt-2 rounded-xl bg-slate-50 border border-slate-200 p-3 text-[10px] text-slate-600 overflow-x-auto max-h-40">
+                  {buildFineTuneJSONL(pairs.filter((p) => p.success)).split("\n").slice(0, 3).join("\n")}
+                  {"\n… (truncated)"}
+                </pre>
+              )}
+            </div>
+          )}
+
+          {ftStatus && !ftError && (
+            <p className="rounded-2xl bg-blue-50 border border-blue-200 px-4 py-2 text-xs font-semibold text-blue-700">
+              {ftStatus}
+            </p>
+          )}
+          {ftError && (
+            <p className="rounded-2xl bg-red-50 border border-red-200 px-4 py-2 text-xs font-semibold text-red-600">
+              {ftError}
+            </p>
+          )}
+
+          <div className="flex flex-wrap gap-3">
+            {/* Export JSONL */}
+            <button type="button"
+              disabled={!pairs.filter((p) => p.success).length}
+              onClick={() => {
+                const jsonl = buildFineTuneJSONL(pairs.filter((p) => p.success));
+                const blob  = new Blob([jsonl], { type: "application/jsonl" });
+                const url   = URL.createObjectURL(blob);
+                const a     = document.createElement("a");
+                a.href = url; a.download = `bashabuddy_finetune_${Date.now()}.jsonl`; a.click();
+                URL.revokeObjectURL(url);
+              }}
+              className="rounded-full bg-buddy-mint px-4 py-2 text-xs font-semibold text-slate-700 shadow-soft disabled:opacity-40">
+              ↓ Export JSONL
+            </button>
+
+            {/* Upload + start fine-tune */}
+            <motion.button type="button"
+              disabled={ftPhase === "uploading" || ftPhase === "training" || !pairs.filter((p) => p.success).length}
+              onClick={startFineTune}
+              whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}
+              className="rounded-full bg-buddy-grape px-5 py-2 text-xs font-semibold text-white shadow-soft disabled:opacity-40">
+              {ftPhase === "uploading" ? "Uploading…" : ftPhase === "training" ? "Starting job…" : "Upload & Start Fine-Tune ▶"}
+            </motion.button>
+
+            {/* Check status */}
+            {ftJobId && (
+              <button type="button" onClick={checkFineTuneStatus}
+                className="rounded-full bg-white/80 border border-white/70 px-4 py-2 text-xs font-semibold text-slate-600">
+                Check Job Status
+              </button>
+            )}
+          </div>
+
+          {/* What this trains on */}
+          <div className="rounded-2xl bg-slate-50 border border-slate-100 px-4 py-3 text-xs text-slate-500 space-y-1">
+            <p className="font-semibold text-slate-600">What the training data contains:</p>
+            <ul className="list-disc list-inside space-y-0.5">
+              <li>Story generation examples (system + user idea → full story)</li>
+              <li>Evaluation examples (question + correct answer → positive feedback)</li>
+              <li>One JSONL record per story + per correct Q&amp;A pair</li>
+              <li>Training examples: ~{Math.max(0, pairs.filter((p) => p.success).length + pairs.flatMap((p) => p.evalCorrect || []).filter((e) => e?.positive).length)}</li>
+            </ul>
+          </div>
+        </div>
 
         {/* Methodology note */}
         <div className="rounded-3xl border border-buddy-grape/20 bg-white/85 p-6 shadow-card">

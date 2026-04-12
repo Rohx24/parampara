@@ -10,7 +10,9 @@ import {
   buildAdaptivePromptContext,
   buildAdaptiveQuizContext,
   recordQuizMistake,
+  recordQuizSuccess,
 } from "../lib/adaptiveDifficulty";
+import { updateConcepts, detectConcepts, buildBKTPromptContext } from "../lib/bkt";
 import { logEvent, insertSessionResult } from "../lib/db";
 
 const LANG_LABELS = {
@@ -185,25 +187,30 @@ export default function MakeStory() {
     setFeedback("");
     correctCountRef.current = 0;
 
-    // ── RAG: retrieve culturally relevant context for the query ───────────────
-    // Build query from genre + character + idea for best retrieval signal
+    // ── RAG: retrieve culturally relevant context (semantic embedding path) ────
     const ragQuery   = `${genre} ${character} ${trimmed}`;
-    const ragContext = getStoryContext(ragQuery, language, 2);
+    const ragContext = await getStoryContext(ragQuery, language, 2).catch(() => "");
 
-    // ── Adaptive: use pre-loaded weak items context ───────────────────────────
+    // ── Adaptive + BKT context ────────────────────────────────────────────────
     const adaptiveCtx = adaptiveContextRef.current;
+    const bktCtx      = buildBKTPromptContext(childId);
+
+    // ── Fine-tuned model (if available from DatasetEval fine-tune pipeline) ───
+    const ftModel = typeof localStorage !== "undefined"
+      ? localStorage.getItem("bashabuddy_finetuned_model") || "gpt-4o-mini"
+      : "gpt-4o-mini";
 
     try {
       await streamCompletion(
         [
           {
             role: "system",
-            content: buildStoryPrompt(language, ageGroup, genre, character, ragContext, adaptiveCtx),
+            content: buildStoryPrompt(language, ageGroup, genre, character, ragContext, adaptiveCtx + bktCtx),
           },
           { role: "user", content: `Story idea: ${trimmed}` },
         ],
         (chunk) => setStoryText((prev) => prev + chunk),
-        { max_tokens: 900, temperature: 0.9 }
+        { model: ftModel, max_tokens: 900, temperature: 0.9 }
       );
     } catch {
       setError("Could not generate story. Check your OpenAI API key in .env");
@@ -329,21 +336,28 @@ export default function MakeStory() {
       const isCorrect = /^(great|excellent|perfect|well done|correct|right|wonderful|amazing|good job|that's right|yes|bravo|brilliant|super)/i
         .test(fb.trim());
 
+      // Extract the key term from the question for adaptive/SR tracking
+      const questionKey = questions[currentQ]
+        .replace(/[^\w\s]/g, "")
+        .split(/\s+/)
+        .filter((w) => w.length > 3)
+        .slice(0, 2)
+        .join(" ")
+        .toLowerCase();
+
       if (isCorrect) {
         correctCountRef.current += 1;
+        // SM-2: advance the word's schedule forward (quality=4, correct with hesitation)
+        if (questionKey && childId) recordQuizSuccess(childId, questionKey);
       } else {
-        // Record the question's key term as a vocabulary miss for adaptive learning
-        // Extract first 3 meaningful words from the question as a proxy vocabulary item
-        const questionKey = questions[currentQ]
-          .replace(/[^\w\s]/g, "")
-          .split(/\s+/)
-          .filter((w) => w.length > 3)
-          .slice(0, 2)
-          .join(" ")
-          .toLowerCase();
-        if (questionKey && childId) {
-          recordQuizMistake(childId, questionKey);
-        }
+        // SM-2 + localStorage: record mistake, schedule early review
+        if (questionKey && childId) recordQuizMistake(childId, questionKey);
+      }
+
+      // BKT: update knowledge state for concepts touched by this story/quiz
+      if (childId) {
+        const touchedConcepts = detectConcepts({ genre, text: questions[currentQ], weakWords: (weakItems || []).map((w) => w.item) });
+        updateConcepts(childId, touchedConcepts, isCorrect);
       }
 
       setFeedback(fb);

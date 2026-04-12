@@ -1,4 +1,5 @@
 import { openaiSpeak } from "./openai.js";
+import { evaluateTranscriptPhoneme, phonemeSimilarity, phoneticBreakdown } from "./phoneme.js";
 
 const CLEAN_PUNCT = /[.,!?;:”’’””()\-]/g;
 
@@ -73,6 +74,10 @@ export function tokenize(text) {
   return normalizeText(text).split(" ").filter(Boolean);
 }
 
+/**
+ * Character-level Levenshtein distance (kept for English fallback / legacy use).
+ * For Indian languages, prefer phonemeEditDistance from phoneme.js.
+ */
 export function levenshtein(a, b) {
   const m = a.length;
   const n = b.length;
@@ -90,6 +95,10 @@ export function levenshtein(a, b) {
   return dp[m][n];
 }
 
+/**
+ * Character-level similarity (0–1). Used as English fallback.
+ * For Indian languages use phonemeSimilarity() from phoneme.js instead.
+ */
 export function similarityScore(a, b) {
   const aNorm = normalizeText(a);
   const bNorm = normalizeText(b);
@@ -99,17 +108,47 @@ export function similarityScore(a, b) {
   return 1 - distance / maxLen;
 }
 
-export function evaluateTranscript(expectedRaw, userRaw, keywords = []) {
+/**
+ * Evaluate a transcript against the expected sentence.
+ *
+ * For Indian languages (hindi, tamil, telugu, kannada):
+ *   Uses phoneme-level edit distance — linguistically superior because it
+ *   recognises aspirated/unaspirated near-misses (क/ख), retroflex/dental
+ *   confusions (ट/त), and long/short vowel substitutions (a/aa, i/ii).
+ *
+ * For English:
+ *   Falls back to character-level Levenshtein (phoneme tables not needed).
+ *
+ * @param {string}   expectedRaw
+ * @param {string}   userRaw
+ * @param {string[]} keywords
+ * @param {string}   [language='hindi']
+ * @returns {{ score, similarity, missingKeywords, extraWords, phonemeBased }}
+ */
+export function evaluateTranscript(expectedRaw, userRaw, keywords = [], language = "hindi") {
+  // For Indian languages, delegate to the phoneme-aware evaluator
+  if (language !== "english") {
+    const result = evaluateTranscriptPhoneme(expectedRaw, userRaw, keywords, language);
+    return { ...result, extraWords: [] };
+  }
+
+  // English path: character-level (original behaviour)
   const expectedTokens = tokenize(expectedRaw);
-  const userTokens = tokenize(userRaw);
-  const expectedSet = new Set(expectedTokens);
+  const userTokens     = tokenize(userRaw);
+  const expectedSet    = new Set(expectedTokens);
   const missingKeywords = keywords.filter((k) => !userRaw.includes(k));
-  const extraWords = userTokens.filter((token) => !expectedSet.has(token));
+  const extraWords      = userTokens.filter((token) => !expectedSet.has(token));
   const keywordCoverage = keywords.length === 0 ? 1 : (keywords.length - missingKeywords.length) / keywords.length;
-  const similarity = similarityScore(expectedRaw, userRaw);
-  const score = Math.round(100 * (0.7 * keywordCoverage + 0.3 * similarity));
-  return { score, similarity, missingKeywords, extraWords };
+  const similarity      = similarityScore(expectedRaw, userRaw);
+  const score           = Math.round(100 * (0.7 * keywordCoverage + 0.3 * similarity));
+  return { score, similarity, missingKeywords, extraWords, phonemeBased: false };
 }
+
+/**
+ * Return a phonetic breakdown string for a word (for UI tooltips).
+ * Delegates to phoneme.js phoneticBreakdown.
+ */
+export { phonemeSimilarity, phoneticBreakdown };
 
 export function getAgeGroup(age) {
   if (!age || Number.isNaN(age)) return "8-11";

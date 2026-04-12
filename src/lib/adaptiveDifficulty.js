@@ -14,6 +14,7 @@
  */
 
 import { supabase } from "./supabase";
+import { reviewCard, getDueCards, getDeckStats, mistakeCountToQuality, addCard } from "./spacedRepetition";
 
 // ─── localStorage key helpers ────────────────────────────────────────────────
 
@@ -126,6 +127,12 @@ export async function fetchWeakItems(childId, limit = 8) {
     }
   }
 
+  // ── 4. SM-2 due cards (highest priority — scheduled for review today) ──────
+  const dueCards = getDueCards(childId, limit);
+  for (const card of dueCards) {
+    merge(card.domain, card.word, card.repetitions === 0 ? 1 : 2, card.lastReview);
+  }
+
   // ── Sort by composite priority score and return top items ─────────────────
   return Array.from(merged.values())
     .sort((a, b) => priorityScore(b) - priorityScore(a))
@@ -133,8 +140,25 @@ export async function fetchWeakItems(childId, limit = 8) {
 }
 
 /**
+ * Return SM-2 deck statistics for the child — used in OutcomeDashboard.
+ * @param {string} childId
+ * @returns {{ total, due, mastered, new }}
+ */
+export function getSpacedRepetitionStats(childId) {
+  return getDeckStats(childId);
+}
+
+/**
  * Record a missed word from a quiz session into localStorage.
  * Increments existing counts. This feeds back into fetchWeakItems next session.
+ *
+ * @param {string} childId
+ * @param {string} word
+ */
+/**
+ * Record a missed word from a quiz session.
+ * Writes to localStorage AND advances the SM-2 card with a low quality rating (1).
+ * The SM-2 scheduler will surface the word for review sooner.
  *
  * @param {string} childId
  * @param {string} word
@@ -149,6 +173,22 @@ export function recordQuizMistake(childId, word) {
   } catch {
     // localStorage write failure is non-fatal
   }
+  // Also update SM-2 with quality=1 (incorrect — needs early review)
+  reviewCard(childId, word, "vocabulary", 1);
+}
+
+/**
+ * Record a correctly answered word.
+ * Advances the SM-2 schedule with quality=4 (correct with hesitation).
+ *
+ * @param {string} childId
+ * @param {string} word
+ * @param {boolean} [wasEasy=false]  If true, uses quality=5 (perfect recall)
+ */
+export function recordQuizSuccess(childId, word, wasEasy = false) {
+  if (!childId || !word) return;
+  addCard(childId, word, "vocabulary"); // no-op if already exists
+  reviewCard(childId, word, "vocabulary", wasEasy ? 5 : 4);
 }
 
 /**

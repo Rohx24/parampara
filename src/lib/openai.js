@@ -89,6 +89,88 @@ export async function chatCompletion(
 }
 
 /**
+ * Create an embedding vector for a text string using text-embedding-3-small.
+ * Returns a Float32Array (1536-dimensional).
+ */
+export async function createEmbedding(text) {
+  const res = await fetch(`${BASE_URL}/embeddings`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getKey()}`,
+    },
+    body: JSON.stringify({ model: "text-embedding-3-small", input: text }),
+  });
+  if (!res.ok) {
+    const err = await res.text().catch(() => res.statusText);
+    throw new Error(`OpenAI embedding ${res.status}: ${err}`);
+  }
+  const data = await res.json();
+  return data.data[0].embedding; // number[]
+}
+
+/**
+ * Upload a JSONL string as a training file to OpenAI Files API.
+ * Returns the file object { id, filename, ... }.
+ */
+export async function uploadTrainingFile(jsonlContent, filename = "training.jsonl") {
+  const blob = new Blob([jsonlContent], { type: "application/json" });
+  const formData = new FormData();
+  formData.append("purpose", "fine-tune");
+  formData.append("file", blob, filename);
+
+  const res = await fetch(`${BASE_URL}/files`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${getKey()}` },
+    body: formData,
+  });
+  if (!res.ok) {
+    const err = await res.text().catch(() => res.statusText);
+    throw new Error(`File upload ${res.status}: ${err}`);
+  }
+  return res.json();
+}
+
+/**
+ * Create a fine-tuning job from an already-uploaded training file.
+ * Returns the fine-tune job object { id, status, model, ... }.
+ */
+export async function createFineTuneJob(trainingFileId, suffix = "bashabuddy") {
+  const res = await fetch(`${BASE_URL}/fine_tuning/jobs`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getKey()}`,
+    },
+    body: JSON.stringify({
+      training_file: trainingFileId,
+      model: "gpt-4o-mini-2024-07-18",
+      suffix,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.text().catch(() => res.statusText);
+    throw new Error(`Fine-tune job ${res.status}: ${err}`);
+  }
+  return res.json();
+}
+
+/**
+ * Get the status of an existing fine-tuning job.
+ * Status values: validating_files | queued | running | succeeded | failed | cancelled
+ */
+export async function getFineTuneJob(jobId) {
+  const res = await fetch(`${BASE_URL}/fine_tuning/jobs/${jobId}`, {
+    headers: { Authorization: `Bearer ${getKey()}` },
+  });
+  if (!res.ok) {
+    const err = await res.text().catch(() => res.statusText);
+    throw new Error(`Fine-tune status ${res.status}: ${err}`);
+  }
+  return res.json();
+}
+
+/**
  * Streaming chat completion. Calls onChunk(text) for every token received.
  * Returns a promise that resolves when the stream ends.
  */
