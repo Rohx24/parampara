@@ -186,24 +186,25 @@ export function wordToPhonemes(word, language = 'hindi') {
       // ── Consonant ─────────────────────────────────────────────────────────
       const base = consonants[ch];
       i++;
+      // nukta (null) is a grapheme modifier, not a vowel — skip it
+      if (i < chars.length && matras[chars[i]] === null) i++;
 
+      phonemes.push(base);
+      const sign = matras[chars[i]];
       if (i < chars.length && chars[i] === virama) {
         // Virama: pure consonant, no vowel
-        phonemes.push(base);
         i++;
-      } else if (i < chars.length && matras[chars[i]] !== undefined) {
+      } else if (i < chars.length && (sign === 'n' || sign === 'h')) {
+        // Anusvara/visarga follow the inherent /a/ rather than replacing it
+        phonemes.push('a', sign);
+        i++;
+      } else if (i < chars.length && sign !== undefined) {
         // Matra overrides inherent /a/ with its own vowel
-        const vowelPhoneme = matras[chars[i]];
-        if (vowelPhoneme !== null) {
-          // nukta (null) is a grapheme modifier, not a vowel — emit just the consonant
-          phonemes.push(base + vowelPhoneme);
-        } else {
-          phonemes.push(base + 'a');
-        }
+        phonemes.push(sign);
         i++;
       } else {
         // Inherent /a/ vowel
-        phonemes.push(base + 'a');
+        phonemes.push('a');
       }
     } else if (vowels[ch] !== undefined) {
       // ── Independent vowel ─────────────────────────────────────────────────
@@ -361,14 +362,20 @@ export function evaluateTranscriptPhoneme(expectedRaw, userRaw, keywords = [], l
 
   // ── 1. Keyword coverage with phoneme fuzzy matching ────────────────────────
   const PHONEME_MATCH_THRESHOLD = 0.60;
+  // One changed sound turns a short word into a different word (माँ / में)
+  const SHORT_WORD_LENGTH = 3;
+  const SHORT_WORD_THRESHOLD = 0.85;
 
   const missingKeywords = keywords.filter((keyword) => {
     const kPh = wordToPhonemes(clean(keyword), language);
     return !userWords.some((uWord) => {
       const uPh = wordToPhonemes(uWord, language);
+      // Text from another script has no phonemes here, so it can never match
+      if (!kPh.length || !uPh.length) return false;
       const maxLen = Math.max(kPh.length, uPh.length) || 1;
       const dist = phonemeEditDistance(kPh, uPh);
-      return (1 - dist / maxLen) >= PHONEME_MATCH_THRESHOLD;
+      const threshold = kPh.length <= SHORT_WORD_LENGTH ? SHORT_WORD_THRESHOLD : PHONEME_MATCH_THRESHOLD;
+      return (1 - dist / maxLen) >= threshold;
     });
   });
 
@@ -385,6 +392,7 @@ export function evaluateTranscriptPhoneme(expectedRaw, userRaw, keywords = [], l
       let best = 0;
       for (const uWord of userWords) {
         const uPh = wordToPhonemes(uWord, language);
+        if (!expPh.length || !uPh.length) continue;
         const maxLen = Math.max(expPh.length, uPh.length) || 1;
         const dist = phonemeEditDistance(expPh, uPh);
         const sim = Math.max(0, 1 - dist / maxLen);

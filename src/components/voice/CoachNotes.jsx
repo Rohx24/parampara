@@ -30,7 +30,7 @@ function ScoreRing({ score }) {
       </svg>
       <div className="absolute flex flex-col items-center">
         <span className="text-lg font-extrabold text-buddy-cocoa leading-none">{pct}</span>
-        <span className="text-[9px] font-semibold text-slate-400">score</span>
+        <span className="text-[9px] font-semibold text-slate-400">match</span>
       </div>
     </div>
   );
@@ -43,48 +43,65 @@ export default function CoachNotes({
   score,
   decision,
   feedback,
-  progressChips,
+  chips,
   onRetry,
   onAdvance,
 }) {
   const hasResult = score !== null && score !== undefined;
-  const actionEmoji = {
-    ADVANCE: "🚀",
-    PRAISE: "🎉",
-    RETRY: "🔄",
-    SIMPLIFY: "💡",
-    SWITCH_TO_ENGLISH_HELP: "🇬🇧",
+  const nextStep = {
+    ADVANCE: "🚀 Moving to the next sentence",
+    RETRY_SAME: "🔄 Try this one once more",
+    SIMPLIFY: "💡 Practising a shorter version",
+    SWITCH_TO_ENGLISH_HELP: "💡 Here's a hint",
   };
+  const stayedOnSentence = decision?.action !== "ADVANCE";
 
   return (
     <div className="rounded-3xl border border-white/70 bg-white/80 p-5 shadow-card space-y-4">
       <h3 className="font-display text-xl font-semibold text-buddy-cocoa">Coach Notes</h3>
 
       {/* Score ring */}
-      <div className="flex items-center gap-4">
-        <ScoreRing score={hasResult ? score : null} />
-        <div className="flex-1 space-y-1">
-          {hasResult ? (
-            <>
-              <p className="text-sm font-bold text-buddy-cocoa">
-                {score >= 80 ? "Excellent! 🌟" : score >= 60 ? "Good effort!" : "Keep practicing!"}
-              </p>
-              {decision && (
-                <p className="text-xs font-semibold text-slate-500">
-                  {actionEmoji[decision.action] ?? ""} {decision.action?.replace(/_/g, " ")}
+      {mode === "guided" ? (
+        <div className="flex items-center gap-4">
+          <ScoreRing score={hasResult ? score : null} />
+          <div className="flex-1 space-y-1">
+            {hasResult ? (
+              <>
+                <p className="text-sm font-bold text-buddy-cocoa">
+                  {score >= 80 ? "Very close match 🌟" : score >= 60 ? "Good match" : "Keep practising"}
                 </p>
-              )}
-            </>
-          ) : (
-            <p className="text-sm text-slate-400">Speak to see your score</p>
-          )}
+                {decision && (
+                  <p className="text-xs font-semibold text-slate-500">{nextStep[decision.action]}</p>
+                )}
+              </>
+            ) : (
+              <p className="text-sm text-slate-400">Say the sentence to see your match</p>
+            )}
+          </div>
         </div>
-      </div>
+      ) : (
+        <p className="text-sm text-slate-500">Free talk has no score. Buddy answers what you said.</p>
+      )}
 
       {/* Feedback panels */}
       <AnimatePresence>
+        {feedback?.heard && (
+          <motion.div
+            key="heard"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-2xl bg-slate-50 border border-slate-100 px-4 py-3"
+          >
+            <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400 mb-1">
+              Buddy heard
+            </p>
+            <p className="text-xs font-semibold text-slate-700">{feedback.heard}</p>
+          </motion.div>
+        )}
+
         {feedback?.positives?.length > 0 && (
           <motion.div
+            key="positives"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             className="rounded-2xl bg-emerald-50 border border-emerald-100 px-4 py-3"
@@ -105,6 +122,7 @@ export default function CoachNotes({
 
         {feedback?.improvement && (
           <motion.div
+            key="improvement"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
@@ -119,6 +137,7 @@ export default function CoachNotes({
 
         {feedback?.retryPrompt && (
           <motion.div
+            key="retry"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
@@ -134,7 +153,7 @@ export default function CoachNotes({
 
       {/* Progress chips */}
       <div className="flex flex-wrap gap-2">
-        {progressChips?.map((chip) => (
+        {chips?.map((chip) => (
           <span
             key={chip.label}
             className="rounded-full bg-buddy-peach/60 px-3 py-1 text-xs font-semibold text-slate-600"
@@ -144,15 +163,23 @@ export default function CoachNotes({
         ))}
       </div>
 
+      {mode === "guided" && (
+        <p className="text-[10px] leading-snug text-slate-400">
+          The match compares the words Buddy heard with the sentence. It can't judge how the sounds were made.
+        </p>
+      )}
+
       {/* Action buttons */}
       <div className="flex flex-wrap gap-2 pt-1">
-        <button
-          type="button"
-          onClick={onRetry}
-          className="rounded-full bg-white/80 px-4 py-2 text-xs font-semibold text-slate-600 shadow-soft transition hover:-translate-y-0.5"
-        >
-          🔄 Try again
-        </button>
+        {stayedOnSentence && (
+          <button
+            type="button"
+            onClick={onRetry}
+            className="rounded-full bg-white/80 px-4 py-2 text-xs font-semibold text-slate-600 shadow-soft transition hover:-translate-y-0.5"
+          >
+            🔄 Try again
+          </button>
+        )}
         {mode === "guided" && (
           <button
             type="button"

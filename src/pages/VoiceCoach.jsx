@@ -11,8 +11,11 @@ import { useSession } from "../context/SessionContext.jsx";
 import { logEvent, upsertMistake } from "../lib/db";
 import {
   VOICE_LANGUAGES,
+  buildFreeTalkNotes,
+  buildGuidedNotes,
   evaluateTranscript,
   getAgeGroup,
+  getBuddyReply,
   getGuidedPrompts,
   getSimplifiedPrompt,
   getSpeechRecognition,
@@ -30,16 +33,9 @@ const item = {
   show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } },
 };
 
-const defaultProgress = [
-  { label: "Confidence", value: "—" },
-  { label: "Fluency", value: "—" },
-  { label: "Streak", value: "2 days" },
-];
-
-const fallbackPrompts = [
-  "Tell me about your day.",
-  "What is your favourite food?",
-  "Describe a happy moment with your family.",
+const defaultChips = [
+  { label: "Key words", value: "—" },
+  { label: "Sentence match", value: "—" },
 ];
 
 export default function VoiceCoach() {
@@ -60,6 +56,7 @@ export default function VoiceCoach() {
   const [feedback, setFeedback]   = useState(null);
   const [score, setScore]         = useState(null);
   const [decision, setDecision]   = useState(null);
+  const [chips, setChips]         = useState(defaultChips);
   const [manualText, setManualText] = useState("");
   const [supportMessage, setSupportMessage] = useState("");
   const [attempts, setAttempts]   = useState(0);
@@ -72,6 +69,7 @@ export default function VoiceCoach() {
   const sessionStartRef  = useRef(Date.now());
   const sessionScoresRef = useRef([]); // accumulate per-transcript scores
   const sessionPromptsRef = useRef(0); // count of voice_advance events this session
+  const replyRequestRef  = useRef(0);  // ignores a Buddy reply that arrives after a reset
 
   // Mistakes — initialise empty; populated from localStorage in useEffect
   // so we have access to childProfile.id
@@ -145,7 +143,12 @@ export default function VoiceCoach() {
     setSupportMessage("");
     setAttempts(0);
     setOverridePrompt(null);
+    setChips(defaultChips);
+    replyRequestRef.current += 1;
   }, [mode, language, ageGroup]);
+
+  // Each language has its own list, so start it from the top
+  useEffect(() => { setPromptIndex(0); }, [language, ageGroup]);
 
   // Push new guided prompt into chat
   useEffect(() => {
@@ -190,33 +193,22 @@ export default function VoiceCoach() {
     logEvent(childProfile?.id, "voice_transcript", { mode, lang: language, text, ...meta });
 
     if (mode === "free") {
-      const words = text.split(" ").filter(Boolean);
-      const positives = [
-        words.length > 6 ? "You used lots of words!" : "You spoke clearly.",
-        "Great confidence showing your voice!",
-      ];
-      const improvement =
-        words.length < 4
-          ? "Try a slightly longer sentence next time."
-          : "Add one new word to make it richer.";
-      const retryPrompt = fallbackPrompts[Math.floor(Math.random() * fallbackPrompts.length)];
-      const newScore = Math.min(95, 50 + words.length * 4);
-      setFeedback({ positives, improvement, retryPrompt });
-      setDecision({ action: "PRAISE" });
-      setScore(newScore);
+      const notes = buildFreeTalkNotes({ transcript: text, language });
+      setFeedback({ ...notes, retryPrompt: "" });
+      setChips(notes.chips);
+      setDecision(null);
+      setScore(null);
       setSupportMessage("");
-      setChatMessages((prev) => [
-        ...prev,
-        { role: "assistant", text: `Love it! ${improvement}` },
-      ]);
-      logEvent(childProfile?.id, "voice_feedback", { mode, lang: language, score: newScore });
+      logEvent(childProfile?.id, "voice_feedback", { mode, lang: language });
+      replyAsBuddy(text);
       return;
     }
 
     const evaluation = evaluateTranscript(
       activePrompt?.nativeText || "",
       text,
-      activePrompt?.keywords || []
+      activePrompt?.keywords || [],
+      language
     );
     const hesitationMs  = meta.hesitationMs ?? 0;
     const mistakesCount = Object.values(mistakeCounts).reduce((s, v) => s + v, 0);
@@ -233,26 +225,25 @@ export default function VoiceCoach() {
     // Accumulate score for session-level average (logged on unmount)
     sessionScoresRef.current = [...sessionScoresRef.current, evaluation.score];
 
-    const positives = [
-      evaluation.score > 80
-        ? "Pronunciation sounded confident!"
-        : "Nice effort — keep going!",
-      evaluation.missingKeywords?.length
-        ? "You caught some key words."
-        : "Great keyword coverage!",
-    ];
-    const improvement = evaluation.missingKeywords?.length
-      ? `Try stressing: ${evaluation.missingKeywords.slice(0, 2).join(", ")}.`
-      : "Try a smoother flow for the whole sentence.";
-    setFeedback({ positives, improvement, retryPrompt: `Say: ${activePrompt?.nativeText}` });
+    const notes = buildGuidedNotes({
+      prompt: activePrompt,
+      evaluation,
+      transcript: text,
+      language,
+      startedAfterMs: hesitationMs,
+    });
+    const staysOnSentence = nextDecision.action !== "ADVANCE";
+    setFeedback({ ...notes, retryPrompt: staysOnSentence ? activePrompt?.nativeText : "" });
+    setChips(notes.chips);
     setDecision(nextDecision);
 
-    if (evaluation.score < 70 && activePrompt?.keywords?.length) {
-      const word = activePrompt.keywords[0];
+    if (evaluation.score < 70 && evaluation.missingKeywords?.length) {
+      const word = evaluation.missingKeywords[0];
       updateMistakeLocal(word);
       upsertMistake(childProfile?.id, { domain: "speech", item: word, count: 1 });
     }
 
+    let reply = nextDecision.message || "Nice try!";
     if (nextDecision.action === "ADVANCE") {
       setPromptIndex((p) => p + 1);
       setAttempts(0);
@@ -263,11 +254,19 @@ export default function VoiceCoach() {
         mode, lang: language, score: evaluation.score, promptId: activePrompt?.id,
       });
     } else if (nextDecision.action === "SIMPLIFY") {
-      setOverridePrompt(getSimplifiedPrompt(activePrompt));
+      const shorter = getSimplifiedPrompt(activePrompt);
+      const isShorter = shorter.nativeText !== activePrompt?.nativeText;
+      if (!isShorter) reply = "Let's listen once more, then try again.";
+      setOverridePrompt(shorter);
+      setFeedback((prev) => ({ ...prev, retryPrompt: shorter.nativeText }));
       setAttempts((p) => p + 1);
-      setSupportMessage("Let's try a shorter version first.");
+      setSupportMessage(isShorter ? "Let's try a shorter version first." : "Press \"Hear it\", then say it slowly.");
     } else if (nextDecision.action === "SWITCH_TO_ENGLISH_HELP") {
-      setSupportMessage("English tip: Say it slowly, word by word.");
+      setSupportMessage(
+        activePrompt?.englishMeaning
+          ? `It means: "${activePrompt.englishMeaning}". Say it slowly, word by word.`
+          : "Say it slowly, word by word."
+      );
       setAttempts((p) => p + 1);
     } else {
       setAttempts((p) => p + 1);
@@ -275,11 +274,27 @@ export default function VoiceCoach() {
 
     setChatMessages((prev) => [
       ...prev,
-      { role: "assistant", text: nextDecision.message || "Nice try!" },
+      { role: "assistant", text: reply },
     ]);
     logEvent(childProfile?.id, "voice_feedback", {
       mode, lang: language, score: evaluation.score, promptId: activePrompt?.id,
     });
+  };
+
+  const replyAsBuddy = async (text) => {
+    const requestId = ++replyRequestRef.current;
+    setStatus("Buddy is thinking…");
+    const reply = await getBuddyReply({
+      language,
+      ageGroup,
+      nickname: childProfile?.nickname,
+      history: chatMessages,
+      text,
+    });
+    if (requestId !== replyRequestRef.current) return;
+    setChatMessages((prev) => [...prev, { role: "assistant", text: reply }]);
+    setStatus("Your turn!");
+    if (!recognitionRef.current) speakText(reply, languageMeta.speechCode, style);
   };
 
   // ── Speech Recognition ────────────────────────────────────────────────────
@@ -310,6 +325,7 @@ export default function VoiceCoach() {
     setFeedback(null);
     setScore(null);
     setDecision(null);
+    setChips(defaultChips);
     setSupportMessage("");
 
     rec.onresult = (event) => {
@@ -347,8 +363,8 @@ export default function VoiceCoach() {
         firstResultRef.current && startTimeRef.current
           ? firstResultRef.current - startTimeRef.current
           : 0;
-      handleTranscript(finalText, { hesitationMs });
       setStatus("Captured! ✓");
+      handleTranscript(finalText, { hesitationMs });
     };
 
     recognitionRef.current = rec;
@@ -381,6 +397,7 @@ export default function VoiceCoach() {
     setDecision(null);
     setFeedback(null);
     setScore(null);
+    setChips(defaultChips);
   };
 
   const handleAdvance = () => {
@@ -391,19 +408,8 @@ export default function VoiceCoach() {
     setDecision(null);
     setFeedback(null);
     setScore(null);
+    setChips(defaultChips);
   };
-
-  const progressChips = useMemo(() => {
-    const confidence = score ? `${Math.min(score, 100)}%` : "—";
-    const fluency    = transcript
-      ? `${Math.min(10, Math.ceil(transcript.split(" ").length / 3))}/10`
-      : "—";
-    return [
-      { label: "Confidence", value: confidence },
-      { label: "Fluency", value: fluency },
-      { label: "Streak", value: "2 days" },
-    ];
-  }, [score, transcript]);
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -544,7 +550,7 @@ export default function VoiceCoach() {
               />
             ) : (
               <div className="rounded-2xl border border-white/70 bg-white/85 p-4 text-sm text-slate-600 shadow-soft">
-                🎙️ Speak for 15–30 seconds. Buddy will give you friendly feedback when you finish.
+                🎙️ Say anything in {languageMeta.label}. Buddy will answer and ask you something back.
               </div>
             )}
 
@@ -598,7 +604,7 @@ export default function VoiceCoach() {
             score={score}
             decision={decision}
             feedback={feedback}
-            progressChips={score != null ? progressChips : defaultProgress}
+            chips={mode === "free" && chips === defaultChips ? [] : chips}
             onRetry={handleRetry}
             onAdvance={handleAdvance}
           />
