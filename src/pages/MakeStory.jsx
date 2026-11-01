@@ -213,7 +213,7 @@ export default function MakeStory() {
         { model: ftModel, max_tokens: 900, temperature: 0.9 }
       );
     } catch {
-      setError("Could not generate story. Check your OpenAI API key in .env");
+      setError("Could not generate story. Please try again.");
       setPhase("compose");
     } finally {
       setLoading(false);

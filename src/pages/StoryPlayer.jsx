@@ -495,7 +495,7 @@ Say it: [simple phonetic pronunciation for a child]`,
       setResults([]);
       setPhaseSync("quiz");
     } catch {
-      setError("Could not load questions. Check your OpenAI API key.");
+      setError("Could not load questions. Please try again.");
       setPhaseSync("watching");
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps

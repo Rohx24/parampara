@@ -1,16 +1,9 @@
-const BASE = "https://www.googleapis.com/youtube/v3";
-
-function key() {
-  const k = import.meta.env.VITE_YOUTUBE_API_KEY;
-  if (!k) throw new Error("VITE_YOUTUBE_API_KEY is not set in .env");
-  return k;
-}
-
 async function ytGet(path, params) {
-  const url = new URL(`${BASE}/${path}`);
-  url.searchParams.set("key", key());
-  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
-  const res = await fetch(url.toString());
+  const res = await fetch("/api/youtube", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ path, params }),
+  });
   if (!res.ok) {
     const body = await res.text().catch(() => res.statusText);
     throw new Error(`YouTube API ${res.status}: ${body.slice(0, 200)}`);

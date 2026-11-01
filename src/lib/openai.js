@@ -1,4 +1,5 @@
-const BASE_URL = "https://api.openai.com/v1";
+const BASE_URL = "/api/openai";
+const ADMIN_TOKEN_KEY = "bashabuddy_admin_token";
 
 // ── Instant TTS via browser Web Speech API ────────────────────────────────────
 // Uses the best available neural voice (Google/Microsoft/Apple) — zero latency.
@@ -59,12 +60,6 @@ export function stopOpenaiSpeak() {
   if (window.speechSynthesis) window.speechSynthesis.cancel();
 }
 
-function getKey() {
-  const key = import.meta.env.VITE_OPENAI_API_KEY;
-  if (!key) throw new Error("VITE_OPENAI_API_KEY is not set in .env");
-  return key;
-}
-
 /**
  * Single-shot chat completion. Returns the assistant's reply as a string.
  */
@@ -72,12 +67,9 @@ export async function chatCompletion(
   messages,
   { model = "gpt-4o-mini", temperature = 0.7, max_tokens = 400 } = {}
 ) {
-  const res = await fetch(`${BASE_URL}/chat/completions`, {
+  const res = await fetch(`${BASE_URL}/chat`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${getKey()}`,
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ model, messages, temperature, max_tokens }),
   });
   if (!res.ok) {
@@ -95,11 +87,8 @@ export async function chatCompletion(
 export async function createEmbedding(text) {
   const res = await fetch(`${BASE_URL}/embeddings`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${getKey()}`,
-    },
-    body: JSON.stringify({ model: "text-embedding-3-small", input: text }),
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ input: text }),
   });
   if (!res.ok) {
     const err = await res.text().catch(() => res.statusText);
@@ -110,64 +99,50 @@ export async function createEmbedding(text) {
 }
 
 /**
- * Upload a JSONL string as a training file to OpenAI Files API.
- * Returns the file object { id, filename, ... }.
+ * Fine-tuning runs on the server and needs the admin token, which is kept only
+ * for this browser tab.
  */
-export async function uploadTrainingFile(jsonlContent, filename = "training.jsonl") {
-  const blob = new Blob([jsonlContent], { type: "application/json" });
-  const formData = new FormData();
-  formData.append("purpose", "fine-tune");
-  formData.append("file", blob, filename);
-
-  const res = await fetch(`${BASE_URL}/files`, {
+async function fineTuneRequest(body) {
+  let token = sessionStorage.getItem(ADMIN_TOKEN_KEY);
+  if (!token) {
+    token = window.prompt("Enter the admin token to use fine-tuning") ?? "";
+    sessionStorage.setItem(ADMIN_TOKEN_KEY, token);
+  }
+  const res = await fetch(`${BASE_URL}/fine-tune`, {
     method: "POST",
-    headers: { Authorization: `Bearer ${getKey()}` },
-    body: formData,
+    headers: { "Content-Type": "application/json", "x-admin-token": token },
+    body: JSON.stringify(body),
   });
+  if (res.status === 403) sessionStorage.removeItem(ADMIN_TOKEN_KEY);
   if (!res.ok) {
     const err = await res.text().catch(() => res.statusText);
-    throw new Error(`File upload ${res.status}: ${err}`);
+    throw new Error(`Fine-tune ${res.status}: ${err}`);
   }
   return res.json();
+}
+
+/**
+ * Upload a JSONL string as a training file.
+ * Returns the file object { id, filename, ... }.
+ */
+export function uploadTrainingFile(jsonlContent, filename = "training.jsonl") {
+  return fineTuneRequest({ action: "upload", jsonl: jsonlContent, filename });
 }
 
 /**
  * Create a fine-tuning job from an already-uploaded training file.
  * Returns the fine-tune job object { id, status, model, ... }.
  */
-export async function createFineTuneJob(trainingFileId, suffix = "bashabuddy") {
-  const res = await fetch(`${BASE_URL}/fine_tuning/jobs`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${getKey()}`,
-    },
-    body: JSON.stringify({
-      training_file: trainingFileId,
-      model: "gpt-4o-mini-2024-07-18",
-      suffix,
-    }),
-  });
-  if (!res.ok) {
-    const err = await res.text().catch(() => res.statusText);
-    throw new Error(`Fine-tune job ${res.status}: ${err}`);
-  }
-  return res.json();
+export function createFineTuneJob(trainingFileId, suffix = "bashabuddy") {
+  return fineTuneRequest({ action: "create", trainingFileId, suffix });
 }
 
 /**
  * Get the status of an existing fine-tuning job.
  * Status values: validating_files | queued | running | succeeded | failed | cancelled
  */
-export async function getFineTuneJob(jobId) {
-  const res = await fetch(`${BASE_URL}/fine_tuning/jobs/${jobId}`, {
-    headers: { Authorization: `Bearer ${getKey()}` },
-  });
-  if (!res.ok) {
-    const err = await res.text().catch(() => res.statusText);
-    throw new Error(`Fine-tune status ${res.status}: ${err}`);
-  }
-  return res.json();
+export function getFineTuneJob(jobId) {
+  return fineTuneRequest({ action: "status", jobId });
 }
 
 /**
@@ -179,12 +154,9 @@ export async function streamCompletion(
   onChunk,
   { model = "gpt-4o-mini", temperature = 0.8, max_tokens = 700 } = {}
 ) {
-  const res = await fetch(`${BASE_URL}/chat/completions`, {
+  const res = await fetch(`${BASE_URL}/chat`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${getKey()}`,
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ model, messages, temperature, max_tokens, stream: true }),
   });
   if (!res.ok) {

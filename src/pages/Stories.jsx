@@ -71,7 +71,7 @@ export default function Stories() {
       setTotalResults(result.totalResults ?? 0);
       setSearchStatus("done");
     } catch (err) {
-      setSearchError(err.message ?? "Search failed. Check your YouTube API key.");
+      setSearchError(err.message ?? "Search failed. Please try again.");
       setSearchStatus("error");
     }
   }, [lang, effectiveTopic, difficulty]);

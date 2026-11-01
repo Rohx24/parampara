@@ -388,7 +388,7 @@ Be warm, supportive, specific, and concise. Under 120 words per reply.`;
       );
       setChatMessages((m) => [...m, { role: "assistant", text: reply }]);
     } catch {
-      setChatMessages((m) => [...m, { role: "assistant", text: "Sorry, I couldn't connect right now. Please check your API key and try again." }]);
+      setChatMessages((m) => [...m, { role: "assistant", text: "Sorry, I couldn't connect right now. Please try again." }]);
     } finally {
       setChatLoading(false);
     }
@@ -827,7 +827,7 @@ Be warm, supportive, specific, and concise. Under 120 words per reply.`;
 
               {reportStatus === "error" && (
                 <div className="rounded-2xl bg-red-50 border border-red-100 p-4 text-sm text-red-600">
-                  Failed to generate report. Check your OpenAI API key in .env.
+                  Failed to generate report. Please try again.
                 </div>
               )}
 
