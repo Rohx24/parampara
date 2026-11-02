@@ -70,7 +70,8 @@ const actionCards = [
     title: "AI Benchmark",
     description: "Generate a synthetic story dataset and run the accuracy benchmark.",
     to: "/dataset-eval",
-    enabled: true,
+    enabled: false,
+    hidden: true,
     icon: <LabIcon />,
   },
 ];
@@ -173,7 +174,7 @@ export default function HomeLoggedIn() {
 
         <section className="mt-10 grid gap-6 lg:grid-cols-[2fr_1fr]">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {actionCards.map((card) => (
+            {actionCards.filter((card) => !card.hidden).map((card) => (
               <ActionCard key={card.id} {...card} />
             ))}
           </div>

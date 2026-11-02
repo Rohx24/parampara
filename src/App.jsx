@@ -17,7 +17,6 @@ import VoiceCoach from "./pages/VoiceCoach.jsx";
 import MakeStory from "./pages/MakeStory.jsx";
 import ParentDashboard from "./pages/ParentDashboard.jsx";
 import OutcomeDashboard from "./pages/OutcomeDashboard.jsx";
-import DatasetEval from "./pages/DatasetEval.jsx";
 import Start from "./pages/Start.jsx";
 import ParentSetup from "./pages/ParentSetup.jsx";
 import KidJoin from "./pages/KidJoin.jsx";
@@ -255,7 +254,7 @@ function App() {
         <Route path="/games/word-match" element={<WordMatchGame />} />
         <Route path="/parent-dashboard" element={<ParentDashboard />} />
         <Route path="/outcome-dashboard" element={<OutcomeDashboard />} />
-        <Route path="/dataset-eval" element={<DatasetEval />} />
+        <Route path="/dataset-eval" element={<Navigate to="/home" replace />} />
       </Routes>
     </div>
   );
