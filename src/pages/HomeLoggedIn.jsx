@@ -140,7 +140,7 @@ export default function HomeLoggedIn() {
           <div className="space-y-6">
             <motion.h1
               variants={heroItem}
-              className="font-display text-4xl font-semibold tracking-tight text-buddy-cocoa sm:text-5xl"
+              className="font-display text-3xl font-semibold tracking-tight text-buddy-cocoa sm:text-5xl"
             >
               Welcome back, {nickname}.
             </motion.h1>

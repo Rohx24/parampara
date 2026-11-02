@@ -171,8 +171,11 @@ export function SessionProvider({ children }) {
     clearActiveProfile();
   }, [clearActiveProfile]);
 
+  // Signs out and forgets the remembered child on this device.
   const switchChild = useCallback(() => {
     logout();
+    setLastChildProfile(null);
+    if (typeof localStorage !== "undefined") localStorage.removeItem(PROFILE_KEY);
   }, [logout]);
 
   const value = useMemo(

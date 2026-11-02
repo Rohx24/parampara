@@ -9,7 +9,7 @@ export default function PromptCard({ prompt, onSpeak, supportMessage, attempts =
       key={prompt.id}
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl border border-white/70 bg-white/90 p-5 shadow-card space-y-3"
+      className="rounded-2xl border border-white/70 bg-white/90 p-4 shadow-card space-y-3 sm:p-5"
     >
       {/* Label row */}
       <div className="flex items-center justify-between gap-3">
@@ -38,14 +38,14 @@ export default function PromptCard({ prompt, onSpeak, supportMessage, attempts =
           type="button"
           onClick={onSpeak}
           title="Hear the prompt"
-          className="flex items-center gap-1.5 rounded-full bg-buddy-mint px-3 py-1.5 text-xs font-bold text-slate-700 shadow-soft transition hover:scale-105 active:scale-95"
+          className="flex min-h-11 shrink-0 items-center gap-1.5 rounded-full bg-buddy-mint px-3 py-1.5 sm:min-h-0 text-xs font-bold text-slate-700 shadow-soft transition hover:scale-105 active:scale-95"
         >
           🔊 Hear it
         </button>
       </div>
 
       {/* Native text — big and readable */}
-      <p className="font-display text-2xl font-bold leading-snug text-buddy-cocoa">
+      <p className="break-words font-display text-xl font-bold leading-snug text-buddy-cocoa sm:text-2xl">
         {prompt.nativeText}
       </p>
 

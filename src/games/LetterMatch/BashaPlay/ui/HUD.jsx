@@ -26,7 +26,7 @@ export default function HUD({
       <div className="bp-panel">
         <div className="bp-panel-title">Settings</div>
 
-        <div className="bp-setting">
+        <div className="bp-setting bp-setting-language">
           <div className="bp-setting-label">Language</div>
           <div className="bp-toggle">
             <button
@@ -56,6 +56,13 @@ export default function HUD({
               onClick={() => setLanguage('te')}
             >
               Telugu
+            </button>
+            <button
+              type="button"
+              className={language === 'ml' ? 'is-selected' : ''}
+              onClick={() => setLanguage('ml')}
+            >
+              Malayalam
             </button>
           </div>
         </div>

@@ -92,7 +92,7 @@ export default function Games() {
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
               Games
             </p>
-            <h1 className="font-display text-4xl font-semibold text-buddy-cocoa">
+            <h1 className="font-display text-3xl font-semibold text-buddy-cocoa sm:text-4xl">
               Play, learn, and smile.
             </h1>
             <p className="max-w-xl text-base text-slate-600">

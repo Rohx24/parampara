@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { openaiSpeak } from "../../lib/openai.js";
+import { splitGraphemes } from "../LetterMatch/BashaPlay/splitters/splitGraphemes";
 
 // ── Shared vocab (same words as FlashCards so kids reinforce learning) ─────────
 const VOCAB = {
@@ -93,6 +94,28 @@ const VOCAB = {
     { word: "ಆಕಾಶ", answer: "sky", emoji: "🌤️" },
     { word: "ಮಳೆ", answer: "rain", emoji: "🌧️" },
   ],
+  malayalam: [
+    { word: "വെള്ളം", answer: "water", emoji: "💧" },
+    { word: "ഭക്ഷണം", answer: "food", emoji: "🍱" },
+    { word: "അമ്മ", answer: "mother", emoji: "👩" },
+    { word: "വീട്", answer: "home", emoji: "🏠" },
+    { word: "മാമ്പഴം", answer: "mango", emoji: "🥭" },
+    { word: "പുസ്തകം", answer: "book", emoji: "📚" },
+    { word: "സൂര്യൻ", answer: "sun", emoji: "☀️" },
+    { word: "ചന്ദ്രൻ", answer: "moon", emoji: "🌙" },
+    { word: "സുഹൃത്ത്", answer: "friend", emoji: "👫" },
+    { word: "വിദ്യാലയം", answer: "school", emoji: "🏫" },
+    { word: "പൂവ്", answer: "flower", emoji: "🌸" },
+    { word: "മരം", answer: "tree", emoji: "🌳" },
+    { word: "പൂച്ച", answer: "cat", emoji: "🐱" },
+    { word: "നായ", answer: "dog", emoji: "🐶" },
+    { word: "മീൻ", answer: "fish", emoji: "🐟" },
+    { word: "ആന", answer: "elephant", emoji: "🐘" },
+    { word: "ആപ്പിൾ", answer: "apple", emoji: "🍎" },
+    { word: "വാഴപ്പഴം", answer: "banana", emoji: "🍌" },
+    { word: "ആകാശം", answer: "sky", emoji: "🌤️" },
+    { word: "മഴ", answer: "rain", emoji: "🌧️" },
+  ],
   english: [
     { word: "Hello", answer: "hello", emoji: "👋" },
     { word: "Family", answer: "family", emoji: "👨‍👩‍👧" },
@@ -107,7 +130,7 @@ const VOCAB = {
   ],
 };
 
-const LANG_LABELS = { hindi: "Hindi", tamil: "Tamil", telugu: "Telugu", kannada: "Kannada", english: "English" };
+const LANG_LABELS = { hindi: "Hindi", tamil: "Tamil", telugu: "Telugu", kannada: "Kannada", malayalam: "Malayalam", english: "English" };
 const ROUNDS = 10;
 const TIME_PER_ROUND = 15; // seconds
 
@@ -122,7 +145,7 @@ function shuffle(arr) {
 
 // Show blanks like "_ _ _ _ _" for the answer length
 function makeBlanks(answer, revealed) {
-  return answer.split("").map((ch, i) =>
+  return splitGraphemes(answer).map((ch, i) =>
     revealed.includes(i) ? ch : "_"
   ).join(" ");
 }
@@ -206,8 +229,8 @@ export default function SpellingBeeGame() {
 
   const submit = useCallback(() => {
     if (!current || result !== null) return;
-    const clean = input.trim().toLowerCase();
-    const correct = clean === current.answer.toLowerCase();
+    const clean = input.trim().toLowerCase().normalize("NFC");
+    const correct = clean === current.answer.toLowerCase().normalize("NFC");
     setResult(correct ? "correct" : "wrong");
     clearInterval(timerRef.current);
     if (correct) {
@@ -242,7 +265,8 @@ export default function SpellingBeeGame() {
 
   const hint = useMemo(() => {
     if (!current) return "";
-    return current.answer[0].toUpperCase() + " _ ".repeat(current.answer.length - 1);
+    const letters = splitGraphemes(current.answer);
+    return letters[0].toUpperCase() + " _ ".repeat(letters.length - 1);
   }, [current]);
 
   const timerPct = (timeLeft / TIME_PER_ROUND) * 100;
@@ -258,7 +282,7 @@ export default function SpellingBeeGame() {
             <h1 className="font-display text-3xl font-semibold text-buddy-cocoa">Spelling Bee 🐝</h1>
             <p className="mt-1 text-sm text-slate-600">See the word — type the English spelling!</p>
           </div>
-          <Link to="/games" className="rounded-full bg-white/80 px-4 py-2 text-sm font-semibold text-slate-600 shadow-soft transition hover:-translate-y-0.5">
+          <Link to="/games" className="inline-flex min-h-[44px] items-center rounded-full bg-white/80 px-4 py-2 text-sm font-semibold text-slate-600 shadow-soft transition hover:-translate-y-0.5">
             ← Back
           </Link>
         </div>
@@ -276,7 +300,7 @@ export default function SpellingBeeGame() {
               <div className="flex flex-wrap justify-center gap-2">
                 {Object.keys(LANG_LABELS).map((l) => (
                   <button key={l} type="button" onClick={() => setLanguage(l)}
-                    className={`rounded-full px-4 py-2 text-sm font-semibold transition ${language === l ? "bg-buddy-grape text-white shadow-soft" : "bg-white/80 text-slate-600"}`}
+                    className={`min-h-[44px] rounded-full px-4 py-2 text-sm font-semibold transition ${language === l ? "bg-buddy-grape text-white shadow-soft" : "bg-white/80 text-slate-600"}`}
                   >{LANG_LABELS[l]}</button>
                 ))}
               </div>
@@ -323,19 +347,19 @@ export default function SpellingBeeGame() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.3 }}
-                className="rounded-3xl border border-white/70 bg-white/90 p-8 shadow-card text-center space-y-4"
+                className="rounded-3xl border border-white/70 bg-white/90 p-5 shadow-card text-center space-y-4 sm:p-8"
               >
-                <div className="text-7xl">{current.emoji}</div>
-                <div className="text-4xl font-extrabold text-buddy-cocoa font-display leading-none">
+                <div className="text-5xl sm:text-7xl">{current.emoji}</div>
+                <div className="text-4xl font-extrabold text-buddy-cocoa font-display leading-snug">
                   {current.word}
                 </div>
                 <div className="flex justify-center gap-3">
                   <button type="button" onClick={hearWord}
-                    className={`rounded-full px-4 py-2 text-xs font-bold shadow-soft transition hover:scale-105 ${speaking ? "bg-buddy-grape text-white" : "bg-buddy-mint text-slate-700"}`}
+                    className={`min-h-[44px] rounded-full px-4 py-2 text-xs font-bold shadow-soft transition hover:scale-105 ${speaking ? "bg-buddy-grape text-white" : "bg-buddy-mint text-slate-700"}`}
                   >{speaking ? "🔊 Speaking…" : "🔊 Hear English"}</button>
                   {!hintUsed && (
                     <button type="button" onClick={() => setHintUsed(true)}
-                      className="rounded-full bg-amber-100 px-4 py-2 text-xs font-bold text-amber-700 shadow-soft transition hover:scale-105"
+                      className="min-h-[44px] rounded-full bg-amber-100 px-4 py-2 text-xs font-bold text-amber-700 shadow-soft transition hover:scale-105"
                     >💡 Hint</button>
                   )}
                 </div>
@@ -349,13 +373,18 @@ export default function SpellingBeeGame() {
                 <div className="relative">
                   <input
                     ref={inputRef}
+                    autoFocus
                     type="text"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && submit()}
                     placeholder="Type the English word…"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    enterKeyHint="done"
                     disabled={result !== null}
-                    className={`w-full rounded-2xl border-2 px-4 py-3 text-center text-lg font-bold text-slate-700 outline-none transition ${
+                    className={`w-full rounded-2xl border-2 px-4 py-3 text-center text-lg font-bold text-slate-700 outline-none transition placeholder:text-sm ${
                       result === "correct" ? "border-emerald-400 bg-emerald-50" :
                       result === "wrong" ? "border-red-300 bg-red-50" :
                       "border-slate-200 bg-white focus:border-buddy-grape"

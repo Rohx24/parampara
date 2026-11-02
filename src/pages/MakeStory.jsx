@@ -20,6 +20,7 @@ const LANG_LABELS = {
   telugu: "Telugu",
   hindi: "Hindi",
   kannada: "Kannada",
+  malayalam: "Malayalam",
   english: "English",
 };
 
@@ -338,7 +339,7 @@ export default function MakeStory() {
 
       // Extract the key term from the question for adaptive/SR tracking
       const questionKey = questions[currentQ]
-        .replace(/[^\w\s]/g, "")
+        .replace(/[^\p{L}\p{M}\s]/gu, "")
         .split(/\s+/)
         .filter((w) => w.length > 3)
         .slice(0, 2)
@@ -425,20 +426,20 @@ export default function MakeStory() {
   };
 
   return (
-    <div className="min-h-screen bg-sparkle px-6 py-10 sm:px-10 lg:px-16">
+    <div className="min-h-dvh bg-sparkle px-4 py-6 sm:px-10 sm:py-10 lg:px-16">
       <div className="mx-auto max-w-3xl">
         <header className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
               AI Story Creator
             </p>
-            <h1 className="mt-2 font-display text-3xl font-semibold text-buddy-cocoa sm:text-4xl">
+            <h1 className="mt-2 font-display text-2xl font-semibold text-buddy-cocoa sm:text-4xl">
               Make My Story ✨
             </h1>
           </div>
           <Link
             to="/home"
-            className="rounded-full bg-white/80 px-4 py-2 text-xs font-semibold text-slate-600 shadow-soft transition hover:-translate-y-0.5"
+            className="inline-flex min-h-11 items-center rounded-full bg-white/80 px-4 py-2 text-xs font-semibold text-slate-600 shadow-soft transition hover:-translate-y-0.5 sm:min-h-0"
           >
             Back home
           </Link>
@@ -464,7 +465,7 @@ export default function MakeStory() {
                       key={lang.id}
                       type="button"
                       onClick={() => setLanguage(lang.id)}
-                      className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
+                      className={`min-h-11 rounded-full px-4 py-2 text-xs font-semibold transition sm:min-h-0 ${
                         language === lang.id
                           ? "bg-buddy-grape text-white shadow-soft"
                           : "bg-white/80 text-slate-600"
@@ -484,7 +485,7 @@ export default function MakeStory() {
                 <div className="flex flex-wrap gap-2">
                   {GENRES.map((g) => (
                     <button key={g.id} type="button" onClick={() => setGenre(g.id)}
-                      className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                      className={`min-h-11 rounded-full px-3 py-1.5 text-xs font-semibold transition sm:min-h-0 ${
                         genre === g.id ? "bg-buddy-coral text-white shadow-soft" : "bg-white/80 text-slate-600"
                       }`}
                     >{g.label}</button>
@@ -502,7 +503,7 @@ export default function MakeStory() {
                   value={character}
                   onChange={(e) => setCharacter(e.target.value)}
                   placeholder="e.g. Arjun, Priya, Meera…"
-                  className="w-full rounded-2xl border border-white/80 bg-white/90 px-4 py-2.5 text-sm font-semibold text-slate-700 outline-none focus:border-buddy-grape"
+                  className="w-full rounded-2xl border border-white/80 bg-white/90 px-4 py-2.5 text-base font-semibold sm:text-sm text-slate-700 outline-none focus:border-buddy-grape"
                 />
               </div>
 
@@ -517,7 +518,7 @@ export default function MakeStory() {
                     onChange={(e) => setIdea(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && generate()}
                     placeholder="e.g. A monkey who learns Hindi, a brave girl and a tiger…"
-                    className="flex-1 rounded-2xl border border-white/80 bg-white/90 px-4 py-3 text-sm font-semibold text-slate-700 outline-none focus:border-buddy-grape"
+                    className="min-w-0 flex-1 rounded-2xl border border-white/80 bg-white/90 px-4 py-3 text-base font-semibold sm:text-sm text-slate-700 outline-none focus:border-buddy-grape"
                   />
                   <motion.button
                     type="button"
@@ -624,7 +625,7 @@ export default function MakeStory() {
                     type="button"
                     onClick={reset}
                     whileTap={{ scale: 0.95 }}
-                    className="rounded-full border border-white/70 bg-white/80 px-4 py-2 text-xs font-semibold text-slate-600 shadow-soft"
+                    className="min-h-11 rounded-full border border-white/70 bg-white/80 px-4 py-2 text-xs font-semibold text-slate-600 shadow-soft sm:min-h-0"
                   >
                     Make another story
                   </motion.button>

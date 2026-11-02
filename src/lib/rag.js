@@ -2,7 +2,7 @@
  * RAG (Retrieval-Augmented Generation) engine for BashaBuddy.
  *
  * PRIMARY PATH — Semantic Embedding Retrieval (OpenAI text-embedding-3-small):
- *   1. On first use, embed all 36 cultural context entries → cache in localStorage
+ *   1. On first use, embed all 47 cultural context entries → cache in localStorage
  *   2. At query time, embed the query → cosine similarity vs all cached embeddings
  *   3. Return top-N entries by similarity score
  *
@@ -166,15 +166,24 @@ const STOP_WORDS = new Set([
   "my", "me", "i", "we", "he", "she", "they", "this", "that", "with", "from",
   "was", "are", "be", "has", "had", "do", "did", "at", "by", "up", "as",
   "make", "story", "write", "about", "once", "upon", "time", "one", "two",
+  // Malayalam: "കഥ" must stay out or "ഒരു കഥ" would match "കഥകളി" (Kathakali)
+  "ഒരു", "ഒരിക്കൽ", "കഥ", "കഥകൾ", "എന്ന", "ആണ്", "ഉണ്ട്", "പറ്റി", "കുറിച്ച്", "എഴുതുക",
 ]);
+
+// Older keyboards type a chillu as consonant + virama + ZWJ; the keywords use the atomic letter.
+const CHILLU = { ണ: "ൺ", ന: "ൻ", ര: "ർ", ല: "ൽ", ള: "ൾ", ക: "ൿ" };
 
 function tokenise(text) {
   if (!text || typeof text !== "string") return [];
   return text
+    .normalize("NFC")
     .toLowerCase()
-    .replace(/[^\w\s]/g, " ")
+    .replace(/([ണനരലളക])്‍/g, (_, c) => CHILLU[c])
+    .replace(/[‌‍]/g, "") // ZWJ/ZWNJ only change rendering, and would split the word below
+    .replace(/[^\p{L}\p{M}\p{N}_\s]/gu, " ") // \p{M} keeps vowel signs and the virama
     .split(/\s+/)
-    .filter((t) => t.length >= 3 && !STOP_WORDS.has(t));
+    // Latin needs 3+ letters; Indian scripts have real 2-unit words like "മഴ" (rain)
+    .filter((t) => t.length >= (/^[\x00-\x7f]*$/.test(t) ? 3 : 2) && !STOP_WORDS.has(t));
 }
 
 function scoreEntry(entry, tokens) {
@@ -224,7 +233,7 @@ function retrieveContextTfIdf(query, language, n) {
  * Tries semantic embedding retrieval first; falls back to TF-IDF on failure.
  *
  * @param {string}  query
- * @param {string}  language  'hindi' | 'tamil' | 'telugu' | 'kannada' | 'english'
+ * @param {string}  language  'hindi' | 'tamil' | 'telugu' | 'kannada' | 'malayalam' | 'english'
  * @param {number}  [n=3]
  * @returns {Promise<Object[]>}
  */

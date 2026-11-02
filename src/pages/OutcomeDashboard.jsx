@@ -31,11 +31,12 @@ const LANG_COLOURS = {
   tamil:   "#FF7D6B",
   telugu:  "#22c55e",
   kannada: "#f59e0b",
+  malayalam: "#ec4899",
   english: "#06b6d4",
 };
 const LANG_LABEL = {
   hindi: "Hindi", tamil: "Tamil", telugu: "Telugu",
-  kannada: "Kannada", english: "English",
+  kannada: "Kannada", malayalam: "Malayalam", english: "English",
 };
 
 // ─── localStorage helpers ─────────────────────────────────────────────────────
@@ -96,7 +97,7 @@ function LineChart({ sessions }) {
   const xLabelInterval = Math.max(1, Math.floor(sessions.length / 6));
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" aria-label="Quiz accuracy over time">
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full min-w-[480px] sm:min-w-0" aria-label="Quiz accuracy over time">
       {/* Y-axis grid & labels */}
       {yTicks.map((tick) => {
         const y = PAD.t + chartH - (tick / 100) * chartH;
@@ -193,7 +194,7 @@ function BarChart({ sessions }) {
   };
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" aria-label="Words per session">
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full min-w-[480px] sm:min-w-0" aria-label="Words per session">
       {/* Y-axis grid */}
       {yTicks.map((tick) => {
         const y = PAD.t + chartH - (tick / maxWords) * chartH;
@@ -448,7 +449,7 @@ export default function OutcomeDashboard() {
   const genreEmoji = { adventure: "🗺️", funny: "😄", moral: "🌟", mystery: "🔍", festival: "🪔" };
 
   return (
-    <div className="min-h-screen bg-sparkle px-6 py-10 sm:px-10 lg:px-16">
+    <div className="min-h-[100dvh] bg-sparkle px-4 py-8 sm:px-10 sm:py-10 lg:px-16">
       <div className="mx-auto max-w-5xl">
 
         {/* Header */}
@@ -457,7 +458,7 @@ export default function OutcomeDashboard() {
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
               Learning Results
             </p>
-            <h1 className="mt-1 font-display text-3xl font-semibold text-buddy-cocoa sm:text-4xl">
+            <h1 className="mt-1 font-display text-2xl font-semibold text-buddy-cocoa sm:text-4xl">
               {nickname}'s Outcome Dashboard 📊
             </h1>
             {isDemoData && (
@@ -468,11 +469,11 @@ export default function OutcomeDashboard() {
           </div>
           <div className="flex gap-2 flex-wrap">
             <Link to="/make-story"
-              className="rounded-full bg-buddy-grape px-4 py-2 text-xs font-semibold text-white shadow-soft transition hover:-translate-y-0.5">
+              className="inline-flex min-h-[44px] items-center rounded-full bg-buddy-grape px-4 py-2 text-xs font-semibold text-white shadow-soft sm:min-h-0 transition hover:-translate-y-0.5">
               Make a Story ✨
             </Link>
             <Link to="/home"
-              className="rounded-full bg-white/80 px-4 py-2 text-xs font-semibold text-slate-600 shadow-soft transition hover:-translate-y-0.5">
+              className="inline-flex min-h-[44px] items-center rounded-full bg-white/80 px-4 py-2 text-xs font-semibold text-slate-600 shadow-soft sm:min-h-0 transition hover:-translate-y-0.5">
               Back home
             </Link>
           </div>
@@ -507,7 +508,7 @@ export default function OutcomeDashboard() {
 
         {/* Stat cards */}
         {stats && (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 mb-8">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 lg:grid-cols-5 mb-8">
             <StatCard label="Sessions"      value={stats.totalSessions}     colour="#7B6CF6" />
             <StatCard label="Avg Accuracy"  value={`${stats.avgAccuracy}%`} colour="#FF7D6B"
               sub="quiz comprehension" />
@@ -525,7 +526,7 @@ export default function OutcomeDashboard() {
           <div className="flex overflow-x-auto gap-1 mb-6 pb-1">
             {TABS.map((tab) => (
               <button key={tab} type="button" onClick={() => setActiveTab(tab)}
-                className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold transition ${
+                className={`shrink-0 min-h-[44px] rounded-full px-4 py-2 text-xs font-semibold transition sm:min-h-0 ${
                   activeTab === tab
                     ? "bg-buddy-grape text-white shadow-soft"
                     : "bg-white/80 text-slate-600 hover:bg-white"
@@ -544,15 +545,16 @@ export default function OutcomeDashboard() {
               className="space-y-6">
 
               {/* Mini line chart preview */}
-              <div className="rounded-3xl border border-white/70 bg-white/85 p-6 shadow-card">
+              <div className="rounded-3xl border border-white/70 bg-white/85 p-4 shadow-card sm:p-6">
                 <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-4">
                   Quiz Accuracy Over Time
                 </p>
-                <LineChart sessions={sessions} />
+                {/* Charts keep a readable label size on phones and scroll inside this box. */}
+                <div className="overflow-x-auto"><LineChart sessions={sessions} /></div>
               </div>
 
               {/* Recent sessions table */}
-              <div className="rounded-3xl border border-white/70 bg-white/85 p-6 shadow-card">
+              <div className="rounded-3xl border border-white/70 bg-white/85 p-4 shadow-card sm:p-6">
                 <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-4">
                   Recent Sessions
                 </p>
@@ -611,7 +613,7 @@ export default function OutcomeDashboard() {
           {activeTab === "Accuracy" && (
             <motion.div key="accuracy"
               initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-              className="rounded-3xl border border-white/70 bg-white/85 p-6 shadow-card space-y-6">
+              className="rounded-3xl border border-white/70 bg-white/85 p-4 shadow-card sm:p-6 space-y-6">
 
               <div>
                 <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
@@ -620,7 +622,7 @@ export default function OutcomeDashboard() {
                 <p className="text-xs text-slate-500 mb-4">
                   Each point is one completed story + quiz session. The trend shows how comprehension improves over time.
                 </p>
-                <LineChart sessions={sessions} />
+                <div className="overflow-x-auto"><LineChart sessions={sessions} /></div>
               </div>
 
               {/* Accuracy histogram */}
@@ -629,7 +631,7 @@ export default function OutcomeDashboard() {
                   <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-3">
                     Accuracy Distribution
                   </p>
-                  <div className="flex gap-3">
+                  <div className="flex gap-2 sm:gap-3">
                     {[
                       { label: "0–33%",   range: [0,  33],  colour: "#FF7D6B" },
                       { label: "34–66%",  range: [34, 66],  colour: "#f59e0b" },
@@ -640,7 +642,7 @@ export default function OutcomeDashboard() {
                       ).length;
                       const pct = Math.round((count / sessions.length) * 100);
                       return (
-                        <div key={label} className="flex-1 rounded-2xl p-4 text-center"
+                        <div key={label} className="min-w-0 flex-1 rounded-2xl px-2 py-4 text-center sm:p-4"
                           style={{ background: colour + "22" }}>
                           <p className="text-2xl font-bold" style={{ color: colour }}>{count}</p>
                           <p className="text-xs font-semibold text-slate-500">{label}</p>
@@ -658,7 +660,7 @@ export default function OutcomeDashboard() {
           {activeTab === "Words" && (
             <motion.div key="words"
               initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-              className="rounded-3xl border border-white/70 bg-white/85 p-6 shadow-card space-y-6">
+              className="rounded-3xl border border-white/70 bg-white/85 p-4 shadow-card sm:p-6 space-y-6">
 
               <div>
                 <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
@@ -667,7 +669,7 @@ export default function OutcomeDashboard() {
                 <p className="text-xs text-slate-500 mb-4">
                   Colour indicates the language. Longer stories = more vocabulary exposure.
                 </p>
-                <BarChart sessions={sessions} />
+                <div className="overflow-x-auto"><BarChart sessions={sessions} /></div>
               </div>
 
               {/* Language colour legend for bar chart */}
@@ -703,7 +705,7 @@ export default function OutcomeDashboard() {
           {activeTab === "Languages" && (
             <motion.div key="languages"
               initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-              className="rounded-3xl border border-white/70 bg-white/85 p-6 shadow-card">
+              className="rounded-3xl border border-white/70 bg-white/85 p-4 shadow-card sm:p-6">
 
               <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-6">
                 Language Usage Breakdown
@@ -751,7 +753,7 @@ export default function OutcomeDashboard() {
               initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
               className="space-y-6">
 
-              <div className="rounded-3xl border border-white/70 bg-white/85 p-6 shadow-card">
+              <div className="rounded-3xl border border-white/70 bg-white/85 p-4 shadow-card sm:p-6">
                 <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
                   Words Needing Practice
                 </p>
@@ -869,7 +871,7 @@ export default function OutcomeDashboard() {
               </div>
 
               {/* BKT concept mastery bars */}
-              <div className="rounded-3xl border border-white/70 bg-white/85 p-6 shadow-card">
+              <div className="rounded-3xl border border-white/70 bg-white/85 p-4 shadow-card sm:p-6">
                 <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                   <h3 className="font-display text-lg font-semibold text-buddy-cocoa">
                     Concept Mastery — Bayesian Knowledge Tracing

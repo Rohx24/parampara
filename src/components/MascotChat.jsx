@@ -56,7 +56,7 @@ export default function MascotChat({ nickname, language }) {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+    <div className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-[calc(1rem+env(safe-area-inset-right))] z-50 flex flex-col items-end gap-3 sm:bottom-6 sm:right-6">
       <AnimatePresence>
         {open && (
           <motion.div
@@ -64,7 +64,7 @@ export default function MascotChat({ nickname, language }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.96 }}
             transition={{ duration: 0.22, ease: "easeOut" }}
-            className="w-72 rounded-3xl border border-white/70 bg-white/95 shadow-card sm:w-80"
+            className="w-[min(18rem,calc(100vw-2rem))] rounded-3xl border border-white/70 bg-white/95 shadow-card sm:w-80"
           >
             {/* Header */}
             <div className="flex items-center justify-between rounded-t-3xl bg-buddy-grape/10 px-4 py-3">
@@ -72,7 +72,7 @@ export default function MascotChat({ nickname, language }) {
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="text-slate-400 hover:text-slate-600"
+                className="-mr-2 flex h-11 w-11 items-center justify-center text-slate-400 hover:text-slate-600 sm:mr-0 sm:h-auto sm:w-auto"
                 aria-label="Close chat"
               >
                 ✕
@@ -80,7 +80,7 @@ export default function MascotChat({ nickname, language }) {
             </div>
 
             {/* Messages */}
-            <div className="max-h-52 space-y-2 overflow-y-auto px-4 py-3">
+            <div className="max-h-[40dvh] space-y-2 sm:max-h-52 overflow-y-auto px-4 py-3">
               {messages.map((msg, i) => (
                 <div
                   key={i}
@@ -109,7 +109,7 @@ export default function MascotChat({ nickname, language }) {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKey}
                 placeholder="Type a question…"
-                className="flex-1 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 outline-none focus:border-buddy-grape"
+                className="min-w-0 flex-1 rounded-full border border-slate-200 bg-white px-3 py-2.5 text-base font-semibold text-slate-700 outline-none sm:py-1.5 sm:text-xs focus:border-buddy-grape"
                 disabled={loading}
               />
               <motion.button
@@ -117,7 +117,7 @@ export default function MascotChat({ nickname, language }) {
                 onClick={send}
                 disabled={loading || !input.trim()}
                 whileTap={{ scale: 0.92 }}
-                className="rounded-full bg-buddy-grape px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-40"
+                className="min-h-11 rounded-full bg-buddy-grape px-4 py-1.5 text-sm font-semibold text-white disabled:opacity-40 sm:min-h-0 sm:px-3 sm:text-xs"
               >
                 Send
               </motion.button>
@@ -132,11 +132,11 @@ export default function MascotChat({ nickname, language }) {
         onClick={() => setOpen((v) => !v)}
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.94 }}
-        className="flex items-center gap-2 rounded-full bg-buddy-grape px-5 py-3 text-sm font-bold text-white shadow-soft"
+        className="flex h-14 w-14 items-center justify-center gap-2 rounded-full bg-buddy-grape text-sm font-bold text-white shadow-soft sm:h-auto sm:w-auto sm:px-5 sm:py-3"
         aria-label="Chat with Buddy"
       >
         <ChatIcon />
-        Ask Buddy anything
+        <span className="hidden sm:inline">Ask Buddy anything</span>
       </motion.button>
     </div>
   );
@@ -144,7 +144,7 @@ export default function MascotChat({ nickname, language }) {
 
 function ChatIcon() {
   return (
-    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
+    <svg className="h-6 w-6 sm:h-4 sm:w-4" viewBox="0 0 24 24" fill="none">
       <path
         d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
         stroke="currentColor"

@@ -1,0 +1,22 @@
+export const wordsMl = [
+  { word: "അമ്മ", meaning: "mother" },
+  { word: "അച്ഛൻ", meaning: "father" },
+  { word: "പാൽ", meaning: "milk" },
+  { word: "വെള്ളം", meaning: "water" },
+  { word: "വീട്", meaning: "house" },
+  { word: "പൂവ്", meaning: "flower" },
+  { word: "പഴം", meaning: "fruit" },
+  { word: "നായ", meaning: "dog" },
+  { word: "പൂച്ച", meaning: "cat" },
+  { word: "മരം", meaning: "tree" },
+  { word: "ദിവസം", meaning: "day" },
+  { word: "കണ്ണ്", meaning: "eye" },
+  { word: "ചെവി", meaning: "ear" },
+  { word: "വിരൽ", meaning: "finger" },
+  { word: "കാൽ", meaning: "leg" },
+  { word: "സൂര്യൻ", meaning: "sun" },
+  { word: "ചന്ദ്രൻ", meaning: "moon" },
+  { word: "നക്ഷത്രം", meaning: "star" },
+  { word: "പുസ്തകം", meaning: "book" },
+  { word: "വിദ്യാലയം", meaning: "school" }
+];

@@ -210,7 +210,7 @@ function ModeSelect({ onSelect, onDismiss }) {
         animate={{ scale: 1, y: 0, opacity: 1 }}
         exit={{ scale: 0.92, opacity: 0 }}
         transition={{ duration: 0.32, ease: "easeOut" }}
-        className="w-full max-w-sm rounded-3xl bg-white p-8 shadow-2xl text-center"
+        className="w-full max-w-sm max-h-[90dvh] overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl text-center sm:p-8"
         onClick={(e) => e.stopPropagation()}
       >
         <motion.div
@@ -308,7 +308,7 @@ function StepOverlay({ step, stepIdx, total, onNext, onBack, onDismiss }) {
         animate={{ x: 0, opacity: 1, scale: 1 }}
         exit={{ x: 40, opacity: 0, scale: 0.97 }}
         transition={{ duration: 0.35, ease: "easeOut" }}
-        className="absolute bottom-6 right-6 w-80 pointer-events-auto"
+        className="absolute bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 right-4 pointer-events-auto sm:bottom-6 sm:left-auto sm:right-6 sm:w-80"
         style={{ zIndex: 10000 }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -328,7 +328,7 @@ function StepOverlay({ step, stepIdx, total, onNext, onBack, onDismiss }) {
                 ))}
                 <span className="ml-1.5 text-xs font-bold text-white/80">{stepIdx + 1}/{total}</span>
               </div>
-              <button onClick={onDismiss} className="text-white/70 hover:text-white text-xs font-semibold">
+              <button onClick={onDismiss} className="-my-2 min-h-11 px-1 text-white/70 hover:text-white text-xs font-semibold sm:my-0 sm:min-h-0">
                 Skip ✕
               </button>
             </div>

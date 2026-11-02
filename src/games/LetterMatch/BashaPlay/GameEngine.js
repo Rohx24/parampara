@@ -45,7 +45,7 @@ export function createRound(currentWord, language, hindiMode) {
   const units =
     language === 'hi'
       ? splitHindi(wordText, hindiMode)
-      : language === 'ta' || language === 'te'
+      : language === 'ta' || language === 'te' || language === 'ml'
         ? splitGraphemes(wordText)
         : splitEnglish(wordText);
   const boxes = units.map((text, index) => ({

@@ -145,7 +145,7 @@ export default function Stories() {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-sparkle px-4 py-10 sm:px-8 lg:px-16">
+    <div className="min-h-dvh bg-sparkle px-4 py-6 sm:px-8 sm:py-10 lg:px-16">
       <div className="mx-auto max-w-6xl space-y-8 pb-24">
 
         {/* Header */}
@@ -154,7 +154,7 @@ export default function Stories() {
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
               BashaBuddy Learn
             </p>
-            <h1 className="mt-1 font-display text-4xl font-extrabold text-buddy-cocoa sm:text-5xl">
+            <h1 className="mt-1 font-display text-3xl font-extrabold text-buddy-cocoa sm:text-5xl">
               Find Your Lesson 🎬
             </h1>
             <p className="mt-2 max-w-md text-sm text-slate-500">
@@ -164,7 +164,7 @@ export default function Stories() {
           </div>
           <Link
             to="/home"
-            className="rounded-full bg-white/80 px-4 py-2 text-xs font-semibold text-slate-600 shadow-soft transition hover:-translate-y-0.5"
+            className="inline-flex min-h-11 items-center rounded-full bg-white/80 px-4 py-2 text-xs font-semibold text-slate-600 shadow-soft transition hover:-translate-y-0.5 sm:min-h-0"
           >
             Back home
           </Link>
@@ -191,7 +191,7 @@ export default function Stories() {
                     key={l}
                     type="button"
                     onClick={() => setLang(l)}
-                    className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                    className={`min-h-11 rounded-full px-3 py-1.5 text-xs font-semibold transition sm:min-h-0 ${
                       lang === l
                         ? "bg-buddy-grape text-white shadow-soft"
                         : "bg-white/80 text-slate-600 hover:bg-buddy-mint"
@@ -214,7 +214,7 @@ export default function Stories() {
                     key={t}
                     type="button"
                     onClick={() => { setTopic(t); setCustomTopic(""); }}
-                    className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                    className={`min-h-11 rounded-full px-3 py-1.5 text-xs font-semibold transition sm:min-h-0 ${
                       topic === t && !customTopic
                         ? "bg-buddy-coral text-white shadow-soft"
                         : "bg-white/80 text-slate-600 hover:bg-buddy-peach"
@@ -229,7 +229,7 @@ export default function Stories() {
                 value={customTopic}
                 onChange={(e) => setCustomTopic(e.target.value)}
                 placeholder="Or type your own topic…"
-                className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-600 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-buddy-grape/40"
+                className="mt-1 min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-base text-slate-600 sm:min-h-0 sm:text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-buddy-grape/40"
               />
             </div>
 
@@ -371,7 +371,7 @@ export default function Stories() {
                     <p className="text-sm font-semibold text-red-600">{lessonError}</p>
                     <button
                       onClick={handleAnalyze}
-                      className="rounded-full bg-buddy-grape px-4 py-2 text-xs font-semibold text-white shadow-soft"
+                      className="min-h-11 rounded-full bg-buddy-grape px-4 py-2 text-xs font-semibold text-white shadow-soft sm:min-h-0"
                     >
                       Retry
                     </button>
@@ -614,7 +614,7 @@ function QuizPanel({ lesson, lang, openSections, onToggle, mcqAnswers, setMcqAns
         <button
           type="button"
           onClick={onRegenerate}
-          className="flex items-center gap-2 rounded-full bg-buddy-mint px-4 py-2 text-xs font-bold text-slate-700 shadow-soft transition hover:-translate-y-0.5"
+          className="flex min-h-11 items-center gap-2 rounded-full bg-buddy-mint px-4 py-2 text-xs font-bold sm:min-h-0 text-slate-700 shadow-soft transition hover:-translate-y-0.5"
         >
           ↺ Regenerate
         </button>
@@ -733,7 +733,7 @@ function QuizPanel({ lesson, lang, openSections, onToggle, mcqAnswers, setMcqAns
                     value={val}
                     onChange={(e) => setFillAnswers((p) => ({ ...p, [i]: e.target.value }))}
                     placeholder={`Type in English or ${lang}…`}
-                    className={`flex-1 rounded-2xl border px-3 py-2 text-sm font-semibold outline-none transition ${
+                    className={`min-w-0 flex-1 rounded-2xl border px-3 py-2 text-base font-semibold outline-none sm:text-sm transition ${
                       !answered
                         ? "border-white/80 bg-white/90 text-slate-700 focus:border-buddy-grape"
                         : correct
@@ -872,7 +872,7 @@ function SpeakingPromptCard({ prompt, speechCode, lang }) {
           type="button"
           onClick={listening ? stop : start}
           whileTap={{ scale: 0.92 }}
-          className={`flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold text-white shadow-soft transition ${
+          className={`flex min-h-11 items-center gap-2 rounded-full px-4 py-2 text-xs font-bold text-white shadow-soft transition sm:min-h-0 ${
             listening ? "bg-buddy-coral" : "bg-buddy-grape"
           }`}
         >

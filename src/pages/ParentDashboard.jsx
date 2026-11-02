@@ -229,8 +229,8 @@ const NLP_MODELS = [
   { label: "Text Similarity",    tech: "Levenshtein Distance", desc: "Character-level edit distance computes similarity between expected and spoken text — analogous to ROUGE/F1.", color: "bg-blue-100 text-blue-700", icon: "📐" },
   { label: "Comprehension QA",   tech: "GPT-4o-mini (Decoder)", desc: "Autoregressive transformer generates and evaluates open-ended comprehension questions.", color: "bg-green-100 text-green-700", icon: "🧠" },
   { label: "Lesson Generation",  tech: "Prompt Engineering",   desc: "Structured JSON prompt with persona pattern, chain-of-thought constraints, and output schema control.", color: "bg-amber-100 text-amber-700", icon: "⚡" },
-  { label: "Story Generation",   tech: "GPT Streaming (SSE)",  desc: "Server-sent events stream tokens for real-time story generation across 5 Indian languages.", color: "bg-pink-100 text-pink-700", icon: "✨" },
-  { label: "Text-to-Speech",     tech: "Web Speech TTS",       desc: "Browser-native TTS with language-specific voice selection (hi-IN, ta-IN, te-IN, kn-IN).", color: "bg-teal-100 text-teal-700", icon: "🔊" },
+  { label: "Story Generation",   tech: "GPT Streaming (SSE)",  desc: "Server-sent events stream tokens for real-time story generation across 6 languages.", color: "bg-pink-100 text-pink-700", icon: "✨" },
+  { label: "Text-to-Speech",     tech: "Web Speech TTS",       desc: "Browser-native TTS with language-specific voice selection (hi-IN, ta-IN, te-IN, kn-IN, ml-IN).", color: "bg-teal-100 text-teal-700", icon: "🔊" },
 ];
 
 // ─── Colour helpers ───────────────────────────────────────────────────────────
@@ -404,7 +404,7 @@ Be warm, supportive, specific, and concise. Under 120 words per reply.`;
   ];
 
   return (
-    <div className="min-h-screen bg-sparkle px-4 py-8 sm:px-8 lg:px-16">
+    <div className="min-h-[100dvh] bg-sparkle px-4 py-8 sm:px-8 lg:px-16">
       <div className="mx-auto max-w-6xl space-y-6 pb-20">
 
         {/* Header */}
@@ -416,7 +416,7 @@ Be warm, supportive, specific, and concise. Under 120 words per reply.`;
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
               Parent Dashboard
             </p>
-            <h1 className="mt-1 font-display text-3xl font-extrabold text-buddy-cocoa sm:text-4xl">
+            <h1 className="mt-1 font-display text-2xl font-extrabold text-buddy-cocoa sm:text-4xl">
               {nickname}'s Progress
             </h1>
             <p className="mt-1 text-sm text-slate-500">
@@ -429,7 +429,7 @@ Be warm, supportive, specific, and concise. Under 120 words per reply.`;
             </span>
             <Link
               to="/home"
-              className="rounded-full bg-white/80 px-4 py-2 text-xs font-semibold text-slate-600 shadow-soft transition hover:-translate-y-0.5"
+              className="inline-flex min-h-[44px] items-center rounded-full bg-white/80 px-4 py-2 text-xs font-semibold text-slate-600 shadow-soft transition hover:-translate-y-0.5 sm:min-h-0"
             >
               ← Back home
             </Link>
@@ -450,7 +450,7 @@ Be warm, supportive, specific, and concise. Under 120 words per reply.`;
         <div className="flex gap-1 overflow-x-auto rounded-2xl bg-white/60 p-1.5 shadow-soft">
           {tabs.map((t) => (
             <button key={t.id} type="button" onClick={() => setActiveTab(t.id)}
-              className={`shrink-0 rounded-xl px-4 py-2 text-xs font-bold transition ${
+              className={`shrink-0 min-h-[44px] rounded-xl px-4 py-2 text-xs font-bold transition sm:min-h-0 ${
                 activeTab === t.id
                   ? "bg-buddy-grape text-white shadow-soft"
                   : "text-slate-500 hover:text-slate-700 hover:bg-white/60"
@@ -476,14 +476,14 @@ Be warm, supportive, specific, and concise. Under 120 words per reply.`;
             )}
 
             {/* Stat cards */}
-            <motion.div variants={item} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <motion.div variants={item} className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
               {[
                 { label: "Minutes this week", value: data.totalMins, unit: "min", icon: "⏱️", color: "bg-buddy-grape/10 text-buddy-grape" },
                 { label: "Daily average",     value: data.avgMins,   unit: "min", icon: "📅", color: "bg-buddy-coral/10 text-buddy-coral" },
                 { label: "Activities done",   value: data.modules.reduce((s, m) => s + m.done, 0), unit: "sessions", icon: "✅", color: "bg-emerald-50 text-emerald-600" },
                 { label: "Streak",            value: data.streak,    unit: "days", icon: "🔥", color: "bg-amber-50 text-amber-600" },
               ].map((stat) => (
-                <div key={stat.label} className="rounded-2xl border border-white/70 bg-white/85 p-5 shadow-soft">
+                <div key={stat.label} className="rounded-2xl border border-white/70 bg-white/85 p-4 shadow-soft sm:p-5">
                   <div className={`inline-flex rounded-xl p-2 text-xl ${stat.color}`}>{stat.icon}</div>
                   <p className="mt-3 text-3xl font-extrabold text-buddy-cocoa">{stat.value}</p>
                   <p className="text-xs font-semibold text-slate-400 mt-0.5">{stat.unit} · {stat.label}</p>
@@ -528,7 +528,7 @@ Be warm, supportive, specific, and concise. Under 120 words per reply.`;
 
             {/* Topics */}
             <motion.div variants={item} className="grid gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl border border-white/70 bg-white/85 p-5 shadow-soft">
+              <div className="rounded-2xl border border-white/70 bg-white/85 p-4 shadow-soft sm:p-5">
                 <h3 className="font-display text-sm font-bold text-buddy-cocoa mb-3">
                   ✅ Topics Covered
                 </h3>
@@ -541,7 +541,7 @@ Be warm, supportive, specific, and concise. Under 120 words per reply.`;
                   ))}
                 </ul>
               </div>
-              <div className="rounded-2xl border border-white/70 bg-white/85 p-5 shadow-soft">
+              <div className="rounded-2xl border border-white/70 bg-white/85 p-4 shadow-soft sm:p-5">
                 <h3 className="font-display text-sm font-bold text-buddy-cocoa mb-3">
                   🎯 Recommended Next
                 </h3>
@@ -915,7 +915,7 @@ Be warm, supportive, specific, and concise. Under 120 words per reply.`;
                   ].map((q) => (
                     <button key={q}
                       onClick={() => { setChatInput(q); }}
-                      className="rounded-full bg-buddy-grape/8 border border-buddy-grape/20 px-3 py-1.5 text-[11px] font-semibold text-buddy-grape hover:bg-buddy-grape/15 transition"
+                      className="min-h-[44px] rounded-full bg-buddy-grape/8 border border-buddy-grape/20 px-3 py-1.5 text-[11px] sm:min-h-0 font-semibold text-buddy-grape hover:bg-buddy-grape/15 transition"
                     >
                       {q}
                     </button>
@@ -970,7 +970,7 @@ Be warm, supportive, specific, and concise. Under 120 words per reply.`;
                   onChange={(e) => setChatInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && sendChat()}
                   placeholder={`Ask about ${nickname}'s progress…`}
-                  className="flex-1 rounded-full border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-buddy-grape focus:ring-2 focus:ring-buddy-grape/20 transition"
+                  className="min-w-0 flex-1 rounded-full border border-slate-200 bg-slate-50 px-4 py-2.5 text-base text-slate-700 sm:text-sm outline-none focus:border-buddy-grape focus:ring-2 focus:ring-buddy-grape/20 transition"
                 />
                 <motion.button
                   whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}

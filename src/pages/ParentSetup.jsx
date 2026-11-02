@@ -1,39 +1,47 @@
-import React, { useMemo, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { createFamilyWithChild, generateKidCode, hashPin } from "../lib/db";
 import { useSession } from "../context/SessionContext.jsx";
+import AuthShell, { PinInput, authErrorClass, authInputClass, authLabelClass, authPrimaryClass } from "../components/AuthShell.jsx";
 
-const stepVariants = {
-  enter: { opacity: 0, y: 16 },
-  center: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -12 },
-};
+const languages = [
+  { label: "Hindi", native: "हिन्दी" },
+  { label: "Tamil", native: "தமிழ்" },
+  { label: "Telugu", native: "తెలుగు" },
+  { label: "Kannada", native: "ಕನ್ನಡ" },
+  { label: "Malayalam", native: "മലയാളം" },
+  { label: "English", native: "English" },
+];
 
-const languages = ["Tamil", "Telugu", "Hindi", "Kannada", "English"];
+const ages = Array.from({ length: 11 }, (_, i) => i + 5);
 
+// Step 1: the child. Step 2: the parent PIN, which creates the family. Step 3: the kid code.
 export default function ParentSetup() {
   const navigate = useNavigate();
-  const { loginChild, childProfile } = useSession();
+  const { loginChild } = useSession();
   const [step, setStep] = useState(1);
-  const [pin, setPin] = useState("");
-  const [confirmPin, setConfirmPin] = useState("");
   const [nickname, setNickname] = useState("");
   const [age, setAge] = useState(8);
-  const [preferredLanguage, setPreferredLanguage] = useState(languages[0]);
+  const [preferredLanguage, setPreferredLanguage] = useState("");
+  const [pin, setPin] = useState("");
+  const [confirmPin, setConfirmPin] = useState("");
   const [kidCode, setKidCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
 
-  const progress = useMemo(() => (step / 3) * 100, [step]);
+  const childValid = nickname.trim().length >= 2 && Boolean(preferredLanguage);
   const pinValid = /^\d{4,6}$/.test(pin) && pin === confirmPin;
-  const childValid = nickname.trim().length >= 2;
-  const showPinError = !pinValid && (pin.length > 0 || confirmPin.length > 0);
-  const showNicknameError = !childValid && nickname.trim().length > 0;
+  const pinMismatch = confirmPin.length >= pin.length && confirmPin.length > 0 && pin !== confirmPin;
 
-  const handleCreate = async () => {
-    if (!pinValid || !childValid) return;
+  const handleChildNext = (event) => {
+    event.preventDefault();
+    if (childValid) setStep(2);
+  };
+
+  const handleCreate = async (event) => {
+    event.preventDefault();
+    if (!pinValid || !childValid || loading) return;
     setLoading(true);
     setError("");
     try {
@@ -46,6 +54,7 @@ export default function ParentSetup() {
           nickname: nickname.trim(),
           age,
           preferredLanguage,
+          onboarding: { age, role: "Child", focus: [], vibe: "gentle" },
         },
       });
       setKidCode(child.kid_code);
@@ -58,12 +67,7 @@ export default function ParentSetup() {
     }
   };
 
-  const handleStart = () => {
-    navigate(childProfile?.onboarding ? "/journey" : "/signup");
-  };
-
   const handleCopyCode = async () => {
-    if (!kidCode) return;
     try {
       await navigator.clipboard.writeText(kidCode);
       setCopied(true);
@@ -73,272 +77,113 @@ export default function ParentSetup() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-sparkle px-6 py-10 sm:px-10 lg:px-16">
-      <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 rounded-3xl border border-white/70 bg-white/80 p-8 shadow-card">
-        <header className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h1 className="font-display text-3xl font-semibold text-buddy-cocoa">
-              Parent setup
-            </h1>
-            <p className="mt-2 text-sm text-slate-600">
-              Secure your family with a PIN, then create a kid code.
-            </p>
-          </div>
-          <Link
-            to="/start"
-            className="rounded-full bg-white/80 px-4 py-2 text-xs font-semibold text-slate-600 shadow-soft transition hover:-translate-y-0.5"
-          >
-            Back
-          </Link>
-        </header>
-
-        <div className="space-y-3">
-          <div className="flex items-center justify-between text-xs font-semibold text-slate-500">
-            <span>Step {step} of 3</span>
-            <span>{Math.round(progress)}% done</span>
-          </div>
-          <div className="h-2 w-full rounded-full bg-white/70">
-            <motion.div
-              className="h-2 rounded-full bg-buddy-grape"
-              initial={false}
-              animate={{ width: `${progress}%` }}
-              transition={{ duration: 0.4, ease: "easeInOut" }}
-            />
-          </div>
-          <div className="flex gap-2">
-            {[1, 2, 3].map((index) => (
-              <span
-                key={index}
-                className={`h-2 w-2 rounded-full ${
-                  step >= index ? "bg-buddy-coral" : "bg-slate-200"
-                }`}
-              />
-            ))}
-          </div>
-        </div>
-
-        {error ? (
-          <div className="rounded-2xl bg-buddy-peach/60 px-4 py-3 text-sm font-semibold text-slate-700">
-            {error}
-          </div>
-        ) : null}
-
-        <AnimatePresence mode="wait">
-          {step === 1 && (
-            <motion.section
-              key="step-1"
-              variants={stepVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ duration: 0.35, ease: "easeInOut" }}
-              className="space-y-6"
-            >
-              <div>
-                <h2 className="font-display text-2xl font-semibold text-buddy-cocoa">
-                  Set your Parent PIN
-                </h2>
-                <p className="mt-2 text-sm text-slate-600">
-                  Choose a 4-6 digit PIN. This stays with your family.
-                </p>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="space-y-2 text-sm font-semibold text-slate-600">
-                  PIN
-                  <input
-                    type="password"
-                    inputMode="numeric"
-                    value={pin}
-                    onChange={(event) => setPin(event.target.value.trim())}
-                    className="w-full rounded-2xl border border-white/70 bg-white/80 px-4 py-3 text-base font-semibold text-slate-700 shadow-soft"
-                    placeholder="4-6 digits"
-                  />
-                </label>
-                <label className="space-y-2 text-sm font-semibold text-slate-600">
-                  Confirm PIN
-                  <input
-                    type="password"
-                    inputMode="numeric"
-                    value={confirmPin}
-                    onChange={(event) => setConfirmPin(event.target.value.trim())}
-                    className="w-full rounded-2xl border border-white/70 bg-white/80 px-4 py-3 text-base font-semibold text-slate-700 shadow-soft"
-                    placeholder="Re-enter"
-                  />
-                </label>
-              </div>
-              {showPinError ? (
-                <p className="text-xs font-semibold text-buddy-coral">
-                  PINs must match and be 4-6 digits.
-                </p>
-              ) : null}
-            </motion.section>
-          )}
-
-          {step === 2 && (
-            <motion.section
-              key="step-2"
-              variants={stepVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ duration: 0.35, ease: "easeInOut" }}
-              className="space-y-6"
-            >
-              <div>
-                <h2 className="font-display text-2xl font-semibold text-buddy-cocoa">
-                  Add your child
-                </h2>
-                <p className="mt-2 text-sm text-slate-600">
-                  Tell us who will be learning today.
-                </p>
-              </div>
-              <label className="space-y-2 text-sm font-semibold text-slate-600">
-                Nickname
-                <input
-                  type="text"
-                  value={nickname}
-                  onChange={(event) => setNickname(event.target.value)}
-                  className="w-full rounded-2xl border border-white/70 bg-white/80 px-4 py-3 text-base font-semibold text-slate-700 shadow-soft"
-                  placeholder="Little Mango"
-                />
-              </label>
-              {showNicknameError ? (
-                <p className="text-xs font-semibold text-buddy-coral">
-                  Please enter at least 2 characters.
-                </p>
-              ) : null}
-              <div className="rounded-2xl border border-white/70 bg-white/80 p-5 shadow-soft">
-                <div className="flex items-center justify-between text-sm font-semibold text-slate-600">
-                  <span>Age</span>
-                  <span className="rounded-full bg-buddy-mint/70 px-3 py-1 text-xs text-slate-700">
-                    {age} years
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="5"
-                  max="15"
-                  value={age}
-                  onChange={(event) => setAge(Number(event.target.value))}
-                  className="mt-4 h-2 w-full cursor-pointer appearance-none rounded-full bg-buddy-sky/60 accent-buddy-coral"
-                />
-              </div>
-              <div className="space-y-2">
-                <p className="text-sm font-semibold text-slate-600">Preferred language</p>
-                <div className="flex flex-wrap gap-3">
-                  {languages.map((language) => (
-                    <motion.button
-                      key={language}
-                      type="button"
-                      whileHover={{ y: -2 }}
-                      whileTap={{ scale: 0.96 }}
-                      onClick={() => setPreferredLanguage(language)}
-                      className={`rounded-full px-4 py-2 text-sm font-semibold shadow-soft transition ${
-                        preferredLanguage === language
-                          ? "bg-buddy-coral text-white"
-                          : "bg-white/80 text-slate-600"
-                      }`}
-                    >
-                      {language}
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
-            </motion.section>
-          )}
-
-          {step === 3 && (
-            <motion.section
-              key="step-3"
-              variants={stepVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ duration: 0.35, ease: "easeInOut" }}
-              className="space-y-6 text-center"
-            >
-              <div>
-                <h2 className="font-display text-2xl font-semibold text-buddy-cocoa">
-                  Your kid code is ready
-                </h2>
-                <p className="mt-2 text-sm text-slate-600">
-                  Share this code with your child to sign in.
-                </p>
-              </div>
-              <div className="rounded-3xl border border-white/70 bg-white/90 px-6 py-5 text-2xl font-semibold text-buddy-cocoa shadow-soft">
-                {kidCode}
-              </div>
-              <p className="text-xs font-semibold text-slate-500">
-                Save this kid code and your parent PIN. The PIN can&apos;t be recovered.
-              </p>
-              <motion.button
-                type="button"
-                whileTap={{ scale: 0.96 }}
-                onClick={handleCopyCode}
-                className="rounded-full bg-buddy-coral px-5 py-2 text-xs font-semibold text-white shadow-soft"
-              >
-                {copied ? "Copied" : "Copy kid code"}
-              </motion.button>
-              <motion.button
-                type="button"
-                whileTap={{ scale: 0.96 }}
-                onClick={handleStart}
-                className="rounded-full bg-buddy-grape px-6 py-3 text-sm font-semibold text-white shadow-soft"
-              >
-                Start learning
-              </motion.button>
-            </motion.section>
-          )}
-        </AnimatePresence>
-
-        <div className="flex flex-wrap items-center justify-between gap-4 pt-4">
+  if (step === 3) {
+    return (
+      <AuthShell title={`${nickname.trim()} is all set!`} subtitle="Keep this kid code. You'll need it with your PIN to sign in on another device." step={3} totalSteps={3}>
+        <div className="flex items-center justify-between gap-3 rounded-2xl bg-buddy-mint/60 px-4 py-4">
+          <span className="whitespace-nowrap font-display text-2xl font-semibold tracking-wide text-buddy-cocoa sm:text-3xl">{kidCode}</span>
           <button
             type="button"
-            onClick={() => setStep((prev) => Math.max(1, prev - 1))}
-            disabled={step === 1 || loading}
-            className={`rounded-full px-5 py-2 text-sm font-semibold transition ${
-              step === 1 || loading
-                ? "cursor-not-allowed bg-slate-100 text-slate-400"
-                : "bg-white/90 text-slate-600 shadow-soft hover:-translate-y-0.5"
-            }`}
+            onClick={handleCopyCode}
+            className="min-h-12 rounded-full bg-white px-5 text-base font-semibold text-slate-700 shadow-soft"
           >
-            Back
+            {copied ? "Copied" : "Copy"}
           </button>
-
-          {step === 1 ? (
-            <motion.button
-              type="button"
-              whileTap={{ scale: 0.96 }}
-              onClick={() => setStep(2)}
-              disabled={!pinValid}
-              className={`rounded-full px-6 py-2 text-sm font-semibold shadow-soft ${
-                pinValid
-                  ? "bg-buddy-grape text-white"
-                  : "cursor-not-allowed bg-slate-200 text-slate-400"
-              }`}
-            >
-              Next
-            </motion.button>
-          ) : null}
-
-          {step === 2 ? (
-            <motion.button
-              type="button"
-              whileTap={{ scale: 0.96 }}
-              onClick={handleCreate}
-              disabled={!childValid || loading}
-              className={`rounded-full px-6 py-2 text-sm font-semibold shadow-soft ${
-                childValid && !loading
-                  ? "bg-buddy-grape text-white"
-                  : "cursor-not-allowed bg-slate-200 text-slate-400"
-              }`}
-            >
-              {loading ? "Creating..." : "Create family"}
-            </motion.button>
-          ) : null}
         </div>
-      </div>
-    </div>
+        <p className="mt-3 text-base font-semibold text-slate-600">
+          The PIN can&apos;t be recovered, so keep it somewhere safe.
+        </p>
+        <button type="button" onClick={() => navigate("/home", { replace: true })} className={`mt-6 ${authPrimaryClass}`}>
+          Start learning
+        </button>
+      </AuthShell>
+    );
+  }
+
+  if (step === 2) {
+    return (
+      <AuthShell
+        title="Set a parent PIN"
+        subtitle="4 to 6 digits. Your child will need it with their kid code to sign in."
+        onBack={() => setStep(1)}
+        step={2}
+        totalSteps={3}
+      >
+        <form onSubmit={handleCreate} className="space-y-4">
+          <PinInput label="PIN" value={pin} onChange={setPin} autoComplete="new-password" autoFocus />
+          <PinInput label="Confirm PIN" value={confirmPin} onChange={setConfirmPin} autoComplete="new-password" />
+          {pinMismatch ? <p className="text-base font-semibold text-red-600">The PINs don&apos;t match.</p> : null}
+          {error ? (
+            <p className={authErrorClass}>{error}</p>
+          ) : null}
+          <button type="submit" disabled={!pinValid || loading} className={authPrimaryClass}>
+            {loading ? "Creating..." : "Create family"}
+          </button>
+        </form>
+      </AuthShell>
+    );
+  }
+
+  return (
+    <AuthShell
+      title="Who's learning?"
+      subtitle="Tell us about your child. You can add more children later."
+      backTo="/start"
+      step={1}
+      totalSteps={3}
+    >
+      <form onSubmit={handleChildNext} className="space-y-5">
+        <label className={authLabelClass}>
+          <span>Child&apos;s name or nickname</span>
+          <input
+            type="text"
+            autoComplete="off"
+            value={nickname}
+            onChange={(event) => setNickname(event.target.value)}
+            className={authInputClass}
+            placeholder="Little Mango"
+          />
+        </label>
+        <label className={authLabelClass}>
+          <span>Age</span>
+          <select value={age} onChange={(event) => setAge(Number(event.target.value))} className={authInputClass}>
+            {ages.map((value) => (
+              <option key={value} value={value}>
+                {value} years
+              </option>
+            ))}
+          </select>
+        </label>
+        <fieldset className="space-y-2">
+          <legend className="text-base font-semibold text-slate-700">Language to learn</legend>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {languages.map(({ label, native }) => {
+              const active = preferredLanguage === label;
+              return (
+                <button
+                  key={label}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => setPreferredLanguage(label)}
+                  className={`flex min-h-16 flex-col items-center justify-center rounded-2xl border-2 px-2 py-2 text-base font-semibold transition ${
+                    active
+                      ? "border-buddy-grape bg-buddy-grape text-white shadow-soft"
+                      : "border-slate-200 bg-white text-slate-700"
+                  }`}
+                >
+                  <span className="text-lg leading-snug">{native}</span>
+                  {native !== label ? (
+                    <span className={`text-sm ${active ? "text-white/90" : "text-slate-600"}`}>{label}</span>
+                  ) : null}
+                </button>
+              );
+            })}
+          </div>
+        </fieldset>
+        <button type="submit" disabled={!childValid} className={authPrimaryClass}>
+          Next
+        </button>
+      </form>
+    </AuthShell>
   );
 }

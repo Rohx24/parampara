@@ -1,7 +1,7 @@
 /**
  * Phoneme-based Grapheme-to-Phoneme (G2P) converter for Indian languages.
  *
- * Converts words in Hindi (Devanagari), Tamil, Telugu, Kannada, or English
+ * Converts words in Hindi (Devanagari), Tamil, Telugu, Kannada, Malayalam, or English
  * into sequences of phoneme tokens, then computes phoneme-level edit distance
  * for pronunciation scoring that is far more linguistically valid than raw
  * character Levenshtein distance.
@@ -134,6 +134,61 @@ const KANNADA_MATRAS = {
   '\u0C82': 'n',    '\u0C83': 'h',
 };
 
+// ─── Malayalam tables ──────────────────────────────────────────────────────────
+
+const MALAYALAM_VIRAMA = '\u0D4D'; // ് chandrakkala
+
+const MALAYALAM_CONSONANTS = {
+  '\u0D15': 'k',    '\u0D16': 'kh',   '\u0D17': 'g',    '\u0D18': 'gh',   '\u0D19': 'ng',
+  '\u0D1A': 'ch',   '\u0D1B': 'chh',  '\u0D1C': 'j',    '\u0D1D': 'jh',   '\u0D1E': 'ny',
+  '\u0D1F': 'T',    '\u0D20': 'Th',   '\u0D21': 'D',    '\u0D22': 'Dh',   '\u0D23': 'N',
+  '\u0D24': 't',    '\u0D25': 'th',   '\u0D26': 'd',    '\u0D27': 'dh',   '\u0D28': 'n',
+  '\u0D29': 'n',    '\u0D2A': 'p',    '\u0D2B': 'ph',   '\u0D2C': 'b',    '\u0D2D': 'bh',
+  '\u0D2E': 'm',    '\u0D2F': 'y',    '\u0D30': 'r',    '\u0D31': 'rr',   '\u0D32': 'l',
+  '\u0D33': 'll',   '\u0D34': 'zh',   '\u0D35': 'v',    '\u0D36': 'sh',   '\u0D37': 'Sh',
+  '\u0D38': 's',    '\u0D39': 'h',    '\u0D3A': 't',
+};
+
+const MALAYALAM_VOWELS = {
+  '\u0D05': 'a',    '\u0D06': 'aa',   '\u0D07': 'i',    '\u0D08': 'ii',
+  '\u0D09': 'u',    '\u0D0A': 'uu',   '\u0D0B': 'ri',
+  '\u0D0E': 'e',    '\u0D0F': 'ee',   '\u0D10': 'ai',
+  '\u0D12': 'o',    '\u0D13': 'oo',   '\u0D14': 'au',
+};
+
+const MALAYALAM_MATRAS = {
+  '\u0D3E': 'aa',   '\u0D3F': 'i',    '\u0D40': 'ii',
+  '\u0D41': 'u',    '\u0D42': 'uu',   '\u0D43': 'ri',
+  '\u0D46': 'e',    '\u0D47': 'ee',   '\u0D48': 'ai',
+  '\u0D4A': 'o',    '\u0D4B': 'oo',   '\u0D4C': 'au',   '\u0D57': 'au',
+  '\u0D02': 'm',    '\u0D03': 'h',    // Anusvara is /m/ in Malayalam, even word-finally
+};
+
+// Chillu letters are consonants with no inherent vowel
+const MALAYALAM_CHILLUS = {
+  '\u0D7A': 'N',    '\u0D7B': 'n',    '\u0D7C': 'r',
+  '\u0D7D': 'l',    '\u0D7E': 'll',   '\u0D7F': 'k',
+};
+
+// Older encoding of each chillu: consonant + virama + ZWJ
+const MALAYALAM_OLD_CHILLU = /([\u0D23\u0D28\u0D30\u0D32\u0D33\u0D15])\u0D4D\u200D/g;
+const MALAYALAM_CHILLU_OF = {
+  '\u0D23': '\u0D7A', '\u0D28': '\u0D7B', '\u0D30': '\u0D7C',
+  '\u0D32': '\u0D7D', '\u0D33': '\u0D7E', '\u0D15': '\u0D7F',
+};
+
+/**
+ * Bring the spellings speech recognisers return to one form. Old chillus go
+ * first: with its ZWJ gone, old-style അവൻ ("he") would read as അവന് ("to him").
+ * NFC joins the two-part vowel signs (െ + ാ → ൊ).
+ */
+function normalizeMalayalam(word) {
+  return word
+    .normalize('NFC')
+    .replace(MALAYALAM_OLD_CHILLU, (_, consonant) => MALAYALAM_CHILLU_OF[consonant])
+    .replace(/[\u200C\u200D]/g, '');
+}
+
 // ─── Language table registry ───────────────────────────────────────────────────
 
 const LANG_TABLES = {
@@ -141,6 +196,12 @@ const LANG_TABLES = {
   tamil:   { consonants: TAMIL_CONSONANTS,   vowels: TAMIL_VOWELS,   matras: TAMIL_MATRAS,   virama: TAMIL_VIRAMA },
   telugu:  { consonants: TELUGU_CONSONANTS,  vowels: TELUGU_VOWELS,  matras: TELUGU_MATRAS,  virama: TELUGU_VIRAMA },
   kannada: { consonants: KANNADA_CONSONANTS, vowels: KANNADA_VOWELS, matras: KANNADA_MATRAS, virama: KANNADA_VIRAMA },
+  malayalam: {
+    consonants: MALAYALAM_CONSONANTS, vowels: MALAYALAM_VOWELS, matras: MALAYALAM_MATRAS, virama: MALAYALAM_VIRAMA,
+    pureConsonants: MALAYALAM_CHILLUS, finalViramaVowel: 'u', normalize: normalizeMalayalam,
+    // Words share long endings, so വേണം/വേണ്ട and ഇഷ്ടമാണ്/ഇഷ്ടമല്ല would pass at 0.60
+    keywordThreshold: 0.75,
+  },
 };
 
 // ─── G2P core algorithm ────────────────────────────────────────────────────────
@@ -154,9 +215,12 @@ const LANG_TABLES = {
  *   - Virama after a consonant removes its inherent vowel (consonant cluster)
  *   - Matra (vowel sign) after a consonant replaces its inherent /a/
  *   - Independent vowels are emitted directly
+ *   - Pure consonants (Malayalam chillus) are emitted with no vowel at all
+ *   - A word-final virama is spoken as a short vowel in Malayalam (samvruthokaram):
+ *     അത് and the older spelling അതു് are both a-t-u
  *
  * @param {string} word
- * @param {string} language  'hindi' | 'tamil' | 'telugu' | 'kannada' | 'english'
+ * @param {string} language  'hindi' | 'tamil' | 'telugu' | 'kannada' | 'malayalam' | 'english'
  * @returns {string[]}  e.g. ['n','a','m','a','s','t','e'] for "namaste"
  */
 export function wordToPhonemes(word, language = 'hindi') {
@@ -174,8 +238,8 @@ export function wordToPhonemes(word, language = 'hindi') {
   const tables = LANG_TABLES[language];
   if (!tables) return word.toLowerCase().split('').filter(Boolean);
 
-  const { consonants, vowels, matras, virama } = tables;
-  const chars = [...word]; // Unicode-aware split (handles surrogate pairs)
+  const { consonants, vowels, matras, virama, pureConsonants = {}, finalViramaVowel, normalize } = tables;
+  const chars = [...(normalize ? normalize(word) : word)]; // Unicode-aware split (handles surrogate pairs)
   const phonemes = [];
   let i = 0;
 
@@ -194,7 +258,11 @@ export function wordToPhonemes(word, language = 'hindi') {
       if (i < chars.length && chars[i] === virama) {
         // Virama: pure consonant, no vowel
         i++;
-      } else if (i < chars.length && (sign === 'n' || sign === 'h')) {
+        const next = chars[i];
+        if (finalViramaVowel && consonants[next] === undefined && pureConsonants[next] === undefined) {
+          phonemes.push(finalViramaVowel);
+        }
+      } else if (i < chars.length && (sign === 'n' || sign === 'h' || sign === 'm')) {
         // Anusvara/visarga follow the inherent /a/ rather than replacing it
         phonemes.push('a', sign);
         i++;
@@ -206,6 +274,10 @@ export function wordToPhonemes(word, language = 'hindi') {
         // Inherent /a/ vowel
         phonemes.push('a');
       }
+    } else if (pureConsonants[ch] !== undefined) {
+      // ── Pure consonant (chillu) ───────────────────────────────────────────
+      phonemes.push(pureConsonants[ch]);
+      i++;
     } else if (vowels[ch] !== undefined) {
       // ── Independent vowel ─────────────────────────────────────────────────
       phonemes.push(vowels[ch]);
@@ -237,6 +309,7 @@ export function wordToPhonemes(word, language = 'hindi') {
  *   - Same vowel class (front/back/mid)               → 0.5  related sounds
  *   - Nasals (n/m/ng)                                 → 0.4  often confused
  *   - Sibilants (s/sh/Sh)                             → 0.4  common confusable
+ *   - Paired liquids (r/rr, l/ll, ll/zh)              → 0.3  ര/റ, ല/ള, ള/ഴ and their Tamil twins
  */
 function phonemePenalty(p1, p2) {
   if (p1 === p2) return 0;
@@ -248,6 +321,11 @@ function phonemePenalty(p1, p2) {
   // Aspirated/unaspirated pairs (0.3)
   const aspirate = { k: 'kh', kh: 'k', t: 'th', th: 't', p: 'ph', ph: 'p', ch: 'chh', chh: 'ch', g: 'gh', gh: 'g', d: 'dh', dh: 'd', j: 'jh', jh: 'j', b: 'bh', bh: 'b' };
   if (aspirate[p1] === p2) return 0.3;
+
+  // Paired liquids (0.3), kept below the general liquid class further down.
+  // Hindi spells ळ as L where the other languages use ll.
+  const liquidPairs = new Set(['r|rr', 'l|ll', 'l|L', 'll|zh', 'L|zh']);
+  if (liquidPairs.has(`${p1}|${p2}`) || liquidPairs.has(`${p2}|${p1}`)) return 0.3;
 
   // Retroflex/dental pairs (0.4)
   const retroflex = { T: 't', t: 'T', D: 'd', d: 'D', N: 'n', n: 'N', Th: 'th', th: 'Th', Dh: 'dh', dh: 'Dh', Sh: 'sh', sh: 'Sh' };
@@ -343,7 +421,7 @@ export function phonemeSimilarity(wordA, wordB, language = 'hindi') {
  *
  * Algorithm:
  *   1. Keyword coverage: for each keyword, check if any user word is
- *      phonemically ≥60% similar (catches pronunciation variants)
+ *      phonemically ≥60% similar, 75% in Malayalam (catches pronunciation variants)
  *   2. Phonetic similarity: for each expected word, find the most similar
  *      user word by phoneme distance; average across all expected words
  *   3. Final score: 70% keyword coverage + 30% phonetic similarity
@@ -351,7 +429,7 @@ export function phonemeSimilarity(wordA, wordB, language = 'hindi') {
  * @param {string}   expectedRaw  Expected sentence (native script or English)
  * @param {string}   userRaw      User's recognised speech
  * @param {string[]} keywords     Key words that must appear (from voice prompt)
- * @param {string}   language     'hindi' | 'tamil' | 'telugu' | 'kannada' | 'english'
+ * @param {string}   language     'hindi' | 'tamil' | 'telugu' | 'kannada' | 'malayalam' | 'english'
  * @returns {{ score: number, similarity: number, missingKeywords: string[], phonemeBased: true }}
  */
 export function evaluateTranscriptPhoneme(expectedRaw, userRaw, keywords = [], language = 'hindi') {
@@ -361,7 +439,7 @@ export function evaluateTranscriptPhoneme(expectedRaw, userRaw, keywords = [], l
   const userWords     = clean(userRaw).split(' ').filter(Boolean);
 
   // ── 1. Keyword coverage with phoneme fuzzy matching ────────────────────────
-  const PHONEME_MATCH_THRESHOLD = 0.60;
+  const PHONEME_MATCH_THRESHOLD = LANG_TABLES[language]?.keywordThreshold ?? 0.60;
   // One changed sound turns a short word into a different word (माँ / में)
   const SHORT_WORD_LENGTH = 3;
   const SHORT_WORD_THRESHOLD = 0.85;

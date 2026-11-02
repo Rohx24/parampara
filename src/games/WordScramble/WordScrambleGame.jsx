@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { splitGraphemes } from "../LetterMatch/BashaPlay/splitters/splitGraphemes";
 
 // ─── Word Bank (scramble the ENGLISH word, show native as hint) ───────────────
 
@@ -53,9 +54,21 @@ const WORDS = {
     { native: "ಮರ", english: "TREE", emoji: "🌳", hint: "Has leaves and roots" },
     { native: "ಮಳೆ", english: "RAIN", emoji: "🌧️", hint: "Falls from clouds" },
   ],
+  malayalam: [
+    { native: "വെള്ളം", english: "WATER", emoji: "💧", hint: "We drink this" },
+    { native: "വീട്", english: "HOME", emoji: "🏠", hint: "Where we live" },
+    { native: "മാമ്പഴം", english: "MANGO", emoji: "🥭", hint: "A sweet tropical fruit" },
+    { native: "സൂര്യൻ", english: "SUN", emoji: "☀️", hint: "Shines in the sky" },
+    { native: "ചന്ദ്രൻ", english: "MOON", emoji: "🌙", hint: "Glows at night" },
+    { native: "പൂച്ച", english: "CAT", emoji: "🐱", hint: "Says meow" },
+    { native: "മീൻ", english: "FISH", emoji: "🐟", hint: "Lives in water" },
+    { native: "പൂവ്", english: "FLOWER", emoji: "🌸", hint: "Smells beautiful" },
+    { native: "മരം", english: "TREE", emoji: "🌳", hint: "Has leaves and roots" },
+    { native: "മഴ", english: "RAIN", emoji: "🌧️", hint: "Falls from clouds" },
+  ],
 };
 
-const LANG_LABELS = { hindi: "Hindi", tamil: "Tamil", telugu: "Telugu", kannada: "Kannada" };
+const LANG_LABELS = { hindi: "Hindi", tamil: "Tamil", telugu: "Telugu", kannada: "Kannada", malayalam: "Malayalam" };
 const ROUNDS = 8;
 
 function shuffle(arr) {
@@ -68,10 +81,10 @@ function shuffle(arr) {
 }
 
 function scramble(word) {
-  const letters = word.split("");
+  const letters = splitGraphemes(word);
   let scrambled;
   do { scrambled = shuffle(letters); }
-  while (scrambled.join("") === word && word.length > 1);
+  while (scrambled.join("") === word && letters.length > 1);
   return scrambled.map((l, i) => ({ id: i, letter: l, used: false }));
 }
 
@@ -126,7 +139,7 @@ export default function WordScrambleGame() {
   const check = useCallback(() => {
     if (!current) return;
     const attempt = answer.map((t) => t.letter).join("");
-    if (attempt === current.english) {
+    if (attempt.normalize("NFC") === current.english.normalize("NFC")) {
       setResult("correct");
       setScore((s) => s + (hintUsed ? 1 : 2));
       setTimeout(nextWord, 1000);
@@ -167,7 +180,7 @@ export default function WordScrambleGame() {
             <h1 className="font-display text-3xl font-semibold text-buddy-cocoa">Word Scramble 🔀</h1>
             <p className="mt-1 text-sm text-slate-600">Unscramble the English word from its {LANG_LABELS[language]} hint!</p>
           </div>
-          <Link to="/games" className="rounded-full bg-white/80 px-4 py-2 text-sm font-semibold text-slate-600 shadow-soft transition hover:-translate-y-0.5">
+          <Link to="/games" className="inline-flex min-h-[44px] items-center rounded-full bg-white/80 px-4 py-2 text-sm font-semibold text-slate-600 shadow-soft transition hover:-translate-y-0.5">
             ← Back
           </Link>
         </div>
@@ -185,7 +198,7 @@ export default function WordScrambleGame() {
               <div className="flex flex-wrap justify-center gap-2">
                 {Object.keys(LANG_LABELS).map((l) => (
                   <button key={l} type="button" onClick={() => setLanguage(l)}
-                    className={`rounded-full px-4 py-2 text-sm font-semibold transition ${language === l ? "bg-buddy-grape text-white shadow-soft" : "bg-white/80 text-slate-600"}`}
+                    className={`min-h-[44px] rounded-full px-4 py-2 text-sm font-semibold transition ${language === l ? "bg-buddy-grape text-white shadow-soft" : "bg-white/80 text-slate-600"}`}
                   >{LANG_LABELS[l]}</button>
                 ))}
               </div>
@@ -227,7 +240,7 @@ export default function WordScrambleGame() {
             </AnimatePresence>
 
             {/* Answer slots */}
-            <div className="flex justify-center gap-2 min-h-[52px]">
+            <div className="flex flex-wrap justify-center gap-2 min-h-[52px]">
               {answer.length === 0 ? (
                 <p className="self-center text-sm text-slate-400 italic">Click letters below to fill here…</p>
               ) : (
@@ -265,20 +278,20 @@ export default function WordScrambleGame() {
             {/* Controls */}
             <div className="flex gap-2 justify-center flex-wrap">
               <button type="button" onClick={check}
-                disabled={answer.length !== current.english.length || !!result}
-                className="rounded-full bg-buddy-grape px-6 py-2.5 text-sm font-bold text-white shadow-soft transition hover:-translate-y-0.5 disabled:opacity-50"
+                disabled={answer.length !== tiles.length || !!result}
+                className="min-h-[44px] rounded-full bg-buddy-grape px-6 py-2.5 text-sm font-bold text-white shadow-soft transition hover:-translate-y-0.5 disabled:opacity-50"
               >Check ✓</button>
               <button type="button" onClick={() => loadWord(current)}
                 disabled={!!result}
-                className="rounded-full border border-white/70 bg-white/80 px-5 py-2.5 text-xs font-semibold text-slate-600 shadow-soft transition hover:-translate-y-0.5"
+                className="min-h-[44px] rounded-full border border-white/70 bg-white/80 px-5 py-2.5 text-xs font-semibold text-slate-600 shadow-soft transition hover:-translate-y-0.5"
               >🔄 Reshuffle</button>
               {!hintUsed && (
                 <button type="button" onClick={useHint}
-                  className="rounded-full border border-buddy-peach bg-buddy-peach/40 px-5 py-2.5 text-xs font-semibold text-slate-700 shadow-soft transition hover:-translate-y-0.5"
+                  className="min-h-[44px] rounded-full border border-buddy-peach bg-buddy-peach/40 px-5 py-2.5 text-xs font-semibold text-slate-700 shadow-soft transition hover:-translate-y-0.5"
                 >💡 Hint (−1pt)</button>
               )}
               <button type="button" onClick={nextWord}
-                className="rounded-full border border-slate-200 bg-white/80 px-5 py-2.5 text-xs font-semibold text-slate-500 transition hover:bg-slate-100"
+                className="min-h-[44px] rounded-full border border-slate-200 bg-white/80 px-5 py-2.5 text-xs font-semibold text-slate-500 transition hover:bg-slate-100"
               >Skip →</button>
             </div>
 

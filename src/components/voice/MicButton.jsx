@@ -41,7 +41,7 @@ export default function MicButton({ isListening, disabled, onStart, onStop }) {
         onClick={handleClick}
         whileTap={{ scale: 0.92 }}
         whileHover={!disabled ? { scale: 1.06 } : {}}
-        className={`relative z-10 flex h-14 w-14 flex-col items-center justify-center rounded-full text-white shadow-card transition ${
+        className={`relative z-10 flex h-16 w-16 flex-col sm:h-14 sm:w-14 items-center justify-center rounded-full text-white shadow-card transition ${
           disabled
             ? "cursor-not-allowed bg-slate-300"
             : isListening

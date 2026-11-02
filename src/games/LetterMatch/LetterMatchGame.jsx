@@ -10,7 +10,7 @@ const shellVariants = {
 
 export default function LetterMatchGame() {
   return (
-    <div className="min-h-screen bg-sparkle px-6 pb-16 pt-10 sm:px-10 lg:px-16">
+    <div className="min-h-screen bg-sparkle px-4 pb-16 pt-6 sm:px-10 sm:pt-10 lg:px-16">
       <motion.div
         variants={shellVariants}
         initial="hidden"
@@ -31,7 +31,7 @@ export default function LetterMatchGame() {
           </div>
           <Link
             to="/games"
-            className="rounded-full bg-white/80 px-4 py-2 text-sm font-semibold text-slate-600 shadow-soft transition hover:-translate-y-0.5"
+            className="inline-flex min-h-[44px] items-center rounded-full bg-white/80 px-4 py-2 text-sm font-semibold text-slate-600 shadow-soft transition hover:-translate-y-0.5"
           >
             Back to games
           </Link>

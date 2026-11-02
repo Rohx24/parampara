@@ -2,6 +2,7 @@ import React, { useState, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { openaiSpeak } from "../../lib/openai.js";
+import { speakText } from "../../lib/voice.js";
 
 // ─── Vocab Bank ───────────────────────────────────────────────────────────────
 
@@ -94,6 +95,28 @@ const VOCAB = {
     { word: "ಆಕಾಶ", meaning: "sky", emoji: "🌤️" },
     { word: "ಮಳೆ", meaning: "rain", emoji: "🌧️" },
   ],
+  malayalam: [
+    { word: "വെള്ളം", meaning: "water", emoji: "💧" },
+    { word: "ഭക്ഷണം", meaning: "food", emoji: "🍱" },
+    { word: "അമ്മ", meaning: "mother", emoji: "👩" },
+    { word: "വീട്", meaning: "home", emoji: "🏠" },
+    { word: "മാമ്പഴം", meaning: "mango", emoji: "🥭" },
+    { word: "പുസ്തകം", meaning: "book", emoji: "📚" },
+    { word: "സൂര്യൻ", meaning: "sun", emoji: "☀️" },
+    { word: "ചന്ദ്രൻ", meaning: "moon", emoji: "🌙" },
+    { word: "സുഹൃത്ത്", meaning: "friend", emoji: "👫" },
+    { word: "വിദ്യാലയം", meaning: "school", emoji: "🏫" },
+    { word: "പൂവ്", meaning: "flower", emoji: "🌸" },
+    { word: "മരം", meaning: "tree", emoji: "🌳" },
+    { word: "പൂച്ച", meaning: "cat", emoji: "🐱" },
+    { word: "നായ", meaning: "dog", emoji: "🐶" },
+    { word: "മീൻ", meaning: "fish", emoji: "🐟" },
+    { word: "ആന", meaning: "elephant", emoji: "🐘" },
+    { word: "ആപ്പിൾ", meaning: "apple", emoji: "🍎" },
+    { word: "വാഴപ്പഴം", meaning: "banana", emoji: "🍌" },
+    { word: "ആകാശം", meaning: "sky", emoji: "🌤️" },
+    { word: "മഴ", meaning: "rain", emoji: "🌧️" },
+  ],
   english: [
     { word: "Hello", meaning: "a greeting", emoji: "👋" },
     { word: "Family", meaning: "related people", emoji: "👨‍👩‍👧" },
@@ -110,7 +133,7 @@ const VOCAB = {
   ],
 };
 
-const LANG_LABELS = { hindi: "Hindi", tamil: "Tamil", telugu: "Telugu", kannada: "Kannada", english: "English" };
+const LANG_LABELS = { hindi: "Hindi", tamil: "Tamil", telugu: "Telugu", kannada: "Kannada", malayalam: "Malayalam", english: "English" };
 const ROUNDS = 10;
 
 function shuffle(arr) {
@@ -187,11 +210,16 @@ export default function FlashCardsGame() {
   }, [chosen, current, qi, deck]);
 
   const hear = (text) => {
+    const codes = { hindi: "hi-IN", tamil: "ta-IN", telugu: "te-IN", kannada: "kn-IN", malayalam: "ml-IN", english: "en-IN" };
+    // openaiSpeak always uses an English voice, so native words go through speakText.
+    if (language !== "english") {
+      speakText(text, codes[language] ?? "hi-IN");
+      return;
+    }
     openaiSpeak(text, "nova").catch(() => {
       if (!window.speechSynthesis) return;
       window.speechSynthesis.cancel();
       const utt = new SpeechSynthesisUtterance(text);
-      const codes = { hindi: "hi-IN", tamil: "ta-IN", telugu: "te-IN", kannada: "kn-IN", english: "en-IN" };
       utt.lang = codes[language] ?? "hi-IN";
       utt.rate = 0.85;
       window.speechSynthesis.speak(utt);
@@ -208,7 +236,7 @@ export default function FlashCardsGame() {
             <h1 className="font-display text-3xl font-semibold text-buddy-cocoa">Flash Cards ⚡</h1>
             <p className="mt-1 text-sm text-slate-600">See the word — pick the right meaning!</p>
           </div>
-          <Link to="/games" className="rounded-full bg-white/80 px-4 py-2 text-sm font-semibold text-slate-600 shadow-soft transition hover:-translate-y-0.5">
+          <Link to="/games" className="inline-flex min-h-[44px] items-center rounded-full bg-white/80 px-4 py-2 text-sm font-semibold text-slate-600 shadow-soft transition hover:-translate-y-0.5">
             ← Back
           </Link>
         </div>
@@ -226,7 +254,7 @@ export default function FlashCardsGame() {
               <div className="flex flex-wrap justify-center gap-2">
                 {Object.keys(LANG_LABELS).map((l) => (
                   <button key={l} type="button" onClick={() => setLanguage(l)}
-                    className={`rounded-full px-4 py-2 text-sm font-semibold transition ${language === l ? "bg-buddy-grape text-white shadow-soft" : "bg-white/80 text-slate-600"}`}
+                    className={`min-h-[44px] rounded-full px-4 py-2 text-sm font-semibold transition ${language === l ? "bg-buddy-grape text-white shadow-soft" : "bg-white/80 text-slate-600"}`}
                   >{LANG_LABELS[l]}</button>
                 ))}
               </div>
@@ -267,14 +295,14 @@ export default function FlashCardsGame() {
                 animate={{ opacity: 1, rotateY: 0, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.35 }}
-                className="rounded-3xl border border-white/70 bg-white/90 p-8 shadow-card text-center space-y-3"
+                className="rounded-3xl border border-white/70 bg-white/90 p-5 shadow-card text-center space-y-3 sm:p-8"
               >
                 <div className="text-6xl">{current.emoji}</div>
-                <p className="font-display text-4xl font-extrabold text-buddy-cocoa leading-none">
+                <p className="font-display text-4xl font-extrabold text-buddy-cocoa leading-snug">
                   {current.word}
                 </p>
                 <button type="button" onClick={() => hear(current.word)}
-                  className="rounded-full bg-buddy-mint px-4 py-1.5 text-xs font-bold text-slate-700 shadow-soft transition hover:scale-105"
+                  className="min-h-[44px] rounded-full bg-buddy-mint px-4 py-1.5 text-xs font-bold text-slate-700 shadow-soft transition hover:scale-105"
                 >🔊 Hear it</button>
                 <p className="text-xs text-slate-400 font-semibold uppercase tracking-widest mt-2">
                   What does this mean in English?

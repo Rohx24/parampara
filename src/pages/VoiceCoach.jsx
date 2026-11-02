@@ -22,6 +22,7 @@ import {
   normalizeLanguageId,
   decideNextStep,
   speakText,
+  checkVoiceFor,
 } from "../lib/voice";
 
 const container = {
@@ -80,6 +81,14 @@ export default function VoiceCoach() {
   const prompts      = useMemo(() => getGuidedPrompts(language, ageGroup), [language, ageGroup]);
   const activePrompt = overridePrompt || prompts[promptIndex % prompts.length];
   const supportsSpeech = useMemo(() => Boolean(getSpeechRecognition()), []);
+  const [hasVoice, setHasVoice] = useState(true);
+
+  // Without a device voice for this language, "Hear it" stays silent
+  useEffect(() => {
+    let alive = true;
+    checkVoiceFor(languageMeta.speechCode).then((ok) => { if (alive) setHasVoice(ok); });
+    return () => { alive = false; };
+  }, [languageMeta.speechCode]);
 
   // Sync language from profile
   useEffect(() => { setLanguage(initialLanguage); }, [initialLanguage]);
@@ -414,7 +423,7 @@ export default function VoiceCoach() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-sparkle px-4 py-8 sm:px-8 lg:px-12">
+    <div className="min-h-dvh bg-sparkle px-4 py-6 sm:px-8 sm:py-8 lg:px-12">
       <motion.div
         variants={container}
         initial="hidden"
@@ -424,31 +433,31 @@ export default function VoiceCoach() {
         {/* Header */}
         <motion.header
           variants={item}
-          className="mb-6 flex flex-wrap items-center justify-between gap-4"
+          className="mb-5 flex flex-wrap items-center justify-between gap-3 sm:mb-6 sm:gap-4"
         >
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
               Talk to a Friend
             </p>
-            <h1 className="mt-1 font-display text-3xl font-semibold text-buddy-cocoa">
+            <h1 className="mt-1 font-display text-2xl font-semibold text-buddy-cocoa sm:text-3xl">
               Practice speaking with Buddy
             </h1>
           </div>
           <Link
             to="/home"
-            className="rounded-full bg-white/80 px-4 py-2 text-xs font-semibold text-slate-600 shadow-soft transition hover:-translate-y-0.5"
+            className="inline-flex min-h-11 items-center rounded-full bg-white/80 px-4 py-2 text-xs font-semibold text-slate-600 shadow-soft transition hover:-translate-y-0.5 sm:min-h-0"
           >
             ← Back home
           </Link>
-          <div className="flex items-center gap-3">
+          <div className="flex w-full items-start gap-3 sm:w-auto sm:items-center">
             {/* Language pills in header */}
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-1 flex-wrap gap-1.5 sm:flex-none">
               {VOICE_LANGUAGES.map((lang) => (
                 <button
                   key={lang.id}
                   type="button"
                   onClick={() => setLanguage(lang.id)}
-                  className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                  className={`min-h-11 rounded-full px-3 py-1.5 text-xs font-semibold transition sm:min-h-0 ${
                     language === lang.id
                       ? "bg-buddy-coral text-white shadow-soft"
                       : "bg-white/80 text-slate-600 hover:bg-buddy-peach/40"
@@ -458,7 +467,7 @@ export default function VoiceCoach() {
                 </button>
               ))}
             </div>
-            <span className="rounded-full bg-white/80 px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-soft">
+            <span className="shrink-0 rounded-full bg-white/80 px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-soft">
               {childProfile?.nickname || "Buddy"}
             </span>
           </div>
@@ -467,10 +476,10 @@ export default function VoiceCoach() {
         {/* Main grid: mascot | chat+mic | coach */}
         <motion.section
           variants={item}
-          className="grid gap-5 lg:grid-cols-[0.85fr_1.3fr_0.85fr]"
+          className="grid grid-cols-1 gap-5 lg:grid-cols-[0.85fr_1.3fr_0.85fr]"
         >
-          {/* ── Left: Mascot + settings ── */}
-          <div className="space-y-4">
+          {/* ── Left: Mascot + settings (below the practice area on phones) ── */}
+          <div className="order-last space-y-4 lg:order-none">
             <div className="rounded-3xl border border-white/70 bg-white/80 p-5 shadow-card text-center">
               <SpeechBubble
                 text={
@@ -498,7 +507,7 @@ export default function VoiceCoach() {
                       key={m}
                       type="button"
                       onClick={() => setMode(m)}
-                      className={`flex-1 rounded-full py-2 text-xs font-semibold transition ${
+                      className={`min-h-11 flex-1 rounded-full py-2 text-xs font-semibold transition sm:min-h-0 ${
                         mode === m
                           ? "bg-buddy-coral text-white shadow-soft"
                           : "bg-white/80 text-slate-600"
@@ -523,7 +532,7 @@ export default function VoiceCoach() {
                       key={id}
                       type="button"
                       onClick={() => setStyle(id)}
-                      className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
+                      className={`min-h-11 rounded-full px-3 py-1 text-xs font-semibold transition sm:min-h-0 ${
                         style === id
                           ? "bg-buddy-grape text-white shadow-soft"
                           : "bg-white/80 text-slate-600"
@@ -539,6 +548,16 @@ export default function VoiceCoach() {
 
           {/* ── Middle: Prompt + chat + mic ── */}
           <div className="space-y-4">
+            {!supportsSpeech && (
+              <p className="rounded-2xl bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700">
+                ⚠️ This browser can't listen to speech, so the mic is off. Type your answer below instead, or open this page in Chrome.
+              </p>
+            )}
+            {!hasVoice && mode === "guided" && (
+              <p className="rounded-2xl bg-buddy-sky/40 px-4 py-3 text-sm font-semibold text-slate-600">
+                🔇 This device has no {languageMeta.label} voice, so Buddy can't read aloud. Read the sentence on screen instead.
+              </p>
+            )}
             {/* Prompt card (guided mode) */}
             {mode === "guided" ? (
               <PromptCard
@@ -573,24 +592,19 @@ export default function VoiceCoach() {
               </div>
 
               {/* Manual input fallback */}
-              {!supportsSpeech && (
-                <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700">
-                  ⚠️ Speech recognition requires Chrome or Edge.
-                </p>
-              )}
               <div className="mt-3 flex gap-2">
                 <input
                   type="text"
                   value={manualText}
                   onChange={(e) => setManualText(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleManualSubmit()}
-                  placeholder="Type your answer (or use mic)…"
-                  className="flex-1 rounded-full border border-white/80 bg-white/90 px-4 py-2 text-xs font-semibold text-slate-600 outline-none focus:ring-2 focus:ring-buddy-grape/30"
+                  placeholder="Type your answer…"
+                  className="min-h-11 min-w-0 flex-1 rounded-full border border-white/80 bg-white/90 px-4 py-2 text-base font-semibold text-slate-600 outline-none focus:ring-2 focus:ring-buddy-grape/30 sm:min-h-0 sm:text-xs"
                 />
                 <button
                   type="button"
                   onClick={handleManualSubmit}
-                  className="rounded-full bg-buddy-grape px-4 py-2 text-xs font-semibold text-white shadow-soft"
+                  className="min-h-11 rounded-full bg-buddy-grape px-4 py-2 text-xs font-semibold text-white shadow-soft sm:min-h-0"
                 >
                   Send
                 </button>
@@ -613,7 +627,7 @@ export default function VoiceCoach() {
         {/* ── Bottom bar: mic + live meter ── */}
         <motion.section
           variants={item}
-          className="sticky bottom-5 mt-5 rounded-3xl border border-white/70 bg-white/95 px-6 py-4 shadow-card backdrop-blur"
+          className="sticky bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-20 mt-5 rounded-3xl border border-white/70 bg-white/95 px-4 py-3 shadow-card backdrop-blur sm:bottom-5 sm:px-6 sm:py-4"
         >
           {/* Live confidence meter */}
           <AnimatePresence>
@@ -652,16 +666,16 @@ export default function VoiceCoach() {
           </AnimatePresence>
 
           {/* Controls row */}
-          <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center justify-between gap-3 sm:flex-wrap sm:gap-4">
             {/* Mic + status */}
-            <div className="flex items-center gap-4">
+            <div className="flex min-w-0 items-center gap-3 sm:gap-4">
               <MicButton
                 isListening={isListening}
                 disabled={!supportsSpeech}
                 onStart={startListening}
                 onStop={stopListening}
               />
-              <div>
+              <div className="min-w-0">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
                   Status
                 </p>
@@ -669,12 +683,14 @@ export default function VoiceCoach() {
               </div>
             </div>
 
-            {/* Waveform */}
-            <Waveform isActive={isListening} />
+            {/* Waveform (the mic's own rings show this on phones) */}
+            <div className="hidden sm:block">
+              <Waveform isActive={isListening} />
+            </div>
 
             {/* Language + current lang indicator */}
-            <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
-              <span>Mic language:</span>
+            <div className="flex shrink-0 items-center gap-2 text-xs font-semibold text-slate-500">
+              <span className="hidden sm:inline">Mic language:</span>
               <span className="rounded-full bg-buddy-coral/20 px-2 py-1 text-buddy-coral font-bold">
                 {languageMeta.label}
               </span>

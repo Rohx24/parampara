@@ -180,12 +180,13 @@ const languages = [
   { id: "tamil",   label: "Tamil",   speechCode: "ta-IN" },
   { id: "telugu",  label: "Telugu",  speechCode: "te-IN" },
   { id: "kannada", label: "Kannada", speechCode: "kn-IN" },
+  { id: "malayalam", label: "Malayalam", speechCode: "ml-IN" },
 ];
 
-const LANG_LABEL = { hindi: "Hindi", tamil: "Tamil", telugu: "Telugu", kannada: "Kannada" };
+const LANG_LABEL = { hindi: "Hindi", tamil: "Tamil", telugu: "Telugu", kannada: "Kannada", malayalam: "Malayalam" };
 
 // ─── Subtitle cues per story per language ─────────────────────────────────────
-// Each story has subtitle cues in all 4 languages so switching language
+// Each story has subtitle cues in all 5 languages so switching language
 // actually changes the on-screen text.
 const SUBTITLE_MAP = {
   "festival-lanterns": {
@@ -221,10 +222,18 @@ const SUBTITLE_MAP = {
       { start: 75,  end: 100, text: "ಭೂತಕಾಲ ಕೇವಲ ನೆನಪಿಗಷ್ಟೇ ಅಲ್ಲ, ಅನುಭವಿಸಬಹುದಾದದ್ದಾಗಿದ್ದರೆ?" },
       { start: 100, end: 124, text: "ಕೇವಲ ಇತಿಹಾಸ ಅಲ್ಲ — ಸಂಬಂಧ. ಕೇವಲ ಕತೆಗಳಲ್ಲ — ಉಪಸ್ಥಿತಿ." },
     ],
+    malayalam: [
+      { start: 0,   end: 14,  text: "ചരിത്രം സാധാരണയായി നമ്മൾ വായിക്കുന്ന ഒന്നാണ് — തീയതികളും പേരുകളും നിറഞ്ഞ താളുകൾ." },
+      { start: 14,  end: 30,  text: "പക്ഷേ ഓരോ താളിലും ഒരുകാലത്ത് ശരിക്കുള്ള ജീവിതങ്ങളുണ്ടായിരുന്നു, രാജ്യങ്ങൾക്കും അതിർത്തികൾക്കും മുമ്പുള്ളവ." },
+      { start: 30,  end: 50,  text: "സാമ്രാജ്യങ്ങൾ വന്നു. അറിവിനെ നിശ്ശബ്ദമാക്കി. ശബ്ദങ്ങളെ അടിച്ചമർത്തി. പുസ്തകങ്ങൾ കത്തിച്ചു." },
+      { start: 50,  end: 75,  text: "എന്നിട്ടും ആ സംസ്കാരം കുടുംബങ്ങളിലും പതുക്കെ പറഞ്ഞുകേട്ട കഥകളിലും ജീവിച്ചു." },
+      { start: 75,  end: 100, text: "കഴിഞ്ഞകാലം ഓർക്കാൻ മാത്രമല്ല, അനുഭവിച്ചറിയാനും കഴിയുന്ന ഒന്നായിരുന്നെങ്കിലോ?" },
+      { start: 100, end: 124, text: "വെറും ചരിത്രമല്ല — ബന്ധം. വെറും കഥകളല്ല — സാന്നിധ്യം." },
+    ],
   },
 };
 
-// For non-video stories, generate cues from the content in all 4 languages
+// For non-video stories, generate cues from the content in all 5 languages
 const DEFAULT_CUES = {
   hindi: [
     { start: 0,  end: 10, text: "एक छोटे से गाँव में एक बच्चा रहता था जो हमेशा नई चीज़ें सीखना चाहता था।" },
@@ -257,6 +266,14 @@ const DEFAULT_CUES = {
     { start: 34, end: 46, text: "ಆದರೆ ಧೈರ್ಯ ಕಳೆದುಕೊಳ್ಳಲಿಲ್ಲ, ತಾಳ್ಮೆಯಿಂದ ಕೆಲಸ ಮಾಡಿತು." },
     { start: 46, end: 56, text: "ಹಳ್ಳಿಗರು ಸಹಾಯ ಮಾಡಿದರು, ಒಟ್ಟಾಗಿ ಯಶಸ್ವಿಯಾದರು." },
     { start: 56, end: 60, text: "ಆ ದಿನದಿಂದ ಎಲ್ಲರೂ ಶ್ರಮ ಮತ್ತು ದಯೆಯಿಂದ ಯಾವ ತೊಂದರೆಯನ್ನೂ ಪರಿಹರಿಸಬಹುದೆಂದು ತಿಳಿದರು." },
+  ],
+  malayalam: [
+    { start: 0,  end: 10, text: "ഒരു കൊച്ചുഗ്രാമത്തിൽ ഒരു കുട്ടി ഉണ്ടായിരുന്നു. എപ്പോഴും പുതിയ കാര്യങ്ങൾ പഠിക്കാനായിരുന്നു ആ കുട്ടിക്ക് ഇഷ്ടം." },
+    { start: 10, end: 22, text: "കുട്ടിക്ക് എല്ലാത്തിലും വലിയ കൗതുകമായിരുന്നു — കാട്ടിൽ നിന്നും പുഴയിൽ നിന്നും മുതിർന്നവരിൽ നിന്നും ഓരോ ദിവസവും എന്തെങ്കിലും പഠിക്കും." },
+    { start: 22, end: 34, text: "ഒരു ദിവസം വലിയൊരു വെല്ലുവിളി മുന്നിൽ വന്നു; കുട്ടിക്ക് പേടി തോന്നി." },
+    { start: 34, end: 46, text: "പക്ഷേ ധൈര്യം കൈവിട്ടില്ല, ക്ഷമയോടെ ശ്രമിച്ചുകൊണ്ടിരുന്നു." },
+    { start: 46, end: 56, text: "നാട്ടുകാർ സഹായിക്കാനെത്തി, എല്ലാവരും ഒരുമിച്ച് അതിനെ മറികടന്നു." },
+    { start: 56, end: 60, text: "അധ്വാനവും ദയയും ഉണ്ടെങ്കിൽ ഏതു പ്രശ്നവും പരിഹരിക്കാമെന്ന് അന്നുമുതൽ എല്ലാവരും മനസ്സിലാക്കി." },
   ],
 };
 
@@ -574,12 +591,12 @@ Say it: [simple phonetic pronunciation for a child]`,
     : Math.min(1, playTime / ANIM_DURATION);
 
   return (
-    <div className="min-h-screen bg-sparkle px-6 py-10 sm:px-10 lg:px-16">
+    <div className="min-h-dvh bg-sparkle px-4 py-6 sm:px-10 sm:py-10 lg:px-16">
       <div className="mx-auto max-w-5xl">
         <header className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Story Player</p>
-            <h1 className="mt-2 font-display text-3xl font-semibold text-buddy-cocoa">{story.title}</h1>
+            <h1 className="mt-2 break-words font-display text-2xl font-semibold text-buddy-cocoa sm:text-3xl">{story.title}</h1>
           </div>
           <Link to="/stories" className="rounded-full bg-white/80 px-4 py-2 text-xs font-semibold text-slate-600 shadow-soft transition hover:-translate-y-0.5">
             Back to library
@@ -820,7 +837,7 @@ Say it: [simple phonetic pronunciation for a child]`,
                   Listen carefully! When it ends, Buddy will ask you 3 questions about the story.
                 </p>
                 <p className="text-xs text-slate-400">
-                  Switch the language tabs below the video to hear subtitles in Hindi, Tamil, Telugu, or Kannada.
+                  Switch the language tabs below the video to hear subtitles in Hindi, Tamil, Telugu, Kannada, or Malayalam.
                 </p>
                 {!story.video && !videoPlaying && (
                   <motion.button

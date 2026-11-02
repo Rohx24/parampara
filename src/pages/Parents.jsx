@@ -60,7 +60,7 @@ export default function Parents() {
   };
 
   return (
-    <div className="min-h-screen bg-sparkle px-6 py-10 sm:px-10 lg:px-16">
+    <div className="min-h-screen bg-sparkle px-4 py-8 sm:px-10 sm:py-10 lg:px-16">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-16">
         <section className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr]">
           <motion.div
@@ -72,7 +72,7 @@ export default function Parents() {
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
               For parents
             </p>
-            <h1 className="font-display text-4xl font-semibold text-buddy-cocoa sm:text-5xl">
+            <h1 className="font-display text-3xl font-semibold text-buddy-cocoa sm:text-5xl">
               Screen time that feels like home.
             </h1>
             <p className="max-w-xl text-base text-slate-600 sm:text-lg">

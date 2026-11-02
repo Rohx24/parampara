@@ -76,6 +76,23 @@ const VOCAB = {
     { word: "ನಾಯಿ", meaning: "dog", emoji: "🐶" },
     { word: "ಮೀನು", meaning: "fish", emoji: "🐟" },
   ],
+  malayalam: [
+    { word: "വെള്ളം", meaning: "water", emoji: "💧" },
+    { word: "ഭക്ഷണം", meaning: "food", emoji: "🍱" },
+    { word: "അമ്മ", meaning: "mother", emoji: "👩" },
+    { word: "വീട്", meaning: "home", emoji: "🏠" },
+    { word: "മാമ്പഴം", meaning: "mango", emoji: "🥭" },
+    { word: "പുസ്തകം", meaning: "book", emoji: "📚" },
+    { word: "സൂര്യൻ", meaning: "sun", emoji: "☀️" },
+    { word: "ചന്ദ്രൻ", meaning: "moon", emoji: "🌙" },
+    { word: "സുഹൃത്ത്", meaning: "friend", emoji: "👫" },
+    { word: "വിദ്യാലയം", meaning: "school", emoji: "🏫" },
+    { word: "പൂവ്", meaning: "flower", emoji: "🌸" },
+    { word: "മരം", meaning: "tree", emoji: "🌳" },
+    { word: "പൂച്ച", meaning: "cat", emoji: "🐱" },
+    { word: "നായ", meaning: "dog", emoji: "🐶" },
+    { word: "മീൻ", meaning: "fish", emoji: "🐟" },
+  ],
   english: [
     { word: "Hello", meaning: "a greeting", emoji: "👋" },
     { word: "Family", meaning: "related people", emoji: "👨‍👩‍👧" },
@@ -95,7 +112,7 @@ const VOCAB = {
   ],
 };
 
-const LANG_LABELS = { hindi: "Hindi", tamil: "Tamil", telugu: "Telugu", kannada: "Kannada", english: "English" };
+const LANG_LABELS = { hindi: "Hindi", tamil: "Tamil", telugu: "Telugu", kannada: "Kannada", malayalam: "Malayalam", english: "English" };
 const PAIRS_PER_ROUND = 5;
 const TOTAL_ROUNDS = 3; // 3 rounds × 5 pairs = 15 matches
 
@@ -219,7 +236,7 @@ export default function WordMatchGame() {
             <h1 className="font-display text-3xl font-semibold text-buddy-cocoa">Word Match 🔗</h1>
             <p className="mt-1 text-sm text-slate-600">Tap the word, then its English meaning!</p>
           </div>
-          <Link to="/games" className="rounded-full bg-white/80 px-4 py-2 text-sm font-semibold text-slate-600 shadow-soft transition hover:-translate-y-0.5">
+          <Link to="/games" className="inline-flex min-h-[44px] items-center rounded-full bg-white/80 px-4 py-2 text-sm font-semibold text-slate-600 shadow-soft transition hover:-translate-y-0.5">
             ← Back
           </Link>
         </div>
@@ -237,7 +254,7 @@ export default function WordMatchGame() {
               <div className="flex flex-wrap justify-center gap-2">
                 {Object.keys(LANG_LABELS).map((l) => (
                   <button key={l} type="button" onClick={() => setLanguage(l)}
-                    className={`rounded-full px-4 py-2 text-sm font-semibold transition ${language === l ? "bg-buddy-grape text-white shadow-soft" : "bg-white/80 text-slate-600"}`}
+                    className={`min-h-[44px] rounded-full px-4 py-2 text-sm font-semibold transition ${language === l ? "bg-buddy-grape text-white shadow-soft" : "bg-white/80 text-slate-600"}`}
                   >{LANG_LABELS[l]}</button>
                 ))}
               </div>
@@ -286,7 +303,7 @@ export default function WordMatchGame() {
                         whileTap={!isMatched ? { scale: 0.95 } : {}}
                         animate={wrongPair && isSelected ? { x: [-6, 6, -6, 6, 0] } : {}}
                         transition={{ duration: 0.3 }}
-                        className={`w-full rounded-2xl border-2 px-3 py-3 text-center text-lg font-bold transition ${
+                        className={`min-h-[56px] w-full break-words rounded-2xl border-2 px-2 py-3 text-center text-lg font-bold transition ${
                           isMatched
                             ? "border-emerald-400 bg-emerald-50 text-emerald-700 cursor-default"
                             : isSelected
@@ -294,7 +311,7 @@ export default function WordMatchGame() {
                             : "border-white/70 bg-white/80 text-slate-700 hover:border-buddy-grape/40 hover:shadow-soft"
                         }`}
                       >
-                        {isMatched && <span className="mr-1">{item.emoji}</span>}
+                        {isMatched && <span className="mr-1 hidden sm:inline">{item.emoji}</span>}
                         {item.word}
                         {isMatched && " ✓"}
                       </motion.button>
@@ -316,7 +333,7 @@ export default function WordMatchGame() {
                         whileTap={!isMatched ? { scale: 0.95 } : {}}
                         animate={wrongPair && isSelected ? { x: [-6, 6, -6, 6, 0] } : {}}
                         transition={{ duration: 0.3 }}
-                        className={`w-full rounded-2xl border-2 px-3 py-3 text-center text-sm font-bold transition ${
+                        className={`min-h-[56px] w-full rounded-2xl border-2 px-2 py-3 text-center text-sm font-bold transition ${
                           isMatched
                             ? "border-emerald-400 bg-emerald-50 text-emerald-700 cursor-default"
                             : isSelected

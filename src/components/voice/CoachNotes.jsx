@@ -57,7 +57,7 @@ export default function CoachNotes({
   const stayedOnSentence = decision?.action !== "ADVANCE";
 
   return (
-    <div className="rounded-3xl border border-white/70 bg-white/80 p-5 shadow-card space-y-4">
+    <div className="rounded-3xl border border-white/70 bg-white/80 p-4 shadow-card space-y-4 sm:p-5">
       <h3 className="font-display text-xl font-semibold text-buddy-cocoa">Coach Notes</h3>
 
       {/* Score ring */}
@@ -175,7 +175,7 @@ export default function CoachNotes({
           <button
             type="button"
             onClick={onRetry}
-            className="rounded-full bg-white/80 px-4 py-2 text-xs font-semibold text-slate-600 shadow-soft transition hover:-translate-y-0.5"
+            className="min-h-11 rounded-full bg-white/80 px-4 py-2 text-xs font-semibold text-slate-600 shadow-soft transition hover:-translate-y-0.5 sm:min-h-0"
           >
             🔄 Try again
           </button>
@@ -184,7 +184,7 @@ export default function CoachNotes({
           <button
             type="button"
             onClick={onAdvance}
-            className="rounded-full bg-buddy-grape px-4 py-2 text-xs font-semibold text-white shadow-soft transition hover:-translate-y-0.5"
+            className="min-h-11 rounded-full bg-buddy-grape px-4 py-2 text-xs font-semibold text-white shadow-soft transition hover:-translate-y-0.5 sm:min-h-0"
           >
             Next prompt →
           </button>

@@ -8,6 +8,7 @@ export const VOICE_LANGUAGES = [
   { id: "telugu", label: "Telugu", speechCode: "te-IN" },
   { id: "hindi", label: "Hindi", speechCode: "hi-IN" },
   { id: "kannada", label: "Kannada", speechCode: "kn-IN" },
+  { id: "malayalam", label: "Malayalam", speechCode: "ml-IN" },
   { id: "english", label: "English", speechCode: "en-IN" },
 ];
 
@@ -88,6 +89,25 @@ const GUIDED_PROMPTS = [
   { id: "kn-12-5", language: "kannada", ageGroup: "12-15", nativeText: "ನಾನು ಪ್ರತಿದಿನ ಪತ್ರಿಕೆ ಓದುತ್ತೇನೆ.", englishMeaning: "I read the newspaper every day.", keywords: ["ಪ್ರತಿದಿನ", "ಪತ್ರಿಕೆ"] },
   { id: "kn-12-6", language: "kannada", ageGroup: "12-15", nativeText: "ನನ್ನ ಕನಸು ವೈದ್ಯನಾಗುವುದು.", englishMeaning: "My dream is to become a doctor.", keywords: ["ಕನಸು", "ವೈದ್ಯನಾಗುವುದು"] },
 
+  { id: "ml-5-1", language: "malayalam", ageGroup: "5-7", nativeText: "അമ്മൂമ്മേ, സുഖമാണോ?", englishMeaning: "Grandma, are you well?", keywords: ["അമ്മൂമ്മേ", "സുഖമാണോ"] },
+  { id: "ml-5-2", language: "malayalam", ageGroup: "5-7", nativeText: "അമ്മേ, എനിക്ക് പാൽ വേണം.", englishMeaning: "Mom, I want milk.", keywords: ["എനിക്ക്", "പാൽ", "വേണം"] },
+  { id: "ml-5-3", language: "malayalam", ageGroup: "5-7", nativeText: "എന്റെ പേര് ബഡ്ഡി.", englishMeaning: "My name is Buddy.", keywords: ["എന്റെ", "പേര്"] },
+  { id: "ml-5-4", language: "malayalam", ageGroup: "5-7", nativeText: "എനിക്ക് വിശക്കുന്നു.", englishMeaning: "I am hungry.", keywords: ["എനിക്ക്", "വിശക്കുന്നു"] },
+  { id: "ml-5-5", language: "malayalam", ageGroup: "5-7", nativeText: "ഇത് എന്റെ അമ്മയാണ്.", englishMeaning: "This is my mother.", keywords: ["എന്റെ", "അമ്മയാണ്"] },
+  { id: "ml-5-6", language: "malayalam", ageGroup: "5-7", nativeText: "നമുക്ക് കളിക്കാൻ പോകാം.", englishMeaning: "Let's go and play.", keywords: ["കളിക്കാൻ", "പോകാം"] },
+  { id: "ml-8-1", language: "malayalam", ageGroup: "8-11", nativeText: "ഞാൻ സ്കൂളിൽ പോവുകയാണ്.", englishMeaning: "I am going to school.", keywords: ["ഞാൻ", "സ്കൂളിൽ"] },
+  { id: "ml-8-2", language: "malayalam", ageGroup: "8-11", nativeText: "ഇന്നലെ അച്ഛൻ ഒരു കഥ പറഞ്ഞു.", englishMeaning: "Dad told a story yesterday.", keywords: ["അച്ഛൻ", "കഥ", "പറഞ്ഞു"] },
+  { id: "ml-8-3", language: "malayalam", ageGroup: "8-11", nativeText: "എനിക്ക് മാമ്പഴം ഒരുപാട് ഇഷ്ടമാണ്.", englishMeaning: "I like mangoes a lot.", keywords: ["മാമ്പഴം", "ഇഷ്ടമാണ്"] },
+  { id: "ml-8-4", language: "malayalam", ageGroup: "8-11", nativeText: "ഇന്ന് നല്ല മഴയാണ്.", englishMeaning: "It is raining hard today.", keywords: ["ഇന്ന്", "മഴയാണ്"] },
+  { id: "ml-8-5", language: "malayalam", ageGroup: "8-11", nativeText: "അമ്മ അടുക്കളയിൽ ചോറ് വെക്കുകയാണ്.", englishMeaning: "Mom is cooking rice in the kitchen.", keywords: ["അടുക്കളയിൽ", "ചോറ്"] },
+  { id: "ml-8-6", language: "malayalam", ageGroup: "8-11", nativeText: "എന്റെ കൂട്ടുകാരൻ നന്നായി പാട്ട് പാടും.", englishMeaning: "My friend sings very well.", keywords: ["കൂട്ടുകാരൻ", "പാട്ട്"] },
+  { id: "ml-12-1", language: "malayalam", ageGroup: "12-15", nativeText: "ഓണത്തിന് ഞങ്ങൾ വീട്ടിൽ സദ്യ ഒരുക്കി.", englishMeaning: "We made a feast at home for Onam.", keywords: ["ഓണത്തിന്", "വീട്ടിൽ", "സദ്യ"] },
+  { id: "ml-12-2", language: "malayalam", ageGroup: "12-15", nativeText: "പുസ്തകം വായിച്ച ശേഷം ഞാൻ ചോദ്യങ്ങൾക്ക് ഉത്തരം എഴുതി.", englishMeaning: "After reading the book, I wrote the answers to the questions.", keywords: ["പുസ്തകം", "ചോദ്യങ്ങൾക്ക്", "ഉത്തരം"] },
+  { id: "ml-12-3", language: "malayalam", ageGroup: "12-15", nativeText: "നമ്മൾ പ്രകൃതിയെ സംരക്ഷിക്കണം.", englishMeaning: "We must protect nature.", keywords: ["പ്രകൃതിയെ", "സംരക്ഷിക്കണം"] },
+  { id: "ml-12-4", language: "malayalam", ageGroup: "12-15", nativeText: "പരീക്ഷയ്ക്ക് മുമ്പ് എല്ലാ പാഠങ്ങളും നന്നായി പഠിക്കണം.", englishMeaning: "We must study all the lessons well before the exam.", keywords: ["പരീക്ഷയ്ക്ക്", "പാഠങ്ങളും", "പഠിക്കണം"] },
+  { id: "ml-12-5", language: "malayalam", ageGroup: "12-15", nativeText: "ഞാൻ എല്ലാ ദിവസവും പത്രം വായിക്കും.", englishMeaning: "I read the newspaper every day.", keywords: ["ദിവസവും", "പത്രം", "വായിക്കും"] },
+  { id: "ml-12-6", language: "malayalam", ageGroup: "12-15", nativeText: "ഡോക്ടർ ആകണമെന്നാണ് എന്റെ ആഗ്രഹം.", englishMeaning: "My wish is to become a doctor.", keywords: ["ഡോക്ടർ", "ആഗ്രഹം"] },
+
   { id: "en-5-1", language: "english", ageGroup: "5-7", nativeText: "Hello! My name is Buddy.", englishMeaning: "", keywords: ["hello", "buddy"] },
   { id: "en-8-1", language: "english", ageGroup: "8-11", nativeText: "I like to read stories with my family.", englishMeaning: "", keywords: ["read", "stories", "family"] },
   { id: "en-5-2", language: "english", ageGroup: "5-7", nativeText: "I want some milk.", englishMeaning: "", keywords: ["want", "milk"] },
@@ -113,6 +133,7 @@ const FREE_TALK_QUESTIONS = {
   telugu: ["ఈ రోజు నువ్వు ఏం చేశావు?", "నీకు ఇష్టమైన ఆహారం ఏమిటి?", "నీ స్నేహితుల గురించి చెప్పు.", "నీకు ఇష్టమైన ఆట ఏది?", "నీ కుటుంబం గురించి చెప్పు."],
   hindi: ["आज तुमने क्या किया?", "तुम्हारा पसंदीदा खाना क्या है?", "अपने दोस्तों के बारे में बताओ।", "तुम्हारा पसंदीदा खेल कौन सा है?", "अपने परिवार के बारे में बताओ।"],
   kannada: ["ಇಂದು ನೀನು ಏನು ಮಾಡಿದೆ?", "ನಿನಗೆ ಇಷ್ಟವಾದ ಊಟ ಯಾವುದು?", "ನಿನ್ನ ಗೆಳೆಯರ ಬಗ್ಗೆ ಹೇಳು.", "ನಿನಗೆ ಇಷ್ಟವಾದ ಆಟ ಯಾವುದು?", "ನಿನ್ನ ಕುಟುಂಬದ ಬಗ್ಗೆ ಹೇಳು."],
+  malayalam: ["ഇന്ന് നീ എന്തൊക്കെ ചെയ്തു?", "നിനക്ക് ഏറ്റവും ഇഷ്ടമുള്ള ഭക്ഷണം ഏതാണ്?", "നിന്റെ കൂട്ടുകാരെപ്പറ്റി പറയൂ.", "നിനക്ക് ഏറ്റവും ഇഷ്ടമുള്ള കളി ഏതാണ്?", "നിന്റെ വീട്ടിൽ ആരൊക്കെയുണ്ട്?"],
   english: ["What did you do today?", "What is your favourite food?", "Tell me about your friends.", "Which game do you like best?", "Tell me about your family."],
 };
 
@@ -121,6 +142,7 @@ const SCRIPT_RANGES = {
   telugu: /[\u0C00-\u0C7F]/,
   hindi: /[\u0900-\u097F]/,
   kannada: /[\u0C80-\u0CFF]/,
+  malayalam: /[\u0D00-\u0D7F]/,
   english: /[a-z]/i,
 };
 
@@ -176,7 +198,7 @@ export function similarityScore(a, b) {
 /**
  * Evaluate a transcript against the expected sentence.
  *
- * For Indian languages (hindi, tamil, telugu, kannada):
+ * For Indian languages (hindi, tamil, telugu, kannada, malayalam):
  *   Uses phoneme-level edit distance — linguistically superior because it
  *   recognises aspirated/unaspirated near-misses (क/ख), retroflex/dental
  *   confusions (ट/त), and long/short vowel substitutions (a/aa, i/ii).
@@ -237,7 +259,10 @@ export function getGuidedPrompts(language, ageGroup) {
 export function getSimplifiedPrompt(prompt) {
   if (!prompt?.nativeText) return prompt;
   const parts = prompt.nativeText.split(" ");
-  const shortText = parts.slice(0, Math.max(2, Math.floor(parts.length / 2))).join(" ");
+  const shortLength = Math.max(2, Math.floor(parts.length / 2));
+  // The verb comes last in Malayalam, so only the end of a sentence stands alone
+  const shortParts = prompt.language === "malayalam" ? parts.slice(-shortLength) : parts.slice(0, shortLength);
+  const shortText = shortParts.join(" ");
   if (shortText === prompt.nativeText) return prompt;
   const keywords = (prompt.keywords || []).filter((k) => shortText.toLowerCase().includes(k.toLowerCase()));
   return {
@@ -245,7 +270,7 @@ export function getSimplifiedPrompt(prompt) {
     id: `${prompt.id}-short`,
     nativeText: shortText,
     englishMeaning: "",
-    keywords: keywords.length ? keywords : [parts[0]],
+    keywords: keywords.length ? keywords : [shortParts[0]],
   };
 }
 
@@ -388,7 +413,7 @@ export function pickVoice(langCode) {
 }
 
 function pickBestVoice(langCode) {
-  if (!window.speechSynthesis) return null;
+  if (typeof window === "undefined" || !window.speechSynthesis) return null;
   const voices = window.speechSynthesis.getVoices();
   if (!voices.length) return null;
   // Prefer Google or Microsoft neural voices for the language
@@ -402,6 +427,34 @@ function pickBestVoice(langCode) {
   const googlePrefix = voices.find((v) => /google/i.test(v.name) && v.lang.startsWith(prefix));
   if (googlePrefix) return googlePrefix;
   return voices.find((v) => v.lang.startsWith(prefix)) ?? null;
+}
+
+/**
+ * True when the device has a voice for this language. Without one, speech for
+ * that language comes out silent or garbled. Some browsers load voices late, so
+ * a page deciding what to show should use checkVoiceFor instead.
+ */
+export function hasVoiceFor(langCode) {
+  return Boolean(pickBestVoice(langCode));
+}
+
+/** hasVoiceFor that first waits for the device's voice list to load. */
+export function checkVoiceFor(langCode, timeoutMs = 1500) {
+  return new Promise((resolve) => {
+    const synth = typeof window === "undefined" ? null : window.speechSynthesis;
+    if (!synth || synth.getVoices().length > 0) {
+      resolve(hasVoiceFor(langCode));
+      return;
+    }
+    const finish = () => {
+      clearTimeout(timer);
+      synth.removeEventListener?.("voiceschanged", finish);
+      resolve(hasVoiceFor(langCode));
+    };
+    // Not onvoiceschanged, which speakText assigns. Some browsers never fire this at all.
+    const timer = setTimeout(finish, timeoutMs);
+    synth.addEventListener?.("voiceschanged", finish);
+  });
 }
 
 export function speakText(text, langCode, style = "gentle") {
@@ -446,6 +499,7 @@ export function normalizeLanguageId(label) {
   if (lower.includes("telugu")) return "telugu";
   if (lower.includes("hindi")) return "hindi";
   if (lower.includes("kannada")) return "kannada";
+  if (lower.includes("malayalam")) return "malayalam";
   if (lower.includes("english")) return "english";
   return "tamil";
 }

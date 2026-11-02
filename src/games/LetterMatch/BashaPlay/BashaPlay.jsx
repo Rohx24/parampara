@@ -3,6 +3,7 @@ import './styles.css';
 import { createRound, shuffleArray } from './GameEngine';
 import { wordsEn } from './data/words.en';
 import { wordsHi } from './data/words.hi';
+import { wordsMl } from './data/words.ml';
 import { wordsTa } from './data/words.ta';
 import { wordsTe } from './data/words.te';
 import BoxRow from './ui/BoxRow';
@@ -37,6 +38,7 @@ export default function BashaPlay() {
     if (language === 'hi') return wordsHi;
     if (language === 'ta') return wordsTa;
     if (language === 'te') return wordsTe;
+    if (language === 'ml') return wordsMl;
     return wordsEn;
   }, [language]);
 

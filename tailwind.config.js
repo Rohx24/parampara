@@ -17,6 +17,9 @@ export default {
           cocoa: "#4A3B36",
         },
       },
+      // dvh so phone browser toolbars don't push content below the fold
+      height: { screen: "100dvh" },
+      minHeight: { screen: "100dvh" },
       boxShadow: {
         soft: "0 20px 60px -40px rgba(30, 41, 59, 0.55)",
         card: "0 18px 45px -30px rgba(15, 23, 42, 0.45)",

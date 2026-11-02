@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState, Component } from "react";
 import { Routes, Route, Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import Signup from "./pages/Signup.jsx";
 import Journey from "./pages/Journey.jsx";
 import Stories from "./pages/Stories.jsx";
 import StoryPlayer from "./pages/StoryPlayer.jsx";
@@ -67,6 +66,17 @@ const languages = [
     messages: [
       "Namaskara!",
       "Kathe kelona!",
+      "Hello!",
+      "Come listen to a story!",
+    ],
+  },
+  {
+    id: "malayalam",
+    label: "Malayalam",
+    subtitle: "Varoo, oru katha kelkkaam",
+    messages: [
+      "Namaskaram!",
+      "Katha kelkkano?",
       "Hello!",
       "Come listen to a story!",
     ],
@@ -194,6 +204,35 @@ const previewSubtitleTracks = {
       text: "ಪ್ರಾಣಿಗಳನ್ನು ಕಾಪಾಡುವುದು ಎಲ್ಲಾ ಜೀವಗಳ ಮೇಲಿನ ಕಾಳಜಿಯನ್ನು ತೋರಿಸುತ್ತದೆ.",
     },
   ],
+  malayalam: [
+    {
+      start: 0,
+      end: 8,
+      text: "ശാന്തമായ ഒരു മഞ്ഞുകാല പ്രഭാതത്തിൽ ഒരു കുഞ്ഞിക്കിളിക്ക് വഴി തെറ്റി. ഒരു കുട്ടി അതിനെ കണ്ട് കൗതുകത്തോടെ നോക്കിനിന്നു.",
+    },
+    { start: 8, end: 12, text: "ആ കുഞ്ഞിക്കിളി പേടിച്ചുപോയി." },
+    {
+      start: 12,
+      end: 24,
+      text: "മുത്തശ്ശി പതുക്കെ കുട്ടിയോട് ശ്രദ്ധിക്കണമെന്ന് ഓർമ്മിപ്പിച്ചു. കുഞ്ഞുജീവികൾക്ക് ദയയും സ്വന്തമായി ഒരു ഇടവും വേണം.",
+    },
+    { start: 24, end: 32, text: "ഒച്ചയുണ്ടാക്കാതെ ശാന്തമായിരിക്കാൻ കുട്ടി പഠിച്ചു." },
+    {
+      start: 32,
+      end: 40,
+      text: "വീട്ടിലേക്കുള്ള വഴി കണ്ടെത്താൻ അവർ കിളിയെ സഹായിച്ചു.",
+    },
+    {
+      start: 40,
+      end: 52,
+      text: "കുഞ്ഞിക്കിളി വീണ്ടും സുരക്ഷിതമായി; സഹായിക്കാൻ കഴിഞ്ഞതിൽ കുട്ടിക്ക് അഭിമാനവും സന്തോഷവും തോന്നി.",
+    },
+    {
+      start: 52,
+      end: 60,
+      text: "മൃഗങ്ങളെ സംരക്ഷിക്കുന്നത് എല്ലാ ജീവജാലങ്ങളോടുമുള്ള കരുതലിന്റെ അടയാളമാണ്.",
+    },
+  ],
 };
 
 const heroContainer = {
@@ -240,7 +279,7 @@ function App() {
           element={session ? <HomeLoggedIn /> : <Navigate to="/start" replace />}
         />
         <Route path="/parents" element={<Parents />} />
-        <Route path="/signup" element={<Signup />} />
+        <Route path="/signup" element={<Navigate to="/parent-setup" replace />} />
         <Route path="/journey" element={<Journey />} />
         <Route path="/stories" element={<Stories />} />
         <Route path="/stories/:id" element={<StoryPlayer />} />
@@ -304,7 +343,7 @@ function LandingPage() {
             </motion.div>
             <motion.h1
               variants={heroItem}
-              className="font-display text-4xl font-semibold tracking-tight text-buddy-cocoa sm:text-5xl lg:text-6xl"
+              className="font-display text-3xl font-semibold tracking-tight text-buddy-cocoa sm:text-5xl lg:text-6xl"
             >
               Language feels like a friend.
             </motion.h1>
@@ -316,7 +355,7 @@ function LandingPage() {
             </motion.p>
             <motion.div variants={heroItem} className="flex flex-wrap gap-4">
               <MotionLink
-                to="/signup"
+                to="/parent-setup"
                 aria-label="Create free account"
                 onMouseEnter={showBuddyMessage("Create a free account")}
                 onMouseLeave={resetBuddyMessage}
@@ -401,7 +440,7 @@ function LandingPage() {
           className="mt-14 grid grid-cols-2 gap-4 sm:grid-cols-4"
         >
           {[
-            { value: "5", label: "Indian languages", icon: "🌏" },
+            { value: "6", label: "Languages", icon: "🌏" },
             { value: "AI", label: "Powered quizzes", icon: "🧠" },
             { value: "100%", label: "Kid-safe design", icon: "🔒" },
             { value: "Free", label: "To get started", icon: "🎁" },
@@ -447,7 +486,7 @@ function LandingPage() {
                 bg: "bg-amber-50",
                 iconBg: "bg-amber-100",
                 title: "Story Builder",
-                desc: "Type any idea and AI writes a personalised story in 5 languages with a comprehension quiz at the end.",
+                desc: "Type any idea and AI writes a personalised story in 6 languages with a comprehension quiz at the end.",
                 badge: "GPT-4o",
                 badgeColor: "bg-amber-100 text-amber-600",
                 to: "/make-story",
@@ -484,7 +523,7 @@ function LandingPage() {
                 </div>
                 <MotionLink
                   to={card.to}
-                  className="mt-auto inline-flex items-center gap-1 text-xs font-bold text-buddy-grape hover:gap-2 transition-all"
+                  className="mt-auto inline-flex min-h-11 items-center gap-1 text-xs font-bold text-buddy-grape hover:gap-2 transition-all sm:min-h-0"
                   whileHover={{ x: 2 }}
                 >
                   Try it free →
@@ -536,6 +575,7 @@ function LandingPage() {
               { lang: "Tamil", native: "தமிழ்", color: "bg-red-50 border-red-200" },
               { lang: "Telugu", native: "తెలుగు", color: "bg-purple-50 border-purple-200" },
               { lang: "Kannada", native: "ಕನ್ನಡ", color: "bg-blue-50 border-blue-200" },
+              { lang: "Malayalam", native: "മലയാളം", color: "bg-teal-50 border-teal-200" },
               { lang: "English", native: "English", color: "bg-emerald-50 border-emerald-200" },
             ].map((l) => (
               <div key={l.lang} className={`rounded-2xl border-2 ${l.color} px-5 py-3 text-center shadow-soft`}>
@@ -603,10 +643,10 @@ function LandingPage() {
         >
           <div className="text-5xl mb-4">🦋</div>
           <h2 className="font-display text-3xl font-extrabold sm:text-4xl">Ready to start learning?</h2>
-          <p className="mt-3 text-white/80 text-lg">Free to try · No credit card · 5 languages · AI-powered</p>
+          <p className="mt-3 text-white/80 text-lg">Free to try · No credit card · 6 languages · AI-powered</p>
           <div className="mt-7 flex flex-wrap justify-center gap-4">
             <MotionLink
-              to="/signup"
+              to="/parent-setup"
               whileHover={{ y: -3, scale: 1.03 }} whileTap={{ scale: 0.97 }}
               className="rounded-full bg-white px-8 py-4 text-base font-extrabold text-buddy-grape shadow-xl"
             >
@@ -630,9 +670,9 @@ function LandingPage() {
             <span className="font-display text-lg font-bold text-buddy-cocoa">BhashaBuddy</span>
           </div>
           <div className="flex flex-wrap gap-5 text-xs font-semibold text-slate-500">
-            <MotionLink to="/parents" whileHover={{ y: -1 }} className="hover:text-buddy-grape transition">For Parents</MotionLink>
-            <MotionLink to="/start" whileHover={{ y: -1 }} className="hover:text-buddy-grape transition">Sign In</MotionLink>
-            <MotionLink to="/parent-dashboard" whileHover={{ y: -1 }} className="hover:text-buddy-grape transition">Dashboard</MotionLink>
+            <MotionLink to="/parents" whileHover={{ y: -1 }} className="inline-flex min-h-11 items-center hover:text-buddy-grape transition sm:min-h-0">For Parents</MotionLink>
+            <MotionLink to="/start" whileHover={{ y: -1 }} className="inline-flex min-h-11 items-center hover:text-buddy-grape transition sm:min-h-0">Sign In</MotionLink>
+            <MotionLink to="/parent-dashboard" whileHover={{ y: -1 }} className="inline-flex min-h-11 items-center hover:text-buddy-grape transition sm:min-h-0">Dashboard</MotionLink>
           </div>
           <p className="text-xs text-slate-400">Made with warm stories and gentle voices · © 2026 BhashaBuddy</p>
         </div>
@@ -879,7 +919,7 @@ function TabletMock({
               </motion.button>
             </div>
 
-            <div className="mt-4 rounded-full bg-buddy-mint/70 px-4 py-2 text-center text-sm font-semibold text-slate-600">
+            <div className="mt-4 rounded-2xl bg-buddy-mint/70 px-4 py-2 text-center text-sm font-semibold text-slate-600">
               {subtitleTracks ? autoSubtitle : subtitle}
             </div>
           </div>
@@ -962,6 +1002,7 @@ function PreviewModal({ open, onClose, language, onLanguageChange }) {
       telugu: { vtt: "/subtitles/te.vtt", audio: "/audio/te.mp3", speech: "te-IN" },
       hindi: { vtt: "/subtitles/hi.vtt", audio: "/audio/hi.mp3", speech: "hi-IN" },
       kannada: { vtt: "/subtitles/kn.vtt", audio: "/audio/kn.mp3", speech: "kn-IN" },
+      malayalam: { vtt: "/subtitles/ml.vtt", audio: "/audio/ml.mp3", speech: "ml-IN" },
     }),
     []
   );
@@ -1088,7 +1129,7 @@ function PreviewModal({ open, onClose, language, onLanguageChange }) {
     <AnimatePresence>
       {open ? (
         <motion.div
-          className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center px-6"
+          className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center px-4 sm:px-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -1104,7 +1145,7 @@ function PreviewModal({ open, onClose, language, onLanguageChange }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
-            className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white/95 p-6 shadow-card"
+            className="w-full max-w-3xl max-h-[90dvh] overflow-y-auto rounded-3xl bg-white/95 p-5 shadow-card sm:p-6"
           >
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h3 className="font-display text-xl font-semibold text-buddy-cocoa">
@@ -1173,7 +1214,7 @@ function PreviewModal({ open, onClose, language, onLanguageChange }) {
                   </button>
                 </div>
 
-                <div className="mt-4 rounded-full bg-buddy-mint/70 px-4 py-2 text-center text-sm font-semibold text-slate-600">
+                <div className="mt-4 rounded-2xl bg-buddy-mint/70 px-4 py-2 text-center text-sm font-semibold text-slate-600">
                   {subtitleText}
                 </div>
               </div>
@@ -1188,8 +1229,8 @@ function PreviewModal({ open, onClose, language, onLanguageChange }) {
                   After the story, Buddy asks comprehension questions and gives pronunciation feedback — all in your child's native language.
                 </div>
                 <div className="rounded-2xl bg-buddy-peach/30 border border-buddy-peach/50 p-4 text-sm text-slate-600">
-                  <p className="font-bold text-buddy-cocoa mb-1">🌐 5 languages supported</p>
-                  Hindi · Tamil · Telugu · Kannada · English — switch anytime.
+                  <p className="font-bold text-buddy-cocoa mb-1">🌐 6 languages supported</p>
+                  Hindi · Tamil · Telugu · Kannada · Malayalam · English — switch anytime.
                 </div>
               </div>
             </div>
